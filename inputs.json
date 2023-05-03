@@ -1,0 +1,7 @@
+{
+    "fastqFiles":[
+        "FH1_S162_R1_001.fastq.gz",
+        "FH1_S162_R2_001.fastq.gz"
+    ],
+    "dockerRegistry": "quay.io/hisplan"
+}

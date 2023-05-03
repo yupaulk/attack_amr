@@ -26,17 +26,17 @@ workflow amr_analysis {
     input_files = fastqc_raw.outZip,
   }
   
-  scatter (sample in SAMPLES) {
-    Array[File] sample_files = glob(fastqc_raw.fastqc_zip)
-    Array[File] fw_files = filter(sample_files, file -> file.basename.contains("_R1_"))
-    Array[File] rv_files = filter(sample_files, file -> file.basename.contains("_R2_"))
-    call cutadapt {
-      input: 
-        fw = fw_files,
-        rv = rv_files
-        threads = 1
-    }
-  }
+  # scatter (sample in SAMPLES) {
+  #   Array[File] sample_files = glob(fastqc_raw.fastqc_zip)
+  #   Array[File] fw_files = filter(sample_files, file -> file.basename.contains("_R1_"))
+  #   Array[File] rv_files = filter(sample_files, file -> file.basename.contains("_R2_"))
+  #   call cutadapt {
+  #     input: 
+  #       fw = fw_files,
+  #       rv = rv_files
+  #       threads = 1
+  #   }
+  # }
 }
 
 task fastqc_raw {
@@ -167,32 +167,32 @@ task multiqc_raw {
   }
 }
 
-task cutadapt {
-  File sample_files
-  # File fw
-  # File rv
-  Int threads
+# task cutadapt {
+#   File sample_files
+#   # File fw
+#   # File rv
+#   Int threads
 
-  input{
-    sample_files
-    threads
-  }
+#   input{
+#     sample_files
+#     threads
+#   }
   
-  fw = 
-  rv = 
+#   fw = 
+#   rv = 
 
-  command {
-    cutadapt -a CTGTCTCTTATACACATCT -A CTGTCTCTTATACACATCT -O 10 -m 30 -q 20 {input.fw} {input.rv} -o {output.fw} -p {output.rv} > {output.log}
-  }
+#   command {
+#     cutadapt -a CTGTCTCTTATACACATCT -A CTGTCTCTTATACACATCT -O 10 -m 30 -q 20 {input.fw} {input.rv} -o {output.fw} -p {output.rv} > {output.log}
+#   }
 
-  output {
-    File fw_trimmed = "trimmed_data/${basename(fw, ".fastq.gz")}_trimmed.fastq.gz"
-    File rv_trimmed = "trimmed_data/${basename(rv, ".fastq.gz")}_trimmed.fastq.gz"
-    File log = "trimmed_data/${basename(fw, ".fastq.gz")}.trimmed.txt"
-  }
+#   output {
+#     File fw_trimmed = "trimmed_data/${basename(fw, ".fastq.gz")}_trimmed.fastq.gz"
+#     File rv_trimmed = "trimmed_data/${basename(rv, ".fastq.gz")}_trimmed.fastq.gz"
+#     File log = "trimmed_data/${basename(fw, ".fastq.gz")}.trimmed.txt"
+#   }
 
-  runtime{
-    #docker: "ubuntu:latest"
-    conda: "envs/cutadapt.yml"
-  }
-}
+#   runtime{
+#     #docker: "ubuntu:latest"
+#     conda: "envs/cutadapt.yml"
+#   }
+# }
