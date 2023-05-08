@@ -1,3 +1,6 @@
+.ipynb*
+2023*/
+*.gz
 .snakemake/
 card_db/
 card_out/
