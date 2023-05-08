@@ -2,12 +2,12 @@ version 1.0
 
 workflow amr_analysis {
 
-  Array[String] READS = ["R1", "R2"]
 
   input{
      Array[File] fastqFiles
      String dockerRegistry
-     #File card_db = "card_db/card.fasta"
+     Array[File] R1Samples
+     Array[File] R2Samples
   }
 
   scatter (fastqFile in fastqFiles) {
@@ -22,21 +22,28 @@ workflow amr_analysis {
   
 
   call multiqc_raw {
-  input:
-    input_files = fastqc_raw.outZip,
+    input:
+      input_files = fastqc_raw.outZip
   }
   
-  # scatter (sample in SAMPLES) {
-  #   Array[File] sample_files = glob(fastqc_raw.fastqc_zip)
-  #   Array[File] fw_files = filter(sample_files, file -> file.basename.contains("_R1_"))
-  #   Array[File] rv_files = filter(sample_files, file -> file.basename.contains("_R2_"))
-  #   call cutadapt {
-  #     input: 
-  #       fw = fw_files,
-  #       rv = rv_files
-  #       threads = 1
-  #   }
-  # }
+  scatter (R1 in R1Samples){
+      call cutadapt_r1{
+        input:
+         read1 = R1,
+         dockerRegistry = dockerRegistry
+      }
+    }
+  
+  scatter (R2 in R2Samples){
+      call cutadapt_r2{
+        input:
+         read2 = R2,
+         dockerRegistry = dockerRegistry
+      }
+  }
+  
+  
+ 
 }
 
 task fastqc_raw {
@@ -167,32 +174,78 @@ task multiqc_raw {
   }
 }
 
-# task cutadapt {
-#   File sample_files
-#   # File fw
-#   # File rv
-#   Int threads
+task cutadapt_r1 {
 
-#   input{
-#     sample_files
-#     threads
-#   }
-  
-#   fw = 
-#   rv = 
+    input {
+        File read1
+        String dockerRegistry
+    }
 
-#   command {
-#     cutadapt -a CTGTCTCTTATACACATCT -A CTGTCTCTTATACACATCT -O 10 -m 30 -q 20 {input.fw} {input.rv} -o {output.fw} -p {output.rv} > {output.log}
-#   }
+    Int numCores = 4
+    String dockerImage = dockerRegistry + "/cromwell-cutadapt:2.5"
+    String out =  basename(read1, ".fastq.gz") + "_trimmed_fastqc.zip"
+    Int length = 30
 
-#   output {
-#     File fw_trimmed = "trimmed_data/${basename(fw, ".fastq.gz")}_trimmed.fastq.gz"
-#     File rv_trimmed = "trimmed_data/${basename(rv, ".fastq.gz")}_trimmed.fastq.gz"
-#     File log = "trimmed_data/${basename(fw, ".fastq.gz")}.trimmed.txt"
-#   }
+    command {
+        set -euo pipefail
 
-#   runtime{
-#     #docker: "ubuntu:latest"
-#     conda: "envs/cutadapt.yml"
-#   }
-# }
+        cutadapt \
+            --minimum-length ~{length} \
+            --length ~{length} \
+            --too-short-output too-short.~{out} \
+            --too-long-output too-long.~{out} \
+            -o ~{out} \
+            ~{read1}
+    }
+
+    output {
+        File outFile = out
+        Array[File] outTooShortTooLongFiles = glob("too-*." + out)
+
+    }
+
+    runtime {
+        docker: dockerImage
+        disks: "local-disk 500 HDD"
+        cpu: numCores
+        memory: "16 GB"
+    }
+}
+
+task cutadapt_r2 {
+
+    input {
+        File read2
+        String dockerRegistry
+    }
+
+    Int numCores = 4
+    String dockerImage = dockerRegistry + "/cromwell-cutadapt:2.5"
+    String out =  basename(read2, ".fastq.gz") + "_trimmed_fastqc.zip"
+    Int length = 30
+
+    command {
+        set -euo pipefail
+
+        cutadapt \
+            --minimum-length ~{length} \
+            --length ~{length} \
+            --too-short-output too-short.~{out} \
+            --too-long-output too-long.~{out} \
+            -o ~{out} \
+            ~{read2}
+    }
+
+    output {
+        File outFile = out
+        Array[File] outTooShortTooLongFiles = glob("too-*." + out)
+
+    }
+
+    runtime {
+        docker: dockerImage
+        disks: "local-disk 500 HDD"
+        cpu: numCores
+        memory: "16 GB"
+    }
+}

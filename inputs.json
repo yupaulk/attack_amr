@@ -1,7 +1,14 @@
 {
-    "fastqFiles":[
+    "fastqFiles" :[
         "FH1_S162_R1_001.fastq.gz",
         "FH1_S162_R2_001.fastq.gz"
     ],
-    "dockerRegistry": "quay.io/hisplan"
+    "dockerRegistry" : "quay.io/hisplan",
+    "R1Samples" :[
+        "FH1_S162_R1_001.fastq.gz"
+    ],
+    "R2Samples" :[
+        "FH1_S162_R2_001.fastq.gz"
+    ]
+
 }
