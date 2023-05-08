@@ -14,8 +14,8 @@ workflow amr_analysis {
 
         call fastqc_raw {
             input:
-                fastqFile = fastqFile,
-                dockerRegistry = dockerRegistry
+                fastqFile = fastqFile#,
+                #dockerRegistry = dockerRegistry
                 
         }
     }
@@ -52,11 +52,11 @@ task fastqc_raw {
         File fastqFile
 
         # docker-related
-        String dockerRegistry
+        #String dockerRegistry
     }
 
     Int numCores = 4
-    String dockerImage = dockerRegistry + "/cromwell-fastqc:0.11.9"
+    String dockerImage = "quay.io/staphb/fastqc:0.11.9" #dockerRegistry + "/cromwell-fastqc:0.11.9"
     Float inputSize = size(fastqFile, "GiB")
 
     command <<<
@@ -72,7 +72,7 @@ task fastqc_raw {
 
     runtime {
         docker: dockerImage
-        disks: "local-disk " + ceil(2 * (if inputSize < 1 then 1 else inputSize )) + " HDD"
+        disks: "local-disk 500 HDD"
         cpu: numCores
         memory: "16 GB"
     }
@@ -169,7 +169,7 @@ task multiqc_raw {
     memory: "3 GB"
     cpu: 2
     docker: "${docker}"
-    disks: "local-disk 375 LOCAL"
+    disks: "local-disk 500 HDD"
     dx_instance_type: "mem1_ssd1_v2_x2"
   }
 }
