@@ -2,6 +2,10 @@ Run Snakemake:
 conda activate snakemake
 snakemake --use-conda --cores all
 
+Install Snakemake:
+conda install -n base -c conda-forge mamba
+mamba create -c conda-forge -c bioconda -n snakemake snakemake
+
 Download Sequence File: (Sample)
 wget ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR701/ERR7015395/FH1_S162_R1_001.fastq.gz
 
