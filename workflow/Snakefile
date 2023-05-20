@@ -7,18 +7,17 @@
 # a.) Uncomment if using raw data instead of trimmed data
 (SAMPLES,) = glob_wildcards("data/{sample}_R1_001.fastq.gz")
 # b.) Uncomment to use for downsampling or if raw data files are already deleted
-# (SAMPLES,) = glob_wildcards("trimmed_data/{sample}_R1_trimmed.fastq.gz")
+#(SAMPLES,) = glob_wildcards("trimmed_data/{sample}_R1_trimmed.fastq.gz")
 
 # This defines the output files for the pipeline.
 rule all:
 	input:
 		# Uncomment if using raw data instead of trimmed data
-		#expand("data/FASTQC/{sample}_{read}_001_fastqc.zip", sample=SAMPLES, read=["R1", "R2"]),
+		expand("data/FASTQC/{sample}_{read}_001_fastqc.zip", sample=SAMPLES, read=["R1", "R2"]),
 		"data/multiqc_report.html",
-		expand("trimmed_data/{sample}_{read}_trimmed.fastq.gz",	sample=SAMPLES,	read=["R1", "R2"]),
+		expand("trimmed_data/{sample}_{read}_trimmed.fastq.gz", sample=SAMPLES,	read=["R1", "R2"]),
 		expand("trimmed_data/FASTQC/{sample}_{read}_trimmed_fastqc.zip", sample=SAMPLES, read=["R1", "R2"]),
 		"trimmed_data/multiqc_report.html",
-
 		# ***Choose only one of either Resfinder or CARD AMR database!***
 		# a.) Uncomment if using Resfinder database
 		"resfinder_db/resfinder.1.bt2",
@@ -36,20 +35,17 @@ rule all:
 		#expand("sorted_reads_card/{sample}.bam.bai", sample=SAMPLES),
 		#"card_out/gene_names",
 		#"card_out/ARG_genemat.txt",
-		
 		# Uncomment to run MGE database
-		"MGE_db/MGE.1.bt2",
+		#"MGE_db/MGE.1.bt2",
 		expand("mapped_reads_MGE/{sample}_unfiltered.bam", sample=SAMPLES),
 		expand("logs/MGE/{sample}.log", sample=SAMPLES),
 		expand("mapped_reads_MGE/{sample}.bam", sample=SAMPLES),
 		expand("sorted_reads_MGE/{sample}.bam.bai", sample=SAMPLES),
 		"MGE_out/gene_names",
 		"MGE_out/MGE_genemat.txt",
-		
 		# Uncomment to run metaphlan
 		expand("metaphlan3/{sample}_profile.txt", sample=SAMPLES),
 		"metaphlan3/merged_abundance_table.txt",
-		
 		# Uncomment to run metaxa
 		expand("metaxa2/{sample}.level_6.txt", sample=SAMPLES),
 		"metaxa2/metaxa_genus.txt"
@@ -266,9 +262,10 @@ rule resfinder_filtering:
 	conda:
 		"envs/bowtie2.yml"
 	threads: 20
-	shell:
+	shell: #PKY: It seems like it maps only read1 (and($2, 0x40)), do we need to map read2 (and($2, 0x80)) as well?
+		#PKY: If 'and' function is not implemented in awk, change awk to gawk
 		"""
-		samtools view -h {input} | awk 'BEGIN {{FS="\t"; OFS="\t"}} \
+		samtools view -h {input} | gawk 'BEGIN {{FS="\t"; OFS="\t"}} \
 		{{if (/^@/ && substr($2, 3, 1)==":") {{print}} \
 		else if (($7!="=" || $7=="=") && and($2, 0x40)) {{print}}}}' \
 		| samtools view -Shu - > {output}
@@ -420,7 +417,7 @@ rule card_filtering:
 	threads: 20
 	shell:
 		"""
-		samtools view -h {input} | awk 'BEGIN {{FS="\t"; OFS="\t"}} \
+		samtools view -h {input} | gawk 'BEGIN {{FS="\t"; OFS="\t"}} \
 		{{if (/^@/ && substr($2, 3, 1)==":") {{print}} \
 		else if (($7!="=" || $7=="=") && and($2, 0x40)) {{print}}}}' \
 		| samtools view -Shu - > {output}
@@ -551,7 +548,7 @@ rule MGE_filtering:
 	threads: 20
 	shell:
 		"""
-		samtools view -h {input} | awk 'BEGIN {{FS="\t"; OFS="\t"}} \
+		samtools view -h {input} | gawk 'BEGIN {{FS="\t"; OFS="\t"}} \
 		{{if (/^@/ && substr($2, 3, 1)==":") {{print}} \
 		else if (($7!="=" || $7=="=") && and($2, 0x40)) {{print}}}}' \
 		| samtools view -Shu - > {output}
