@@ -4,26 +4,103 @@ workflow amr_analysis {
     input {
         Array[File] fastqFiles
         Array[Array[File]] pairedReads
+        File resfinderDB
     }
 
-    #scatter (fastqFile in fastqFiles) {
-    #    call fastqc_raw {
-    #        input: fastqFile = fastqFile
-    #    }
-    #}
+    scatter (fastqFile in fastqFiles) {
+       call fastqc as fastqcRaw {
+           input: 
+               fastqFile = fastqFile
+       }
+    }
     
-    #call multiqc_raw {
-    #    input: input_files = fastqc_raw.outZip
-    #}
-  
+    call multiqc as multiqcRaw {
+       input: 
+           input_files = fastqcRaw.outZip
+    }
+    
     scatter (pairRead in pairedReads) {
         call cutadapt {
             input: read1 = pairRead[0], read2 = pairRead[1]
         }
     }
+    
+
+    scatter (fastqFileTrimmed in flatten([cutadapt.outFwd, cutadapt.outRev])) {
+       call fastqc as fastqcTrim {
+           input: 
+               fastqFile = fastqFileTrimmed
+       }
+    }
+    Array[File] fastqcTrimzip = fastqcTrim.outZip
+    
+    call multiqc as multiqcTrim {
+       input: 
+           input_files = fastqcTrimzip
+    }
+    
+    # call buildDatabase as resFinder{
+    #    input:
+    #        database = resfinderDB,
+    #        referenceName = "resfinder"
+           
+    # }
+
+    # scatter (read1 in cutadapt.outFwd){
+    #     scatter (read2 in cutadapt.outRev){
+    #         call Bowtie2 as resfinderBowtie2{
+    #             input:
+    #                 R1 = read1,
+    #                 R2 = read2,
+    #                 database = resFinder.outFile,
+    #                 referenceName = "resfinder"
+    #         }
+    #         call filterBam as resfinderfilterBam{
+    #             input:
+    #                 samFile = resfinderBowtie2.alignment,
+    #                 referenceName = "resfinder"
+    #         }
+
+    #         call SortAndIndex as resfinderSortAndIndex{
+    #             input:
+    #                 bamFile = resfinderfilterBam.bamFile,
+    #                 referenceName = "resfinder"
+    #         }
+    #     }
+    # }
+
+    # Array[File] bamFiles = flatten(resfinderSortAndIndex.sortedBam)
+
+    # call CombineResults1 as resfindercombineResults1{
+    #         input:
+    #             sortedBam = bamFiles[0],
+    #             referenceName = "resfinder"
+    #     }
+
+    # scatter (sample in bamFiles){
+    #     call CombineResults2 as resfindercombineResults2{
+    #         input:
+    #             sortedReads = sample,
+    #             referenceName = "resfinder"
+    #     }
+    #     call AddSampleNames as resfindersampleNames{
+    #         input:
+    #             sampleCount = resfindercombineResults2.out,
+    #             referenceName = "resfinder"
+    #     }
+    # }
+    # Array [File] renamedSamples = resfindersampleNames.renamedSampleCount
+
+    # call Create_ARG_Genemat{
+    #     input:
+    #         geneNames = resfindercombineResults1.out,
+    #         renamedSampleCounts = renamedSamples,
+    #         referenceName = "resfinder"
+    # }
+ 
 }
 
-task fastqc_raw {
+task fastqc {
 
     input {
         File fastqFile
@@ -51,9 +128,9 @@ task fastqc_raw {
     }
 }
 
-task multiqc_raw {
+task multiqc {
     input {
-        Array[File]     input_files = []
+        Array[File]     input_files 
 
         Boolean         force = false
         Boolean         full_names = false
@@ -84,21 +161,17 @@ task multiqc_raw {
         String          docker = "quay.io/biocontainers/multiqc:1.8--py_2"
     }
 
-    parameter_meta {
-        output_data_format: { description: "[tsv|yaml|json] default:tsv" }
-    }
-
     # get the basename in all wdl use the filename specified (sans ".html" extension, if specified)
     String report_filename = if (defined(file_name)) then basename(select_first([file_name]), ".html") else "multiqc"
 
     command {
         set -ex -o pipefail
 
-        echo "${sep='\n' input_files}" > input-filenames.txt
-        echo "" >> input-filenames.txt
+        echo "${sep='\n' input_files}" >  input-filename.txt
+        echo "" >>  input-filename.txt
 
         multiqc \
-        --file-list input-filenames.txt \
+        --file-list  input-filename.txt \
         --dirs \
         --outdir "${out_dir}" \
         ${true="--force" false="" force} \
@@ -175,5 +248,168 @@ task cutadapt {
         disks: "local-disk 500 HDD"
         cpu: numCores
         memory: "16 GB"
+    }
+}
+
+task buildDatabase{
+    input{
+        File database
+        String referenceName
+    }
+   
+    command{
+        bowtie2-build ~{database} ${referenceName}
+    }
+    output {
+        Array[File] outFile = glob("~{referenceName}.*.bt2")
+    }
+
+    runtime {
+        docker: "quay.io/biocontainers/bowtie2:2.4.2--py38h1c8e9b9_1"
+    }
+}
+
+task Bowtie2 {
+    input {
+        File R1
+        File R2
+        Array[File] database
+        String referenceName
+    }
+     String outFile = "${referenceName}_alignment.sam"
+
+    command {
+        bowtie2 -x ${referenceName} -1 ~{R1} -2 ~{R2} \
+        -D 20 -R 3 -N 1 -L 20 -i S,1,0.50 \
+        --threads 6 | samtools view -Sb -o ~{outFile}
+        
+    }
+
+    output {
+        File alignment = outFile
+    }
+
+    runtime {
+        docker: "ummidock/innuca"
+    }
+}
+
+task filterBam {
+    input {
+        File samFile
+        String referenceName
+    }
+
+    String outFile = "${referenceName} + output.bam"
+
+    command <<<
+      samtools view -h ~{samFile} | awk 'BEGIN {FS="\t"; OFS="\t"} \
+    {if (/^@/ && substr($2, 3, 1)==":") {print} \
+    else if (($7!="=" || $7=="=") && and($2, 0x40)) {print}}' \
+    | samtools view -Shu -o ~{outFile}
+    >>>
+
+    output {
+        File bamFile = "~{outFile}"
+    }
+
+    runtime {
+        docker:'ghcr.io/stjudecloud/samtools:1.0.2'
+    }
+}
+
+task SortAndIndex {
+    input {
+        File bamFile
+        File referenceName
+    }
+
+    String outFile = "${referenceName}+sorted.bam"
+    String outBai = "${referenceName}+sorted.bam.bai"
+
+    command {
+       samtools sort -O bam ~{bamFile} -o ~{outFile}
+        samtools index outFile -o~${outBai}
+    }
+
+    output {
+        File sortedBam = "~{outFile}"
+        File bamIndex = "~{outBai}"
+    }
+
+    runtime {
+        docker: 'ghcr.io/stjudecloud/samtools:1.0.2'
+    }
+}
+
+task CombineResults1{
+    input{
+        File sortedBam
+        String referenceName
+    }
+    String outFile = "${referenceName}_out/gene_names.txt"
+    command{
+        samtools idxstats ~{sortedBam} | grep -v "\*" | cut -f1 -o ~{outFile}
+		sed -i '1 i\GENE' ~{outFile}
+    }
+    output{
+        File out = outFile
+    }
+    runtime {
+        docker: 'ghcr.io/stjudecloud/samtools:1.0.2'
+    }
+}
+
+task CombineResults2{
+    input{
+        File sortedReads
+        String referenceName
+    }
+    String outFile =  "${referenceName}_out/{sortedReads}_counts.txt"
+    command{
+        samtools idxstats ${sortedReads} | grep -v "\*" | cut -f3 -o ~{outFile}
+    }
+    output{
+        File out = outFile
+    }
+    runtime {
+        docker: 'ghcr.io/stjudecloud/samtools:1.0.2'
+    }
+}
+
+
+task AddSampleNames {
+    input {
+        File sampleCount
+        String referenceName
+    }
+    String baseName = basename(sampleCount, "_counts")
+    String outFile = "renamed_${baseName}_${referenceName}_counts.txt"
+
+    command {
+        echo ${baseName} | cat - ${sampleCount} -o ~{outFile}
+    }
+
+    output {
+        File renamedSampleCount = outFile
+    }
+
+}
+
+task Create_ARG_Genemat {
+    input {
+        File geneNames
+        Array[File] renamedSampleCounts
+        String referenceName
+    }
+
+    File outFile = "${referenceName}_ARG_genemat.txt"
+
+    command <<< 
+        paste ${geneNames} ${sep=" " renamedSampleCounts} -o ARG_genemat.txt
+    >>>
+
+    output {
+        File ARG_genemat = outFile
     }
 }
