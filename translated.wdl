@@ -39,64 +39,63 @@ workflow amr_analysis {
            input_files = fastqcTrimzip
     }
     
-    # call buildDatabase as resFinder{
-    #    input:
-    #        database = resfinderDB,
-    #        referenceName = "resfinder"
+    call buildDatabase as resFinder{
+       input:
+           database = resfinderDB,
+           referenceName = "resfinder"
            
-    # }
+    }
 
-    # scatter (read1 in cutadapt.outFwd){
-    #     scatter (read2 in cutadapt.outRev){
-    #         call Bowtie2 as resfinderBowtie2{
-    #             input:
-    #                 R1 = read1,
-    #                 R2 = read2,
-    #                 database = resFinder.outFile,
-    #                 referenceName = "resfinder"
-    #         }
-    #         call filterBam as resfinderfilterBam{
-    #             input:
-    #                 samFile = resfinderBowtie2.alignment,
-    #                 referenceName = "resfinder"
-    #         }
+    scatter (i in range(length(pairedReads))){
+        call Bowtie2 as resfinderBowtie2{
+            input:
+                R1 = cutadapt.outFwd[i],
+                R2 = cutadapt.outRev[i],
+                database = resFinder.outFile,
+                indexPrefix = resFinder.indexPrefix
+        }
+        call filterBam as resfinderfilterBam{
+            input:
+                samFile = resfinderBowtie2.alignment,
+                indexPrefix = resFinder.indexPrefix
+        }
+        call SortBam as resfinderSort{
+            input:
+                bamFile = resfinderfilterBam.bamFile, 
+                referenceName = resFinder.indexPrefix
+        }
+        call IndexBam as resfinderIndex{
+            input:
+                bamFile = resfinderSort.sortedBam,
+                referenceName = resFinder.indexPrefix
+            }
+        }
 
-    #         call SortAndIndex as resfinderSortAndIndex{
-    #             input:
-    #                 bamFile = resfinderfilterBam.bamFile,
-    #                 referenceName = "resfinder"
-    #         }
-    #     }
-    # }
+    call CombineResults1 as resfindercombineResults1{
+            input:
+                sortedBam = resfinderSort.sortedBam[0],
+                referenceName = resFinder.indexPrefix
+        }
 
-    # Array[File] bamFiles = flatten(resfinderSortAndIndex.sortedBam)
+    scatter (sample in resfinderSort.sortedBam){
+        call CombineResults2 as resfindercombineResults2{
+            input:
+                sortedReads = sample,
+                referenceName = resFinder.indexPrefix
+        }
+        call AddSampleNames as resfindersampleNames{
+            input:
+                sample = resfindercombineResults2.out,
+                referenceName =resFinder.indexPrefix
+        }
+    }
 
-    # call CombineResults1 as resfindercombineResults1{
-    #         input:
-    #             sortedBam = bamFiles[0],
-    #             referenceName = "resfinder"
-    #     }
-
-    # scatter (sample in bamFiles){
-    #     call CombineResults2 as resfindercombineResults2{
-    #         input:
-    #             sortedReads = sample,
-    #             referenceName = "resfinder"
-    #     }
-    #     call AddSampleNames as resfindersampleNames{
-    #         input:
-    #             sampleCount = resfindercombineResults2.out,
-    #             referenceName = "resfinder"
-    #     }
-    # }
-    # Array [File] renamedSamples = resfindersampleNames.renamedSampleCount
-
-    # call Create_ARG_Genemat{
-    #     input:
-    #         geneNames = resfindercombineResults1.out,
-    #         renamedSampleCounts = renamedSamples,
-    #         referenceName = "resfinder"
-    # }
+    call Create_ARG_Genemat{
+        input:
+            geneNames = resfindercombineResults1.out,
+            renamedSampleCounts = resfindersampleNames.renamedSampleCount,
+            referenceName = resFinder.indexPrefix
+    }
  
 }
 
@@ -262,6 +261,7 @@ task buildDatabase{
     }
     output {
         Array[File] outFile = glob("~{referenceName}.*.bt2")
+        String indexPrefix = referenceName
     }
 
     runtime {
@@ -274,14 +274,15 @@ task Bowtie2 {
         File R1
         File R2
         Array[File] database
-        String referenceName
+        String indexPrefix
     }
-     String outFile = "${referenceName}_alignment.sam"
+     String outFile = "${indexPrefix}_alignment.sam"
 
     command {
-        bowtie2 -x ${referenceName} -1 ~{R1} -2 ~{R2} \
-        -D 20 -R 3 -N 1 -L 20 -i S,1,0.50 \
-        --threads 6 | samtools view -Sb -o ~{outFile}
+        for f in ~{sep=" " database}; do cp $f .; done
+        bowtie2 -x ~{indexPrefix} -1 ~{R1} -2 ~{R2} \
+            -D 20 -R 3 -N 1 -L 20 -i S,1,0.50 --threads 6 | \
+            samtools view -Sb - > ~{outFile}
         
     }
 
@@ -297,20 +298,19 @@ task Bowtie2 {
 task filterBam {
     input {
         File samFile
-        String referenceName
+        String indexPrefix
     }
 
-    String outFile = "${referenceName} + output.bam"
-
+    String outfile = basename(samFile, ".sam") + "_filtered.bam"
     command <<<
-      samtools view -h ~{samFile} | awk 'BEGIN {FS="\t"; OFS="\t"} \
-    {if (/^@/ && substr($2, 3, 1)==":") {print} \
-    else if (($7!="=" || $7=="=") && and($2, 0x40)) {print}}' \
-    | samtools view -Shu -o ~{outFile}
+        samtools view -h ~{samFile} | gawk 'BEGIN {{FS="\t"; OFS="\t"}} \
+            {{if (/^@/ && substr($2, 3, 1)==":") {{print}} \
+            else if (($7!="=" || $7=="=") && and($2, 0x40)) {{print}}}}' | \
+            samtools view -Shu - > ~{outfile}
     >>>
 
     output {
-        File bamFile = "~{outFile}"
+        File bamFile = outfile
     }
 
     runtime {
@@ -318,40 +318,56 @@ task filterBam {
     }
 }
 
-task SortAndIndex {
+task SortBam {
     input {
         File bamFile
-        File referenceName
+        String referenceName
     }
 
-    String outFile = "${referenceName}+sorted.bam"
-    String outBai = "${referenceName}+sorted.bam.bai"
+    String outFile = basename(bamFile, "_filtered.bam")+ "sorted.bam"
 
     command {
-       samtools sort -O bam ~{bamFile} -o ~{outFile}
-        samtools index outFile -o~${outBai}
+       samtools sort ~{bamFile} -o ~{outFile}
     }
 
     output {
-        File sortedBam = "~{outFile}"
-        File bamIndex = "~{outBai}"
+        File sortedBam = outFile
     }
 
     runtime {
         docker: 'ghcr.io/stjudecloud/samtools:1.0.2'
     }
 }
+# follow https://hcc.unl.edu/docs/applications/app_specific/bioinformatics_tools/data_manipulation_tools/samtools/running_samtools_commands/
+task IndexBam{
+    input{
+        File bamFile
+        String referenceName
+    }
+    String outBai = basename(bamFile, "sorted.bam") +".bai"
 
+    command{
+        samtools index -b ~{bamFile} > ~{outBai}
+    }
+    output{
+        File baiIndex = outBai
+    }
+    runtime{
+       docker: 'ghcr.io/stjudecloud/samtools:1.0.2' 
+    }
+
+}
 task CombineResults1{
     input{
         File sortedBam
         String referenceName
     }
-    String outFile = "${referenceName}_out/gene_names.txt"
-    command{
-        samtools idxstats ~{sortedBam} | grep -v "\*" | cut -f1 -o ~{outFile}
-		sed -i '1 i\GENE' ~{outFile}
-    }
+    String outFile = basename(sortedBam, ".bam")+ "gene_names.txt"
+    command<<<
+        samtools idxstats ~{sortedBam} | grep -v "\*" | cut -f1 > ~{outFile}
+        sed -i '1 i\GENE' ~{outFile}
+    >>>
+ 
     output{
         File out = outFile
     }
@@ -365,9 +381,9 @@ task CombineResults2{
         File sortedReads
         String referenceName
     }
-    String outFile =  "${referenceName}_out/{sortedReads}_counts.txt"
+    String outFile =  basename(sortedReads, ".bam")+ "_counts.txt"
     command{
-        samtools idxstats ${sortedReads} | grep -v "\*" | cut -f3 -o ~{outFile}
+        samtools idxstats ${sortedReads} | grep -v "\*" | cut -f3 > ~{outFile}
     }
     output{
         File out = outFile
@@ -380,14 +396,14 @@ task CombineResults2{
 
 task AddSampleNames {
     input {
-        File sampleCount
+        File sample
         String referenceName
     }
-    String baseName = basename(sampleCount, "_counts")
-    String outFile = "renamed_${baseName}_${referenceName}_counts.txt"
+    String baseName = basename(sample, "_counts")
+    String outFile = basename(sample, "_counts") + "renamed_counts.txt"
 
     command {
-        echo ${baseName} | cat - ${sampleCount} -o ~{outFile}
+        sed '1 i\${baseName}' ~{sample} > ~{outFile}
     }
 
     output {
@@ -406,7 +422,8 @@ task Create_ARG_Genemat {
     File outFile = "${referenceName}_ARG_genemat.txt"
 
     command <<< 
-        paste ${geneNames} ${sep=" " renamedSampleCounts} -o ARG_genemat.txt
+        set -e
+        paste $(echo ${geneNames}) $(echo ${renamedSampleCounts[*]}) > ~{outFile}
     >>>
 
     output {
