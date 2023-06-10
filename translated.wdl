@@ -62,12 +62,14 @@ workflow amr_analysis {
         call SortBam as resfinderSort{
             input:
                 bamFile = resfinderfilterBam.bamFile, 
-                referenceName = resFinder.indexPrefix
+                referenceName = resFinder.indexPrefix,
+                outputDir="WDL Practice/Sort"
         }
         call IndexBam as resfinderIndex{
             input:
                 bamFile = resfinderSort.sortedBam,
-                referenceName = resFinder.indexPrefix
+                referenceName = resFinder.indexPrefix,
+                outputDir="WDL Practice/Sort"
             }
         }
 
@@ -314,7 +316,7 @@ task filterBam {
     }
 
     runtime {
-        docker:'ghcr.io/stjudecloud/samtools:1.0.2'
+        docker:'ummidock/innuca'
     }
 }
 
@@ -322,6 +324,7 @@ task SortBam {
     input {
         File bamFile
         String referenceName
+        String outputDir
     }
 
     String outFile = basename(bamFile, "_filtered.bam")+ "sorted.bam"
@@ -335,7 +338,7 @@ task SortBam {
     }
 
     runtime {
-        docker: 'ghcr.io/stjudecloud/samtools:1.0.2'
+        docker: 'ummidock/innuca'
     }
 }
 # follow https://hcc.unl.edu/docs/applications/app_specific/bioinformatics_tools/data_manipulation_tools/samtools/running_samtools_commands/
@@ -343,6 +346,7 @@ task IndexBam{
     input{
         File bamFile
         String referenceName
+        String outputDir
     }
     String outBai = basename(bamFile, "sorted.bam") +".bai"
 
@@ -353,7 +357,7 @@ task IndexBam{
         File baiIndex = outBai
     }
     runtime{
-       docker: 'ghcr.io/stjudecloud/samtools:1.0.2' 
+       docker: 'ummidock/innuca' 
     }
 
 }
@@ -362,7 +366,7 @@ task CombineResults1{
         File sortedBam
         String referenceName
     }
-    String outFile = basename(sortedBam, ".bam")+ "gene_names.txt"
+    String outFile = basename(sortedBam, ".bam") + "gene_names.txt"
     command<<<
         samtools idxstats ~{sortedBam} | grep -v "\*" | cut -f1 > ~{outFile}
         sed -i '1 i\GENE' ~{outFile}
@@ -372,7 +376,7 @@ task CombineResults1{
         File out = outFile
     }
     runtime {
-        docker: 'ghcr.io/stjudecloud/samtools:1.0.2'
+        docker: 'ummidock/innuca'
     }
 }
 
@@ -383,13 +387,13 @@ task CombineResults2{
     }
     String outFile =  basename(sortedReads, ".bam")+ "_counts.txt"
     command{
-        samtools idxstats ${sortedReads} | grep -v "\*" | cut -f3 > ~{outFile}
+        samtools idxstats ~{sortedReads} | grep -v "\*" | cut -f3 > ~{outFile}
     }
     output{
         File out = outFile
     }
     runtime {
-        docker: 'ghcr.io/stjudecloud/samtools:1.0.2'
+        docker: 'ummidock/innuca'
     }
 }
 
