@@ -47,8 +47,8 @@ rule all:
 		expand("metaphlan3/{sample}_profile.txt", sample=SAMPLES),
 		"metaphlan3/merged_abundance_table.txt",
 		# Uncomment to run metaxa
-		expand("metaxa2/{sample}.level_6.txt", sample=SAMPLES),
-		"metaxa2/metaxa_genus.txt"
+		#expand("metaxa2/{sample}.level_6.txt", sample=SAMPLES),
+		#"metaxa2/metaxa_genus.txt"
 
 # ***DO NOT UNCOMMENT! For downsampling sequence data only!***
 # rule all:
