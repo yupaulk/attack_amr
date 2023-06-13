@@ -311,7 +311,7 @@ rule resfinder_indexing:
 # The cut command extracts the first column (chromosome name)
 rule combine_results_1:
 	input:
-		"sorted_reads_resfinder/FH1_S162.bam"
+		"sorted_reads_resfinder/BFH1_S123.bam"
 	output:
 		"resfinder_out/gene_names"
 	message:
@@ -451,7 +451,7 @@ rule card_indexing:
 
 rule combine_results_card_1:
 	input:
-		"sorted_reads_card/FH1_S162.bam",
+		"sorted_reads_card/BFH1_S123.bam",
 	output:
 		"card_out/gene_names",
 	message:
@@ -582,9 +582,8 @@ rule MGE_indexing:
 
 rule combine_MGE_results_1:
 	input:
-		#PKY:Why hard-coded? 
-		# "sorted_reads_MGE/BFH1_S123.bam"
-		"sorted_reads_MGE/FH1_S162.bam",
+		#PKY:Why hard-coded?
+		"sorted_reads_MGE/BFH1_S123.bam",
 	output:
 		"MGE_out/gene_names",
 	message:
