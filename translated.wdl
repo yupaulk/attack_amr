@@ -442,9 +442,8 @@ task Create_ARG_Genemat {
 
     command <<< 
         echo "-- Creating ARG_genemat --"
-        paste ~{geneNames} ${sep=' '} ~{renamedSampleCounts} > ~{outFile}
+        paste ${geneNames} ${sep=' '} ${renameSampleCounts.join(" ")} > ${outFile}
     >>>
-
     output {
         File ARG_genemat = outFile
     }
