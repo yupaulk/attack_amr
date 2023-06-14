@@ -59,31 +59,24 @@ workflow amr_analysis {
                 samFile = resfinderBowtie2.alignment,
                 indexPrefix = resFinder.indexPrefix
         }
-        call SortBam as resfinderSort{
+        call SortandIndexBam as resfinderSortandIndex{
             input:
                 bamFile = resfinderfilterBam.bamFile, 
-                referenceName = resFinder.indexPrefix,
-                outputDir="WDL Practice/Sort"
+                referenceName = resFinder.indexPrefix
         }
-        call IndexBam as resfinderIndex{
-            input:
-                bamFile = resfinderSort.sortedBam,
-                referenceName = resFinder.indexPrefix,
-                outputDir="WDL Practice/Sort"
-            }
-        }
+    }
 
     call CombineResults1 as resfindercombineResults1{
             input:
-                sortedBam = resfinderSort.sortedBam[0],
-                referenceName = resFinder.indexPrefix
+                sortedBam = resfinderSortandIndex.sortedBam[0],
+                referenceName = resFinder.indexPrefix,
         }
 
-    scatter (sample in resfinderSort.sortedBam){
+    scatter (samples in resfinderSortandIndex.sortedBam){
         call CombineResults2 as resfindercombineResults2{
             input:
-                sortedReads = sample,
-                referenceName = resFinder.indexPrefix
+                sortedReads = samples,
+                referenceName = resFinder.indexPrefix,
         }
         call AddSampleNames as resfindersampleNames{
             input:
@@ -316,7 +309,7 @@ task filterBam {
     }
 
     runtime {
-        docker:'ummidock/innuca'
+        docker:"quay.io/staphb/samtools:1.15"
     }
 }
 
@@ -324,13 +317,13 @@ task SortBam {
     input {
         File bamFile
         String referenceName
-        String outputDir
     }
 
     String outFile = basename(bamFile, "_filtered.bam")+ "sorted.bam"
+    
 
     command {
-       samtools sort ~{bamFile} -o ~{outFile}
+        samtools sort -o ~{outFile} ~{bamFile}
     }
 
     output {
@@ -338,7 +331,7 @@ task SortBam {
     }
 
     runtime {
-        docker: 'ummidock/innuca'
+        docker: "quay.io/staphb/samtools:1.15"
     }
 }
 # follow https://hcc.unl.edu/docs/applications/app_specific/bioinformatics_tools/data_manipulation_tools/samtools/running_samtools_commands/
@@ -346,20 +339,41 @@ task IndexBam{
     input{
         File bamFile
         String referenceName
-        String outputDir
     }
     String outBai = basename(bamFile, "sorted.bam") +".bai"
 
     command{
-        samtools index -b ~{bamFile} > ~{outBai}
+         samtools index -b ~{bamFile} ~{outBai}
     }
     output{
         File baiIndex = outBai
     }
     runtime{
-       docker: 'ummidock/innuca' 
+       docker: "quay.io/staphb/samtools:1.15"
     }
 
+}
+
+task SortandIndexBam{
+    input{
+        File bamFile
+        String referenceName
+    }
+
+    String outFile = basename(bamFile, "_filtered.bam")+ "sorted.bam"
+    command<<<
+        samtools sort -o ~{outFile} ~{bamFile}
+        samtools index ~{outFile}
+
+    >>>
+
+    output{
+        File sortedBam = outFile
+    }
+
+    runtime{
+       docker: "quay.io/staphb/samtools:1.15"
+    }
 }
 task CombineResults1{
     input{
@@ -368,15 +382,16 @@ task CombineResults1{
     }
     String outFile = basename(sortedBam, ".bam") + "gene_names.txt"
     command<<<
-        samtools idxstats ~{sortedBam} | grep -v "\*" | cut -f1 > ~{outFile}
-        sed -i '1 i\GENE' ~{outFile}
+        samtools view -F 4 ~{sortedBam} |
+        awk -F '\t' '!/\*/ && !seen[$3]++ { print $3 }' |
+        sed '1 i\GENE' > ~{outFile}
     >>>
  
     output{
         File out = outFile
     }
     runtime {
-        docker: 'ummidock/innuca'
+        docker: "quay.io/staphb/samtools:1.15"
     }
 }
 
@@ -386,14 +401,14 @@ task CombineResults2{
         String referenceName
     }
     String outFile =  basename(sortedReads, ".bam")+ "_counts.txt"
-    command{
-        samtools idxstats ~{sortedReads} | grep -v "\*" | cut -f3 > ~{outFile}
-    }
+    command<<<
+        samtools view -F 4 ~{sortedReads} | awk -F '\t' '!/\*/ { count[$3]++ } END { for (i in count) print i }' > ~{outFile}
+    >>>
     output{
         File out = outFile
     }
     runtime {
-        docker: 'ummidock/innuca'
+        docker: "quay.io/staphb/samtools:1.15"
     }
 }
 
@@ -426,8 +441,8 @@ task Create_ARG_Genemat {
     File outFile = "${referenceName}_ARG_genemat.txt"
 
     command <<< 
-        set -e
-        paste $(echo ${geneNames}) $(echo ${renamedSampleCounts[*]}) > ~{outFile}
+        echo "-- Creating ARG_genemat --"
+        paste ~{geneNames} ${sep=' '} ~{renamedSampleCounts} > ~{outFile}
     >>>
 
     output {
