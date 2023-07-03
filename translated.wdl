@@ -91,7 +91,23 @@ workflow amr_analysis {
             renamedSampleCounts = resfindersampleNames.renamedSampleCount,
             referenceName = resFinder.indexPrefix
     }
- 
+    
+
+    scatter (i in range(length(pairedReads))){
+        call metaphlan3{
+            input:
+                read1 = cutadapt.outFwd[i],
+                read2 = cutadapt.outRev[i],
+                database = #insert database name from json
+        }
+    }
+
+    scatter (file in metaphlan3.outFile){
+        call metaphlan3Merge{
+            input:
+                profileTxt = file 
+        }
+    }
 }
 
 task fastqc {
@@ -447,4 +463,49 @@ task Create_ARG_Genemat {
     output {
         File ARG_genemat = outFile
     }
+}
+
+task metaphlan3{
+    input{
+        File read1
+        File read2
+        Array[File] database
+    }
+
+    Int threads = 20
+    String outFile = basename(read1, "_trimmed.fastq.gz") + "_profile.txt"
+    String bowtie2out = basename(read1, "_trimmed.fastq.gz") + "_bowtie2.bz2"
+
+
+    command<<<
+        metaphlan -t rel_ab_w_read_stats --bowtie2db ~{database} ~{read1},~{read2} --nproc ${threads} --bowtie2out ~{outFile} --sample_id {read1} --input_type fastq > ~{bowtie2out}
+    >>>
+
+    output{
+        File outProfile = outFile
+        File outBowtie = bowtie2out
+    }
+
+    runtime{
+        docker:'biocontainers/metaphlan:4.0.6--pyhca03a8a_0' 
+    }
+}
+
+task metaphlan3Merge{
+    input{
+        File profileTxt
+    }
+    String outFile = "merged_abundance_table.txt"
+    command<<<
+       merge_metaphlan_tables.py ~{profileTxt} > ~{outFile} 
+    >>>
+
+    output{
+        File output = outFile
+    }
+
+    runtime{
+        docker:'biocontainers/metaphlan:4.0.6--pyhca03a8a_0' 
+    }
+
 }
