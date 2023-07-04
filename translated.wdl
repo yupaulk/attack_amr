@@ -76,7 +76,7 @@ workflow amr_analysis {
         call CombineResults2 as resfindercombineResults2{
             input:
                 sortedReads = samples,
-                referenceName = resFinder.indexPrefix,
+                referenceName = resFsinder.indexPrefix,
         }
         call AddSampleNames as resfindersampleNames{
             input:
@@ -98,7 +98,7 @@ workflow amr_analysis {
             input:
                 read1 = cutadapt.outFwd[i],
                 read2 = cutadapt.outRev[i],
-                database = #insert database name from json
+                database = metaphlan
         }
     }
 
