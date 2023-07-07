@@ -7,17 +7,17 @@ workflow amr_analysis {
         File resfinderDB
     }
 
-    scatter (fastqFile in fastqFiles) {
-       call fastqc as fastqcRaw {
-           input: 
-               fastqFile = fastqFile
-       }
-    }
+    # scatter (fastqFile in fastqFiles) {
+    #    call fastqc as fastqcRaw {
+    #        input: 
+    #            fastqFile = fastqFile
+    #    }
+    # }
     
-    call multiqc as multiqcRaw {
-       input: 
-           input_files = fastqcRaw.outZip
-    }
+    # call multiqc as multiqcRaw {
+    #    input: 
+    #        input_files = fastqcRaw.outZip
+    # }
     
     scatter (pairRead in pairedReads) {
         call cutadapt {
@@ -25,25 +25,23 @@ workflow amr_analysis {
         }
     }
     
-
-    scatter (fastqFileTrimmed in flatten([cutadapt.outFwd, cutadapt.outRev])) {
-       call fastqc as fastqcTrim {
-           input: 
-               fastqFile = fastqFileTrimmed
-       }
-    }
-    Array[File] fastqcTrimzip = fastqcTrim.outZip
+    # scatter (fastqFileTrimmed in flatten([cutadapt.outFwd, cutadapt.outRev])) {
+    #    call fastqc as fastqcTrim {
+    #        input: 
+    #            fastqFile = fastqFileTrimmed
+    #    }
+    # }
+    # Array[File] fastqcTrimzip = fastqcTrim.outZip
     
-    call multiqc as multiqcTrim {
-       input: 
-           input_files = fastqcTrimzip
-    }
+    # call multiqc as multiqcTrim {
+    #    input: 
+    #        input_files = fastqcTrimzip
+    # }
     
     call buildDatabase as resFinder{
        input:
            database = resfinderDB,
            referenceName = "resfinder"
-           
     }
 
     scatter (i in range(length(pairedReads))){
@@ -70,7 +68,7 @@ workflow amr_analysis {
             input:
                 sortedBam = resfinderSortandIndex.sortedBam[0],
                 referenceName = resFinder.indexPrefix,
-        }
+    }
 
     scatter (samples in resfinderSortandIndex.sortedBam){
         call CombineResults2 as resfindercombineResults2{
@@ -238,8 +236,8 @@ task cutadapt {
 
     Int numCores = 8
     String dockerImage = "pegi3s/cutadapt"
-    String outfw = basename(read1, "001.fastq.gz") + "trimmed.fastq.gz"
-    String outrv = basename(read2, "001.fastq.gz") + "trimmed.fastq.gz"
+    String outfw = basename(read1) #put back for raw data input
+    String outrv = basename(read2)
 
     command {
         set -euo pipefail
@@ -287,7 +285,7 @@ task Bowtie2 {
         Array[File] database
         String indexPrefix
     }
-     String outFile = "${indexPrefix}_alignment.sam"
+    String outFile = basename(R1, "_R1_trimmed.fastq.gz") + "_${indexPrefix}_alignment.bam"
 
     command {
         for f in ~{sep=" " database}; do cp $f .; done
@@ -312,7 +310,7 @@ task filterBam {
         String indexPrefix
     }
 
-    String outfile = basename(samFile, ".sam") + "_filtered.bam"
+    String outfile = basename(samFile, "_alignment.bam") + "_filtered.bam"
     command <<<
         samtools view -h ~{samFile} | gawk 'BEGIN {{FS="\t"; OFS="\t"}} \
             {{if (/^@/ && substr($2, 3, 1)==":") {{print}} \
@@ -335,7 +333,7 @@ task SortBam {
         String referenceName
     }
 
-    String outFile = basename(bamFile, "_filtered.bam")+ "sorted.bam"
+    String outFile = basename(bamFile, "_filtered.bam") + "_sorted.bam"
     
 
     command {
@@ -356,7 +354,7 @@ task IndexBam{
         File bamFile
         String referenceName
     }
-    String outBai = basename(bamFile, "sorted.bam") +".bai"
+    String outBai = basename(bamFile, "_sorted.bam") + ".bai"
 
     command{
          samtools index -b ~{bamFile} ~{outBai}
@@ -376,7 +374,7 @@ task SortandIndexBam{
         String referenceName
     }
 
-    String outFile = basename(bamFile, "_filtered.bam")+ "sorted.bam"
+    String outFile = basename(bamFile, "_filtered.bam") + "_sorted.bam"
     command<<<
         samtools sort -o ~{outFile} ~{bamFile}
         samtools index ~{outFile}
@@ -396,11 +394,10 @@ task CombineResults1{
         File sortedBam
         String referenceName
     }
-    String outFile = basename(sortedBam, ".bam") + "gene_names.txt"
+    String outFile = basename(sortedBam, "_sorted.bam") + "_gene_names.txt"
     command<<<
-        samtools view -F 4 ~{sortedBam} |
-        awk -F '\t' '!/\*/ && !seen[$3]++ { print $3 }' |
-        sed '1 i\GENE' > ~{outFile}
+        samtools idxstats ~{sortedBam} | grep -v "\*" | cut -f1 > ~{outFile}
+        sed -i '1 i\GENE' ~{outFile}
     >>>
  
     output{
@@ -416,9 +413,9 @@ task CombineResults2{
         File sortedReads
         String referenceName
     }
-    String outFile =  basename(sortedReads, ".bam")+ "_counts.txt"
+    String outFile =  basename(sortedReads, "_sorted.bam") + "_counts.txt"
     command<<<
-        samtools view -F 4 ~{sortedReads} | awk -F '\t' '!/\*/ { count[$3]++ } END { for (i in count) print i }' > ~{outFile}
+        samtools idxstats ~{sortedReads} | grep -v "\*" | cut -f3 > ~{outFile}
     >>>
     output{
         File out = outFile
@@ -434,8 +431,8 @@ task AddSampleNames {
         File sample
         String referenceName
     }
-    String baseName = basename(sample, "_counts")
-    String outFile = basename(sample, "_counts") + "renamed_counts.txt"
+    String baseName = basename(sample, "_counts.txt")
+    String outFile = basename(sample,  "_counts.txt") + "_renamed_counts.txt"
 
     command {
         sed '1 i\${baseName}' ~{sample} > ~{outFile}
@@ -454,11 +451,11 @@ task Create_ARG_Genemat {
         String referenceName
     }
 
-    File outFile = "${referenceName}_ARG_genemat.txt"
+    String outFile = "${referenceName}_ARG_genemat.txt"
 
     command <<< 
         echo "-- Creating ARG_genemat --"
-        paste ${geneNames} ${sep=' '} ${renameSampleCounts.join(" ")} > ${outFile}
+        paste -d $'\t' ~{geneNames} ~{sep=" " renamedSampleCounts} > ~{outFile}
     >>>
     output {
         File ARG_genemat = outFile

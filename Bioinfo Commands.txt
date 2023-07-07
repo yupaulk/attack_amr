@@ -2,6 +2,9 @@ Run Snakemake:
 conda activate snakemake
 snakemake --use-conda --cores all
 
+Run Miniwdl (Miniwdl installation guide: https://awesome-mice-0fe.notion.site/WDL-30db3e93cf2d401f857f03ed29ab8076)
+miniwdl run translated.wdl --verbose --input inputs.json
+
 Install Snakemake:
 conda install -n base -c conda-forge mamba
 mamba create -c conda-forge -c bioconda -n snakemake snakemake
