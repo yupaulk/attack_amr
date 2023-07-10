@@ -476,7 +476,7 @@ task metaphlan3{
 
 
     command<<<
-        metaphlan -t rel_ab_w_read_stats --bowtie2db ~{sep=',' database} ~{read1},~{read2} --nproc ${threads} --bowtie2out ~{outFile} --sample_id ~{read1} --input_type fastq > ~{bowtie2out}
+        metaphlan -t rel_ab_w_read_stats --bowtie2db ~{sep=',' database} ~{read1},~{read2} --nproc ~{threads} --bowtie2out ~{outFile} --sample_id ~{read1} --input_type fastq > ~{bowtie2out}
     >>>
 
     output{
@@ -485,7 +485,7 @@ task metaphlan3{
     }
 
     runtime{
-        docker:"biobakery/metaphlan"
+        docker:"biobakery/humann"
     }
 }
 
@@ -503,7 +503,7 @@ task metaphlan3Merge{
     }
 
     runtime{
-        docker:"biobakery/metaphlan"
+        docker:"biobakery/humann"
     }
 
 }
