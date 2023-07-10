@@ -5,6 +5,7 @@ workflow amr_analysis {
         Array[File] fastqFiles
         Array[Array[File]] pairedReads
         File resfinderDB
+        Array[File] metaphlan
     }
 
     # scatter (fastqFile in fastqFiles) {
@@ -38,57 +39,57 @@ workflow amr_analysis {
     #        input_files = fastqcTrimzip
     # }
     
-    call buildDatabase as resFinder{
-       input:
-           database = resfinderDB,
-           referenceName = "resfinder"
-    }
+    # call buildDatabase as resFinder{
+    #    input:
+    #        database = resfinderDB,
+    #        referenceName = "resfinder"
+    # }
 
-    scatter (i in range(length(pairedReads))){
-        call Bowtie2 as resfinderBowtie2{
-            input:
-                R1 = cutadapt.outFwd[i],
-                R2 = cutadapt.outRev[i],
-                database = resFinder.outFile,
-                indexPrefix = resFinder.indexPrefix
-        }
-        call filterBam as resfinderfilterBam{
-            input:
-                samFile = resfinderBowtie2.alignment,
-                indexPrefix = resFinder.indexPrefix
-        }
-        call SortandIndexBam as resfinderSortandIndex{
-            input:
-                bamFile = resfinderfilterBam.bamFile, 
-                referenceName = resFinder.indexPrefix
-        }
-    }
+    # scatter (i in range(length(pairedReads))){
+    #     call Bowtie2 as resfinderBowtie2{
+    #         input:
+    #             R1 = cutadapt.outFwd[i],
+    #             R2 = cutadapt.outRev[i],
+    #             database = resFinder.outFile,
+    #             indexPrefix = resFinder.indexPrefix
+    #     }
+    #     call filterBam as resfinderfilterBam{
+    #         input:
+    #             samFile = resfinderBowtie2.alignment,
+    #             indexPrefix = resFinder.indexPrefix
+    #     }
+    #     call SortandIndexBam as resfinderSortandIndex{
+    #         input:
+    #             bamFile = resfinderfilterBam.bamFile, 
+    #             referenceName = resFinder.indexPrefix
+    #     }
+    # }
 
-    call CombineResults1 as resfindercombineResults1{
-            input:
-                sortedBam = resfinderSortandIndex.sortedBam[0],
-                referenceName = resFinder.indexPrefix,
-    }
+    # call CombineResults1 as resfindercombineResults1{
+    #         input:
+    #             sortedBam = resfinderSortandIndex.sortedBam[0],
+    #             referenceName = resFinder.indexPrefix,
+    # }
 
-    scatter (samples in resfinderSortandIndex.sortedBam){
-        call CombineResults2 as resfindercombineResults2{
-            input:
-                sortedReads = samples,
-                referenceName = resFsinder.indexPrefix,
-        }
-        call AddSampleNames as resfindersampleNames{
-            input:
-                sample = resfindercombineResults2.out,
-                referenceName =resFinder.indexPrefix
-        }
-    }
+    # scatter (samples in resfinderSortandIndex.sortedBam){
+    #     call CombineResults2 as resfindercombineResults2{
+    #         input:
+    #             sortedReads = samples,
+    #             referenceName = resFsinder.indexPrefix,
+    #     }
+    #     call AddSampleNames as resfindersampleNames{
+    #         input:
+    #             sample = resfindercombineResults2.out,
+    #             referenceName =resFinder.indexPrefix
+    #     }
+    # }
 
-    call Create_ARG_Genemat{
-        input:
-            geneNames = resfindercombineResults1.out,
-            renamedSampleCounts = resfindersampleNames.renamedSampleCount,
-            referenceName = resFinder.indexPrefix
-    }
+    # call Create_ARG_Genemat{
+    #     input:
+    #         geneNames = resfindercombineResults1.out,
+    #         renamedSampleCounts = resfindersampleNames.renamedSampleCount,
+    #         referenceName = resFinder.indexPrefix
+    # }
     
 
     scatter (i in range(length(pairedReads))){
