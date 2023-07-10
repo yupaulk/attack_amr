@@ -5,6 +5,7 @@ workflow amr_analysis {
         Array[File] fastqFiles
         Array[Array[File]] pairedReads
         File resfinderDB
+        Array[File] metaphlan
     }
 
     # scatter (fastqFile in fastqFiles) {
@@ -38,57 +39,57 @@ workflow amr_analysis {
     #        input_files = fastqcTrimzip
     # }
     
-    call buildDatabase as resFinder{
-       input:
-           database = resfinderDB,
-           referenceName = "resfinder"
-    }
+    # # call buildDatabase as resFinder{
+    #    input:
+    #        database = resfinderDB,
+    #        referenceName = "resfinder"
+    # }
 
-    scatter (i in range(length(pairedReads))){
-        call Bowtie2 as resfinderBowtie2{
-            input:
-                R1 = cutadapt.outFwd[i],
-                R2 = cutadapt.outRev[i],
-                database = resFinder.outFile,
-                indexPrefix = resFinder.indexPrefix
-        }
-        call filterBam as resfinderfilterBam{
-            input:
-                samFile = resfinderBowtie2.alignment,
-                indexPrefix = resFinder.indexPrefix
-        }
-        call SortandIndexBam as resfinderSortandIndex{
-            input:
-                bamFile = resfinderfilterBam.bamFile, 
-                referenceName = resFinder.indexPrefix
-        }
-    }
+    # scatter (i in range(length(pairedReads))){
+    #     call Bowtie2 as resfinderBowtie2{
+    #         input:
+    #             R1 = cutadapt.outFwd[i],
+    #             R2 = cutadapt.outRev[i],
+    #             database = resFinder.outFile,
+    #             indexPrefix = resFinder.indexPrefix
+    #     }
+    #     call filterBam as resfinderfilterBam{
+    #         input:
+    #             samFile = resfinderBowtie2.alignment,
+    #             indexPrefix = resFinder.indexPrefix
+    #     }
+    #     call SortandIndexBam as resfinderSortandIndex{
+    #         input:
+    #             bamFile = resfinderfilterBam.bamFile, 
+    #             referenceName = resFinder.indexPrefix
+    #     }
+    # }
 
-    call CombineResults1 as resfindercombineResults1{
-            input:
-                sortedBam = resfinderSortandIndex.sortedBam[0],
-                referenceName = resFinder.indexPrefix,
-    }
+    # call CombineResults1 as resfindercombineResults1{
+    #         input:
+    #             sortedBam = resfinderSortandIndex.sortedBam[0],
+    #             referenceName = resFinder.indexPrefix,
+    # }
 
-    scatter (samples in resfinderSortandIndex.sortedBam){
-        call CombineResults2 as resfindercombineResults2{
-            input:
-                sortedReads = samples,
-                referenceName = resFsinder.indexPrefix,
-        }
-        call AddSampleNames as resfindersampleNames{
-            input:
-                sample = resfindercombineResults2.out,
-                referenceName =resFinder.indexPrefix
-        }
-    }
+    # scatter (samples in resfinderSortandIndex.sortedBam){
+    #     call CombineResults2 as resfindercombineResults2{
+    #         input:
+    #             sortedReads = samples,
+    #             referenceName = resFinder.indexPrefix,
+    #     }
+    #     call AddSampleNames as resfindersampleNames{
+    #         input:
+    #             sample = resfindercombineResults2.out,
+    #             referenceName =resFinder.indexPrefix
+    #     }
+    # }
 
-    call Create_ARG_Genemat{
-        input:
-            geneNames = resfindercombineResults1.out,
-            renamedSampleCounts = resfindersampleNames.renamedSampleCount,
-            referenceName = resFinder.indexPrefix
-    }
+    # call Create_ARG_Genemat{
+    #     input:
+    #         geneNames = resfindercombineResults1.out,
+    #         renamedSampleCounts = resfindersampleNames.renamedSampleCount,
+    #         referenceName = resFinder.indexPrefix
+    # }
     
 
     scatter (i in range(length(pairedReads))){
@@ -100,7 +101,7 @@ workflow amr_analysis {
         }
     }
 
-    scatter (file in metaphlan3.outFile){
+    scatter (file in metaphlan3.outProfile){
         call metaphlan3Merge{
             input:
                 profileTxt = file 
@@ -475,7 +476,7 @@ task metaphlan3{
 
 
     command<<<
-        metaphlan -t rel_ab_w_read_stats --bowtie2db ~{database} ~{read1},~{read2} --nproc ${threads} --bowtie2out ~{outFile} --sample_id {read1} --input_type fastq > ~{bowtie2out}
+        metaphlan -t rel_ab_w_read_stats --bowtie2db ~{sep=',' database} ~{read1},~{read2} --nproc ${threads} --bowtie2out ~{outFile} --sample_id ~{read1} --input_type fastq > ~{bowtie2out}
     >>>
 
     output{
@@ -484,7 +485,7 @@ task metaphlan3{
     }
 
     runtime{
-        docker:'biocontainers/metaphlan:4.0.6--pyhca03a8a_0' 
+        docker:"biobakery/metaphlan"
     }
 }
 
@@ -498,11 +499,11 @@ task metaphlan3Merge{
     >>>
 
     output{
-        File output = outFile
+        File out = outFile
     }
 
     runtime{
-        docker:'biocontainers/metaphlan:4.0.6--pyhca03a8a_0' 
+        docker:"biobakery/metaphlan"
     }
 
 }
