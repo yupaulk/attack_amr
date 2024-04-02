@@ -24,8 +24,7 @@ $ mamba create -c conda-forge -c bioconda -n snakemake snakemake
 ```
 This creates an isolated enviroment containing the latest Snakemake. To activate it:
 ```
-$ mamba init
-$ mamba activate snakemake
+$ conda activate snakemake
 ```
 To test snakemake:
 ```
@@ -59,7 +58,7 @@ These and other input parameters are specified via a YAML-format config file -- 
 After constructing a config.yaml file and with the snakemake conda environment you created earlier activated, you can call the pipeline from the top-level directory of ATTACK-AMR:
 ```
 cd attack_amr 
-snakemake --configfile config.yaml --use-conda --cores all 
+snakemake --use-conda --cores all
 ```
 
 # 2.3. Ouput
