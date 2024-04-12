@@ -49,7 +49,7 @@ $ mamba install gawk
 ### 1.5. Download the pipeline
 Download ATTACK-AMR from the online [repository](https://github.com/bioinfodlsu/attack_amr), or using the command line:
 ```
-git clone https://github.com/bioinfodlsu/attack_amr
+$ git clone https://github.com/bioinfodlsu/attack_amr
 ```
 
 ## 2. Quickstart Usage Guide
@@ -61,8 +61,8 @@ These and other input parameters are specified via a YAML-format config file -- 
 ### 2.2. Running the pipeline
 After constructing a config.yaml file and with the snakemake conda environment you created earlier activated, you can call the pipeline from the top-level directory of ATTACK-AMR:
 ```
-cd attack_amr 
-snakemake --use-conda --cores all
+$ cd attack_amr 
+$ snakemake --use-conda --cores all
 ```
 
 ### 2.3. Ouput
