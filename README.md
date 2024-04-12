@@ -34,8 +34,7 @@ $ snakemake --help
 ## 1.3. Install Additional Dependencies
 We require gawk to process the filtering stage of our databases.
 ```
-$ sudo apt update && sudo apt upgrade
-$ sudo apt install gawk
+$ mamba install gawk
 ```
 To test gawk:
 ```
