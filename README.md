@@ -8,18 +8,26 @@ Welcome to ATTACK-AMR - a bioinformatics pipeline for analysis of hospital waste
 This pipeline requires the package manager **Conda** and the workflow management system **Snakemake**.
 Additional dependencies not handled by Snakemake are described in Section 1.3.
 
-## 1.1. Install Conda 
-Download Miniconda3 installer for Linux from  [here](https://docs.conda.io/en/latest/miniconda.html#linux-installers).
-Installation instructions are [here](https://conda.io/projects/conda/en/latest/user-guide/install/linux.html).
-Once installation is complete, you can test your Miniconda installation by running:
+## 1.1. Install Miniconda 
 ```
-$ conda list
+$ curl -sL \
+  "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh" > \
+  "Miniconda3.sh"
+$ bash Miniconda3.sh
+$ conda update conda
+$ rm Miniconda3.sh
+$ conda install wget
 ```
 
-## 1.2. Install Snakemake
-Snakemake recommends installation via Conda:
+## 1.2. Install Mamba 
 ```
-$ conda install -c conda-forge mamba
+$ conda config --add channels conda-forge
+$ conda update -n base --all
+$ conda install -n base mamba
+```
+
+## 1.3. Install Snakemake
+```
 $ mamba create -c conda-forge -c bioconda -n snakemake snakemake
 ```
 This creates an isolated enviroment containing the latest Snakemake. To activate it:
@@ -31,17 +39,14 @@ To test snakemake:
 $ snakemake --help
 ```
 
-## 1.3. Install Additional Dependencies
-We require gawk to process the filtering stage of our databases.
+## 1.4. Install Additional Dependencies
+Install git and gawk. We require gawk to process the filtering stage of our databases.
 ```
+$ mamba install git
 $ mamba install gawk
 ```
-To test gawk:
-```
-$ gawk --version
-```
 
-## 1.4. Download the pipeline
+## 1.5. Download the pipeline
 Download ATTACK-AMR from the online [repository](https://github.com/bioinfodlsu/attack_amr), or using the command line:
 ```
 git clone https://github.com/bioinfodlsu/attack_amr
