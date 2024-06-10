@@ -1,0 +1,19 @@
+﻿ID,alias,month,name,hospital,replicate,HWW,hospital_description,no_of_beds,lat,long,sample_material,DNA_ng_µl,A260/280,plot_name
+SLMC1,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,,14.6235414,121.0227282,water,23.27,1.96,hospital influent
+SLMC2,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,,14.6235414,121.0227282,water,25.14,2.3,hospital influent
+SLMC3,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,,14.6235414,121.0227282,water,17.05,1.89,hospital influent
+SLMC4,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,,14.6235414,121.0227282,water,42.02,1.87,hospital influent
+SLMC5,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,,14.6235414,121.0227282,water,40.49,1.81,hospital influent
+SLMC6,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,,14.6235414,121.0227282,water,14.06,1.99,hospital influent
+CGH1,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,,14.6117895,120.9899073,water,32.25,1.88,hospital influent
+CGH2,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,,14.6117895,120.9899073,water,44.44,1.76,hospital influent
+CGH3,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,,14.6261,120.9884419,water,36.44,1.81,hospital influent
+CGH4,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,,14.6261,120.9884419,water,39.53,1.84,hospital influent
+CGH5,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,,14.6261,120.9884419,water,18.53,1.82,hospital influent
+CGH6,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,,14.6261,120.9884419,water,22.9,1.86,hospital influent
+UST1,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,,14.6261,120.9884419,water,16.55,1.8,hospital influent
+UST2,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,,14.6261,120.9884419,water,34.21,1.64,hospital influent
+UST3,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,,14.6117895,120.9899073,water,23.08,1.85,hospital influent
+UST4,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,,14.6117895,120.9899073,water,52.82,1.75,hospital influent
+UST5,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,,14.6117895,120.9899073,water,85.43,1.76,hospital influent
+UST6,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,,14.6117895,120.9899073,water,16.57,1.96,hospital influent
