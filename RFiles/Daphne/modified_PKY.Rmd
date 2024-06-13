@@ -669,7 +669,7 @@ all(rownames(invsimp_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
 invsimp_div$observed <- diversity_observed
 invsimp_div$hospital <- resfinder_PHY_counts_HWW@sam_data$hospital
-colnames(div) <- c("invsimpson", "observed", "hospital")
+colnames(invsimp_div) <- c("invsimpson", "observed", "hospital")
 
 # Plot
 p <- ggplot(invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) + 
@@ -780,178 +780,568 @@ ggsave(filename = "plot5_evenness.tiff",
 ```
 
 ```{r}
-# Plot
-p <- ggplot(div, aes(x=hospital, y=shannon, fill = hospital)) + 
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 1) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
-  theme_classic() + 
-  theme(
-    text = element_text(family = "Palatino"),
-    axis.title.y = element_text(size = 35),
-    axis.title.x = element_blank(),
-    axis.text.y = element_text(size = 20),
-    axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-    legend.position = "none",
-    plot.title = element_text(face = "bold"),
-    plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm")
-  )
-
-# Add labels
-p <- p + labs(title = "Diversity Metrics for ARGs Across Hospitals", subtitle = "Shannon Diversity Index by Hospital") +
-  annotate("text", x = 3, y = -0.3, label = "ABC", size = 6)
-
-# Display plot
-print(p)
+# # Plot
+# p <- ggplot(div, aes(x=hospital, y=shannon, fill = hospital)) + 
+#   geom_dotplot(binaxis='y', stackdir='center', dotsize = 1) + 
+#   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+#   theme_classic() + 
+#   theme(
+#     text = element_text(family = "Palatino"),
+#     axis.title.y = element_text(size = 35),
+#     axis.title.x = element_blank(),
+#     axis.text.y = element_text(size = 20),
+#     axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+#     legend.position = "none",
+#     plot.title = element_text(face = "bold"),
+#     plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm")
+#   )
+# 
+# # Add labels
+# p <- p + labs(title = "Diversity Metrics for ARGs Across Hospitals", subtitle = "Shannon Diversity Index by Hospital") +
+#   annotate("text", x = 3, y = -0.3, label = "ABC", size = 6)
+# 
+# # Display plot
+# print(p)
 
 ```
 
 ```{r}
 # Experiment Plots
-p <- ggplot(div, aes(x = hospital, y = 1, fill = shannon)) +
-  geom_tile() +
-  scale_fill_gradient(low = "#FFEDA0", high = "#800026") +  # Adjust colors as needed
-  theme_classic() + 
-  theme(
-    text = element_text(family = "Palatino"),
-    axis.title.y = element_blank(),
-    axis.title.x = element_blank(),
-    axis.text.y = element_blank(),
-    axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-    legend.position = "right",
-    plot.title = element_text(face = "bold"),
-    plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm")
-  ) +
-  labs(
-    title = "Diversity Metrics for ARGs Across Hospitals",
-    subtitle = "Shannon Diversity Index by Hospital",
-    fill = "Shannon Index"
-  )
-
-
-# Add ID as labels
-p <- p + geom_text(aes(label = rownames(div)), hjust = -0.1, vjust = 0.5, size = 4)
-
-# Display plot
-print(p)
+# p <- ggplot(div, aes(x = hospital, y = 1, fill = shannon)) +
+#   geom_tile() +
+#   scale_fill_gradient(low = "#FFEDA0", high = "#800026") +  # Adjust colors as needed
+#   theme_classic() + 
+#   theme(
+#     text = element_text(family = "Palatino"),
+#     axis.title.y = element_blank(),
+#     axis.title.x = element_blank(),
+#     axis.text.y = element_blank(),
+#     axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+#     legend.position = "right",
+#     plot.title = element_text(face = "bold"),
+#     plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm")
+#   ) +
+#   labs(
+#     title = "Diversity Metrics for ARGs Across Hospitals",
+#     subtitle = "Shannon Diversity Index by Hospital",
+#     fill = "Shannon Index"
+#   )
+# 
+# 
+# # Add ID as labels
+# p <- p + geom_text(aes(label = rownames(div)), hjust = -0.1, vjust = 0.5, size = 4)
+# 
+# # Display plot
+# print(p)
 
 ```
 
 ```{r}
 # Test the significance
-kruskal.test(observed ~ hospital, data = div)
-# There are sig. differences
-
-# Test multiple pairwise
-stat.test <- pairwise.wilcox.test(div$shannon, div$hospital,
-                 p.adjust.method = "BH")
-stat.test
+# kruskal.test(observed ~ hospital, data = div)
+# # There are sig. differences
+# 
+# # Test multiple pairwise
+# stat.test <- pairwise.wilcox.test(div$shannon, div$hospital,
+#                  p.adjust.method = "BH")
+# stat.test
 ```
 
 #### Metaphlan
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-d <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "shannon", MARGIN = 2))
-div <- cbind(d, data.frame("invsimpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "invsimpson", MARGIN = 2)))
-
-all(rownames(div) == colnames(metaphlan_PHY_counts_genus@otu_table))
-diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
-div$observed <- diversity_observed
-
-div$"hospital" <- cbind(metaphlan_PHY_counts_genus@sam_data$hospital)
-
-colnames(div) <- c("shannon", "invsimpson", "observed", "hospital")
-
-# Plot
-p <- ggplot(div, aes(x=hospital, y=shannon, fill = hospital)) + 
-  geom_boxplot()
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-    axis.title.y = element_text(size = 35),
-    axis.title.x = element_blank(),
-    axis.text.y = element_text(size = 20),
-    axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-    plot.title = element_text(face = "bold"),
-    legend.position = "none",
-    plot.margin = margin(0.5, 0.5, 0.5, 0.5, "cm"))
-
-layout <- "
-ABC
-"
-p1<-p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", subtitle = "Shannon Diversity Index by Hospital") +
-  annotate("text", x = 3, y = -0.3, label = "ABC", size = 6)
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = rownames(div)), hjust = -0.1, vjust = 0.5, size = 4)
-# Save plot
-ggsave(filename = "plot6.tiff",
-       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+# d <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "shannon", MARGIN = 2))
+# div <- cbind(d, data.frame("invsimpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "invsimpson", MARGIN = 2)))
+# 
+# all(rownames(div) == colnames(metaphlan_PHY_counts_genus@otu_table))
+# diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+# div$observed <- diversity_observed
+# 
+# div$"hospital" <- cbind(metaphlan_PHY_counts_genus@sam_data$hospital)
+# 
+# colnames(div) <- c("shannon", "invsimpson", "observed", "hospital")
+# 
+# # Plot
+# p <- ggplot(div, aes(x=hospital, y=shannon, fill = hospital)) + 
+#   geom_boxplot()
+# p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+#   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+#   theme_classic() + theme(text = element_text(family = "Palatino"),
+#     axis.title.y = element_text(size = 35),
+#     axis.title.x = element_blank(),
+#     axis.text.y = element_text(size = 20),
+#     axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+#     plot.title = element_text(face = "bold"),
+#     legend.position = "none",
+#     plot.margin = margin(0.5, 0.5, 0.5, 0.5, "cm"))
+# 
+# layout <- "
+# ABC
+# "
+# p1<-p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", subtitle = "Shannon Diversity Index by Hospital") +
+#   annotate("text", x = 3, y = -0.3, label = "ABC", size = 6)
+# 
+# # Add ID as labels
+# p1 <- p1 + geom_text(aes(label = rownames(div)), hjust = -0.1, vjust = 0.5, size = 4)
+# # Save plot
+# ggsave(filename = "plot6.tiff",
+#        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 
 ```
 
-```{r}
-# Test the significance
-kruskal.test(observed ~ hospital, data = div)
-# There are no sig. differences
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "shannon", MARGIN = 2))
+all(rownames(shannon_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+shannon_div$observed <- diversity_observed
+shannon_div$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
+colnames(shannon_div) <- c("shannon", "observed", "hospital")
 
-# Test multiple pairwise
-stat.test <- pairwise.wilcox.test(div$observed, div$hospital,
-                 p.adjust.method = "BH")
-stat.test
+# Plot
+p <- ggplot(shannon_div, aes(x=hospital, y=shannon, fill = hospital)) + 
+  geom_boxplot()
+
+# Add ID as label to the plot
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+                subtitle = "Shannon Diversity Index by Hospital") +
+                scale_y_continuous(limits = c(2.5,max(shannon_div$shannon)), breaks = seq(2.5,max(shannon_div$shannon), by = 0.5))
+
+# Add ID as labels
+p1 <- p1 + geom_text(aes(label = paste(rownames(shannon_div), shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+
+# Save plot
+ggsave(filename = "plot6_shannon.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "simpson", MARGIN = 2))
+all(rownames(simpson_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+simpson_div$observed <- diversity_observed
+simpson_div$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
+colnames(simpson_div) <- c("simpson", "observed", "hospital")
+
+# Plot
+p <- ggplot(simpson_div, aes(x=hospital, y=simpson, fill = hospital)) + 
+  geom_boxplot()
+
+# Add ID as label to the plot
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+                subtitle = "Simpson Diversity Index by Hospital") +
+                scale_y_continuous(limits = c(0.9,max(simpson_div$simpson)), breaks = seq(0.9,max(simpson_div$simpson), by = 0.02))
+
+# Add ID as labels
+p1 <- p1 + geom_text(aes(label = paste(rownames(simpson_div), simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot6_simpson.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+invsimp_div <- data.frame("invsimpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "inv", MARGIN = 2))
+all(rownames(invsimp_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+invsimp_div$observed <- diversity_observed
+invsimp_div$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
+colnames(invsimp_div) <- c("invsimpson", "observed", "hospital")
+
+# Plot
+p <- ggplot(invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) + 
+  geom_boxplot()
+
+# Add ID as label to the plot
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+                subtitle = "Inv Simpson Diversity Index by Hospital") +
+                scale_y_continuous(limits = c(10,max(invsimp_div$invsimpson)), breaks = seq(10,max(invsimp_div$invsimpson), by = 5))
+
+# Add ID as labels
+p1 <- p1 + geom_text(aes(label = paste(rownames(invsimp_div), invsimp_div$invsimpson)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot6_invsimpson.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_counts_genus), MARGIN=2))
+all(rownames(rich) == colnames(metaphlan_PHY_counts_genus@otu_table))
+rich$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
+
+colnames(rich) <- c("richness", "hospital")
+
+# Plot
+p <- ggplot(rich, aes(x=hospital, y=richness, fill = hospital)) + 
+  geom_boxplot()
+
+# Add ID as label to the plot
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Richness for Taxonomic Composition Across Hospitals", 
+                subtitle = "Richness by Hospital") +
+                scale_y_continuous(limits = c(200,max(rich$richness)), breaks = seq(200,max(rich$richness), by = 50))
+
+# Add ID as labels
+p1 <- p1 + geom_text(aes(label = paste(rownames(rich), rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot6_richness.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+even <- data.frame("evenness" = shannon_div$shannon / log(rich$richness))
+rownames(even) <- colnames(metaphlan_PHY_counts_genus@otu_table)
+all(rownames(even) == colnames(metaphlan_PHY_counts_genus@otu_table))
+even$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
+
+colnames(even) <- c("evenness", "hospital")
+
+# Plot
+p <- ggplot(even, aes(x=hospital, y=evenness, fill = hospital)) + 
+  geom_boxplot()
+
+# Add ID as label to the plot
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Evenness for Taxonomic Composition Across Hospitals", 
+                subtitle = "Pielou's Evenness by Hospital") +
+                scale_y_continuous(limits = c(0.5,max(even$evenness)), breaks = seq(0.5,max(even$evenness), by = 0.05))
+
+# Add ID as labels
+p1 <- p1 + geom_text(aes(label = paste(rownames(even), even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot6_evenness.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r}
+# # Test the significance
+# kruskal.test(observed ~ hospital, data = div)
+# # There are no sig. differences
+# 
+# # Test multiple pairwise
+# stat.test <- pairwise.wilcox.test(div$observed, div$hospital,
+#                  p.adjust.method = "BH")
+# stat.test
 
 ```
 
 #### Mobilomes MGE (Exclude)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-d <- data.frame("shannon" = diversity(otu_table(MGE_PHY_counts_HWW), index = "shannon", MARGIN = 2))
-div <- cbind(d, data.frame("invsimpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "invsimpson", MARGIN = 2)))
+# d <- data.frame("shannon" = diversity(otu_table(MGE_PHY_counts_HWW), index = "shannon", MARGIN = 2))
+# div <- cbind(d, data.frame("invsimpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "invsimpson", MARGIN = 2)))
+# 
+# all(rownames(div) == colnames(MGE_PHY_counts_HWW@otu_table))
+# diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+# div$observed <- diversity_observed
+# 
+# div$"hospital" <- cbind(MGE_PHY_counts_HWW@sam_data$hospital)
+# 
+# colnames(div) <- c("shannon", "invsimpson", "observed", "hospital")
+# 
+# # Plot
+# p <- ggplot(div, aes(x=hospital, y=shannon, fill = hospital)) + 
+#   geom_boxplot()
+# p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+#   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+#   theme_classic() + theme(text = element_text(family = "Palatino"),
+#     axis.title.y = element_text(size = 35),
+#     axis.title.x = element_blank(),
+#     axis.text.y = element_text(size = 20),
+#     axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+#     legend.position = "none",
+#     plot.title = element_text(face = "bold"),
+#     plot.margin = margin(0.5, 0.5, 0.5, 0.5, "cm"))
+# 
+# layout <- "
+# ABC
+# "
+# 
+# p1 <-p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", subtitle = "Shannon Diversity Index by Hospital") +
+#   annotate("text", x = 3, y = -0.3, label = "ABC", size = 6)
+# 
+# # Add ID as labels
+# p1 <- p1 + geom_text(aes(label = rownames(div)), hjust = -0.1, vjust = 0.5, size = 4)
+# # Save plot
+# ggsave(filename = "plot7.tiff",
+#        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
 
-all(rownames(div) == colnames(MGE_PHY_counts_HWW@otu_table))
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_counts_HWW), index = "shannon", MARGIN = 2))
+all(rownames(shannon_div) == colnames(MGE_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
-div$observed <- diversity_observed
-
-div$"hospital" <- cbind(MGE_PHY_counts_HWW@sam_data$hospital)
-
-colnames(div) <- c("shannon", "invsimpson", "observed", "hospital")
+shannon_div$observed <- diversity_observed
+shannon_div$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
+colnames(shannon_div) <- c("shannon", "observed", "hospital")
 
 # Plot
-p <- ggplot(div, aes(x=hospital, y=shannon, fill = hospital)) + 
+p <- ggplot(shannon_div, aes(x=hospital, y=shannon, fill = hospital)) + 
   geom_boxplot()
+
+# Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
-    axis.title.y = element_text(size = 35),
-    axis.title.x = element_blank(),
-    axis.text.y = element_text(size = 20),
-    axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-    legend.position = "none",
-    plot.title = element_text(face = "bold"),
-    plot.margin = margin(0.5, 0.5, 0.5, 0.5, "cm"))
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
 
-layout <- "
-ABC
-"
-
-p1 <-p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", subtitle = "Shannon Diversity Index by Hospital") +
-  annotate("text", x = 3, y = -0.3, label = "ABC", size = 6)
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+                subtitle = "Shannon Diversity Index by Hospital") +
+                scale_y_continuous(limits = c(3.5,max(shannon_div$shannon)), breaks = seq(3.5,max(shannon_div$shannon), by = 0.5))
 
 # Add ID as labels
-p1 <- p1 + geom_text(aes(label = rownames(div)), hjust = -0.1, vjust = 0.5, size = 4)
+p1 <- p1 + geom_text(aes(label = paste(rownames(shannon_div), shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+
 # Save plot
-ggsave(filename = "plot7.tiff",
+ggsave(filename = "plot7_shannon.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "simpson", MARGIN = 2))
+all(rownames(simpson_div) == colnames(MGE_PHY_counts_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+simpson_div$observed <- diversity_observed
+simpson_div$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
+colnames(simpson_div) <- c("simpson", "observed", "hospital")
+
+# Plot
+p <- ggplot(simpson_div, aes(x=hospital, y=simpson, fill = hospital)) + 
+  geom_boxplot()
+
+# Add ID as label to the plot
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+                subtitle = "Simpson Diversity Index by Hospital") +
+                scale_y_continuous(limits = c(0.92,max(simpson_div$simpson)), breaks = seq(0.92,max(simpson_div$simpson), by = 0.02))
+
+# Add ID as labels
+p1 <- p1 + geom_text(aes(label = paste(rownames(simpson_div), simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot7_simpson.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+invsimp_div <- data.frame("invsimpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "inv", MARGIN = 2))
+all(rownames(invsimp_div) == colnames(MGE_PHY_counts_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+invsimp_div$observed <- diversity_observed
+invsimp_div$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
+colnames(invsimp_div) <- c("invsimpson", "observed", "hospital")
+
+# Plot
+p <- ggplot(invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) + 
+  geom_boxplot()
+
+# Add ID as label to the plot
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+                subtitle = "Inv Simpson Diversity Index by Hospital") +
+                scale_y_continuous(limits = c(15,max(invsimp_div$invsimpson)), breaks = seq(15,max(invsimp_div$invsimpson), by = 10))
+
+# Add ID as labels
+p1 <- p1 + geom_text(aes(label = paste(rownames(invsimp_div), invsimp_div$invsimpson)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot7_invsimpson.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_counts_HWW), MARGIN=2))
+all(rownames(rich) == colnames(MGE_PHY_counts_HWW@otu_table))
+rich$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
+
+colnames(rich) <- c("richness", "hospital")
+
+# Plot
+p <- ggplot(rich, aes(x=hospital, y=richness, fill = hospital)) + 
+  geom_boxplot()
+
+# Add ID as label to the plot
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Richness for MGEs Across Hospitals", 
+                subtitle = "Richness by Hospital") +
+                scale_y_continuous(limits = c(400,max(rich$richness)), breaks = seq(400,max(rich$richness), by = 50))
+
+# Add ID as labels
+p1 <- p1 + geom_text(aes(label = paste(rownames(rich), rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot7_richness.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+even <- data.frame("evenness" = shannon_div$shannon / log(rich$richness))
+rownames(even) <- colnames(MGE_PHY_counts_HWW@otu_table)
+all(rownames(even) == colnames(MGE_PHY_counts_HWW@otu_table))
+even$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
+
+colnames(even) <- c("evenness", "hospital")
+
+# Plot
+p <- ggplot(even, aes(x=hospital, y=evenness, fill = hospital)) + 
+  geom_boxplot()
+
+# Add ID as label to the plot
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Evenness for MGEs Across Hospitals", 
+                subtitle = "Pielou's Evenness by Hospital") +
+                scale_y_continuous(limits = c(0.65,max(even$evenness)), breaks = seq(0.65,max(even$evenness), by = 0.05))
+
+# Add ID as labels
+p1 <- p1 + geom_text(aes(label = paste(rownames(even), even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot7_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 ```{r}
-# Test the significance
-kruskal.test(observed ~ hospital, data = div)
-# There are sig. differences
-
-# Test multiple pairwise
-stat.test <- pairwise.wilcox.test(div$observed, div$hospital,
-                 p.adjust.method = "BH")
-stat.test
+# # Test the significance
+# kruskal.test(observed ~ hospital, data = div)
+# # There are sig. differences
+# 
+# # Test multiple pairwise
+# stat.test <- pairwise.wilcox.test(div$observed, div$hospital,
+#                  p.adjust.method = "BH")
+# stat.test
 ```
 
 ### Relative abundances of functional genes
@@ -1013,7 +1403,7 @@ p <- ggboxplot(df, x = "hospital", y = "RA", color = "hospital", palette = c("#1
   labs(y = "ARGs/16S rRNA", x = "") +
   guides(color = "none", alpha = "none") +
   geom_jitter(data = df, aes(x = hospital, y = RA, color = hospital), size = 3, alpha = 0.7, width = 0.1) +
-  geom_text(data = df, aes(x = hospital, y = RA, label = rownames(div)), size = 3, vjust = -0.5)  +
+  geom_text(data = df, aes(x = hospital, y = RA, label = rownames(shannon_div)), size = 3, vjust = -0.5)  +
   labs(title = "Comparison of ARGs/16S rRNA Levels Across Hospitals using Wilcoxx")  # Add title
 
 
