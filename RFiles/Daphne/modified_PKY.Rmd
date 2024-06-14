@@ -589,8 +589,17 @@ shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_counts_H
 all(rownames(shannon_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
 shannon_div$observed <- diversity_observed
-shannon_div$hospital <- resfinder_PHY_counts_HWW@sam_data$hospital
-colnames(shannon_div) <- c("shannon", "observed", "hospital")
+shannon_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = shannon_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(shannon_div$shannon, shannon_div$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(shannon_div, aes(x=hospital, y=shannon, fill = hospital)) + 
@@ -620,7 +629,7 @@ p1  # Display the plot
 
 
 # Save plot
-ggsave(filename = "plot5_shannon.tiff",
+ggsave(filename = "plot5_arg_shannon.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -629,8 +638,17 @@ simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_counts_H
 all(rownames(simpson_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
 simpson_div$observed <- diversity_observed
-simpson_div$hospital <- resfinder_PHY_counts_HWW@sam_data$hospital
-colnames(simpson_div) <- c("simpson", "observed", "hospital")
+simpson_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = simpson_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(simpson_div$simpson, simpson_div$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(simpson_div, aes(x=hospital, y=simpson, fill = hospital)) + 
@@ -659,7 +677,7 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(simpson_div), simpson_div$simpso
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot5_simpson.tiff",
+ggsave(filename = "plot5_arg_simpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -668,8 +686,17 @@ invsimp_div <- data.frame("invsimpson" = diversity(otu_table(resfinder_PHY_count
 all(rownames(invsimp_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
 invsimp_div$observed <- diversity_observed
-invsimp_div$hospital <- resfinder_PHY_counts_HWW@sam_data$hospital
-colnames(invsimp_div) <- c("invsimpson", "observed", "hospital")
+invsimp_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+
+# Test the significance
+kruskal.test(invsimpson ~ hospital, data = invsimp_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(invsimp_div$invsimpson, invsimp_div$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) + 
@@ -698,23 +725,33 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(invsimp_div), invsimp_div$invsim
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot5_invsimpson.tiff",
+ggsave(filename = "plot5_arg_invsimpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_counts_HWW), MARGIN=2))
 all(rownames(rich) == colnames(resfinder_PHY_counts_HWW@otu_table))
-rich$hospital <- resfinder_PHY_counts_HWW@sam_data$hospital
+rich$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
 
-colnames(rich) <- c("richness", "hospital")
+# Test the significance
+kruskal.test(richness ~ hospital, data = rich)
+
+# There are sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(rich$richness, rich$hospital,
+                 p.adjust.method = "BH")
+stat.test
+
+pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","n.s.","**"))
 
 # Plot
-p <- ggplot(rich, aes(x=hospital, y=richness, fill = hospital)) + 
-  geom_boxplot()
+p <- ggboxplot(rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#64B98F", "#CD3857", "#61A6E3")) + 
+  stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj")
 
 # Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
@@ -728,7 +765,7 @@ p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) +
 # Adjust the scale to be more detailed
 p1 <- p1 + labs(title = "Richness for ARGs Across Hospitals", 
                 subtitle = "Richness by Hospital") +
-                scale_y_continuous(limits = c(350,max(rich$richness)), breaks = seq(350,max(rich$richness), by = 50))
+                scale_y_continuous(limits = c(350,850), breaks = seq(350,850, by = 50))
 
 # Add ID as labels
 p1 <- p1 + geom_text(aes(label = paste(rownames(rich), rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
@@ -736,7 +773,7 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(rich), rich$richness)), hjust = 
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot5_richness.tiff",
+ggsave(filename = "plot5_arg_richness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -744,16 +781,26 @@ ggsave(filename = "plot5_richness.tiff",
 even <- data.frame("evenness" = shannon_div$shannon / log(rich$richness))
 rownames(even) <- colnames(resfinder_PHY_counts_HWW@otu_table)
 all(rownames(even) == colnames(resfinder_PHY_counts_HWW@otu_table))
-even$hospital <- resfinder_PHY_counts_HWW@sam_data$hospital
+even$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
 
-colnames(even) <- c("evenness", "hospital")
+# Test the significance
+kruskal.test(evenness ~ hospital, data = even)
+
+# There are sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(even$evenness, even$hospital,
+                 p.adjust.method = "BH")
+stat.test
+
+pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("n.s.","n.s.","**"))
 
 # Plot
-p <- ggplot(even, aes(x=hospital, y=evenness, fill = hospital)) + 
-  geom_boxplot()
+p <- ggboxplot(even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#64B98F", "#CD3857", "#61A6E3")) + 
+  stat_pvalue_manual(pvalues, size = 6, y.position = 0.85, step.increase = 0.05, label = "p.adj")
 
 # Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
@@ -767,7 +814,7 @@ p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) +
 # Adjust the scale to be more detailed
 p1 <- p1 + labs(title = "Evenness for ARGs Across Hospitals", 
                 subtitle = "Pielou's Evenness by Hospital") +
-                scale_y_continuous(limits = c(0.65,max(even$evenness)), breaks = seq(0.65,max(even$evenness), by = 0.05))
+                scale_y_continuous(limits = c(0.65,0.9), breaks = seq(0.65,0.9, by = 0.05))
 
 # Add ID as labels
 p1 <- p1 + geom_text(aes(label = paste(rownames(even), even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
@@ -775,7 +822,7 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(even), even$evenness)), hjust = 
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot5_evenness.tiff",
+ggsave(filename = "plot5_arg_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -894,8 +941,18 @@ shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_counts_g
 all(rownames(shannon_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
 diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
 shannon_div$observed <- diversity_observed
-shannon_div$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
+shannon_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
 colnames(shannon_div) <- c("shannon", "observed", "hospital")
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = shannon_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(shannon_div$shannon, shannon_div$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(shannon_div, aes(x=hospital, y=shannon, fill = hospital)) + 
@@ -925,7 +982,7 @@ p1  # Display the plot
 
 
 # Save plot
-ggsave(filename = "plot6_shannon.tiff",
+ggsave(filename = "plot6_tax_shannon.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -934,8 +991,18 @@ simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_counts_g
 all(rownames(simpson_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
 diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
 simpson_div$observed <- diversity_observed
-simpson_div$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
+simpson_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
 colnames(simpson_div) <- c("simpson", "observed", "hospital")
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = simpson_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(simpson_div$simpson, simpson_div$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(simpson_div, aes(x=hospital, y=simpson, fill = hospital)) + 
@@ -964,7 +1031,7 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(simpson_div), simpson_div$simpso
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot6_simpson.tiff",
+ggsave(filename = "plot6_tax_simpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -973,8 +1040,18 @@ invsimp_div <- data.frame("invsimpson" = diversity(otu_table(metaphlan_PHY_count
 all(rownames(invsimp_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
 diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
 invsimp_div$observed <- diversity_observed
-invsimp_div$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
+invsimp_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
 colnames(invsimp_div) <- c("invsimpson", "observed", "hospital")
+
+# Test the significance
+kruskal.test(invsimpson ~ hospital, data = invsimp_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(invsimp_div$invsimpson, invsimp_div$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) + 
@@ -1003,16 +1080,25 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(invsimp_div), invsimp_div$invsim
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot6_invsimpson.tiff",
+ggsave(filename = "plot6_tax_invsimpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_counts_genus), MARGIN=2))
 all(rownames(rich) == colnames(metaphlan_PHY_counts_genus@otu_table))
-rich$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
-
+rich$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
 colnames(rich) <- c("richness", "hospital")
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = rich)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(rich$richness, rich$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(rich, aes(x=hospital, y=richness, fill = hospital)) + 
@@ -1041,7 +1127,7 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(rich), rich$richness)), hjust = 
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot6_richness.tiff",
+ggsave(filename = "plot6_tax_richness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -1049,9 +1135,17 @@ ggsave(filename = "plot6_richness.tiff",
 even <- data.frame("evenness" = shannon_div$shannon / log(rich$richness))
 rownames(even) <- colnames(metaphlan_PHY_counts_genus@otu_table)
 all(rownames(even) == colnames(metaphlan_PHY_counts_genus@otu_table))
-even$hospital <- metaphlan_PHY_counts_genus@sam_data$hospital
+even$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
 
-colnames(even) <- c("evenness", "hospital")
+# Test the significance
+kruskal.test(evenness ~ hospital, data = even)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(even$evenness, even$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(even, aes(x=hospital, y=evenness, fill = hospital)) + 
@@ -1080,7 +1174,7 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(even), even$evenness)), hjust = 
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot6_evenness.tiff",
+ggsave(filename = "plot6_tax_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -1143,12 +1237,22 @@ shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_counts_HWW), i
 all(rownames(shannon_div) == colnames(MGE_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
 shannon_div$observed <- diversity_observed
-shannon_div$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
+shannon_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
 colnames(shannon_div) <- c("shannon", "observed", "hospital")
 
 # Plot
 p <- ggplot(shannon_div, aes(x=hospital, y=shannon, fill = hospital)) + 
   geom_boxplot()
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = shannon_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(shannon_div$shannon, shannon_div$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
@@ -1174,7 +1278,7 @@ p1  # Display the plot
 
 
 # Save plot
-ggsave(filename = "plot7_shannon.tiff",
+ggsave(filename = "plot7_mge_shannon.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -1183,8 +1287,18 @@ simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_counts_HWW), i
 all(rownames(simpson_div) == colnames(MGE_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
 simpson_div$observed <- diversity_observed
-simpson_div$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
+simpson_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
 colnames(simpson_div) <- c("simpson", "observed", "hospital")
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = simpson_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(simpson_div$simpson, simpson_div$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(simpson_div, aes(x=hospital, y=simpson, fill = hospital)) + 
@@ -1213,7 +1327,7 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(simpson_div), simpson_div$simpso
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot7_simpson.tiff",
+ggsave(filename = "plot7_mge_simpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -1222,8 +1336,17 @@ invsimp_div <- data.frame("invsimpson" = diversity(otu_table(MGE_PHY_counts_HWW)
 all(rownames(invsimp_div) == colnames(MGE_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
 invsimp_div$observed <- diversity_observed
-invsimp_div$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
-colnames(invsimp_div) <- c("invsimpson", "observed", "hospital")
+invsimp_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+
+# Test the significance
+kruskal.test(invsimpson ~ hospital, data = invsimp_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(invsimp_div$invsimpson, invsimp_div$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) + 
@@ -1252,23 +1375,33 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(invsimp_div), invsimp_div$invsim
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot7_invsimpson.tiff",
+ggsave(filename = "plot7_mge_invsimpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_counts_HWW), MARGIN=2))
 all(rownames(rich) == colnames(MGE_PHY_counts_HWW@otu_table))
-rich$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
+rich$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
 
-colnames(rich) <- c("richness", "hospital")
+# Test the significance
+kruskal.test(richness ~ hospital, data = rich)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(rich$richness, rich$hospital,
+                 p.adjust.method = "BH")
+stat.test
+
+pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","*","n.s."))
 
 # Plot
-p <- ggplot(rich, aes(x=hospital, y=richness, fill = hospital)) + 
-  geom_boxplot()
+p <- ggboxplot(rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#64B98F", "#CD3857", "#61A6E3")) + 
+  stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj")
 
 # Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
+p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill = hospital)) + 
   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
@@ -1282,7 +1415,7 @@ p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) +
 # Adjust the scale to be more detailed
 p1 <- p1 + labs(title = "Richness for MGEs Across Hospitals", 
                 subtitle = "Richness by Hospital") +
-                scale_y_continuous(limits = c(400,max(rich$richness)), breaks = seq(400,max(rich$richness), by = 50))
+                scale_y_continuous(limits = c(400,950), breaks = seq(400,950, by = 50))
 
 # Add ID as labels
 p1 <- p1 + geom_text(aes(label = paste(rownames(rich), rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
@@ -1290,7 +1423,7 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(rich), rich$richness)), hjust = 
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot7_richness.tiff",
+ggsave(filename = "plot7_mge_richness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -1298,9 +1431,17 @@ ggsave(filename = "plot7_richness.tiff",
 even <- data.frame("evenness" = shannon_div$shannon / log(rich$richness))
 rownames(even) <- colnames(MGE_PHY_counts_HWW@otu_table)
 all(rownames(even) == colnames(MGE_PHY_counts_HWW@otu_table))
-even$hospital <- MGE_PHY_counts_HWW@sam_data$hospital
+even$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
 
-colnames(even) <- c("evenness", "hospital")
+# Test the significance
+kruskal.test(evenness ~ hospital, data = even)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+stat.test <- pairwise.wilcox.test(even$evenness, even$hospital,
+                 p.adjust.method = "BH")
+stat.test
 
 # Plot
 p <- ggplot(even, aes(x=hospital, y=evenness, fill = hospital)) + 
@@ -1329,7 +1470,7 @@ p1 <- p1 + geom_text(aes(label = paste(rownames(even), even$evenness)), hjust = 
 p1  # Display the plot
 
 # Save plot
-ggsave(filename = "plot7_evenness.tiff",
+ggsave(filename = "plot7_mge_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
