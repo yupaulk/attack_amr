@@ -1438,7 +1438,8 @@ p <- metaphlan_PHY_rel_species %>%
                n_taxa = 40,
                bar_outline_colour = NA,
                facet_by  = "hospital",
-               bar_width = 0.7) +
+               bar_width = 0.7,
+               other_name = "Others") +
   coord_flip()  +
   labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Species (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
@@ -1448,7 +1449,7 @@ p <- metaphlan_PHY_rel_species %>%
         strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
         strip.background = element_rect(fill = "white", color = "white"),
         panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 18, face = "italic"),
+        legend.text = element_text(size = 10, face = "italic"),
         legend.title = element_blank(),
         legend.position = "bottom", legend.direction = "horizontal",
         legend.spacing = unit(0.25, 'cm'),
@@ -1479,7 +1480,8 @@ p <- metaphlan_PHY_rel_genus %>%
                n_taxa = 40,
                bar_outline_colour = NA,
                facet_by  = "hospital",
-               bar_width = 0.7) +
+               bar_width = 0.7,
+               other_name = "Others") +
   coord_flip()  +
   labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Genera (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
@@ -1489,7 +1491,7 @@ p <- metaphlan_PHY_rel_genus %>%
         strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
         strip.background = element_rect(fill = "white", color = "white"),
         panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 18, face = "italic"),
+        legend.text = element_text(size = 12, face = "italic"),
         legend.title = element_blank(),
         legend.position = "bottom", legend.direction = "horizontal",
         legend.spacing = unit(0.25, 'cm'),
@@ -1519,7 +1521,8 @@ p <- metaphlan_PHY_rel_family %>%
                n_taxa = 40,
                bar_outline_colour = NA,
                facet_by  = "hospital",
-               bar_width = 0.7) +
+               bar_width = 0.7,
+               other_name = "Others") +
   coord_flip()  +
   labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Families (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
@@ -1529,7 +1532,7 @@ p <- metaphlan_PHY_rel_family %>%
         strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
         strip.background = element_rect(fill = "white", color = "white"),
         panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 18, face = "italic"),
+        legend.text = element_text(size = 12, face = "italic"),
         legend.title = element_blank(),
         legend.position = "bottom", legend.direction = "horizontal",
         legend.spacing = unit(0.25, 'cm'),
@@ -1560,7 +1563,8 @@ p <- metaphlan_PHY_rel_class %>%
                n_taxa = 40,
                bar_outline_colour = NA,
                facet_by  = "hospital",
-               bar_width = 0.7) +
+               bar_width = 0.7,
+               other_name = "Others") +
   coord_flip()  +
   labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Classes (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
@@ -1570,7 +1574,7 @@ p <- metaphlan_PHY_rel_class %>%
         strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
         strip.background = element_rect(fill = "white", color = "white"),
         panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 18, face = "italic"),
+        legend.text = element_text(size = 12, face = "italic"),
         legend.title = element_blank(),
         legend.position = "bottom", legend.direction = "horizontal",
         legend.spacing = unit(0.25, 'cm'),
@@ -1599,7 +1603,8 @@ p <- metaphlan_PHY_rel_phylum %>%
                n_taxa = 40,
                bar_outline_colour = NA,
                facet_by  = "hospital",
-               bar_width = 0.7) +
+               bar_width = 0.7,
+               other_name = "Others") +
   coord_flip()  +
   labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Phyla (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
@@ -1609,7 +1614,7 @@ p <- metaphlan_PHY_rel_phylum %>%
         strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
         strip.background = element_rect(fill = "white", color = "white"),
         panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 18, face = "italic"),
+        legend.text = element_text(size = 12, face = "italic"),
         legend.title = element_blank(),
         legend.position = "bottom", legend.direction = "horizontal",
         legend.spacing = unit(0.25, 'cm'),
