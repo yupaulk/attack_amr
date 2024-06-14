@@ -198,19 +198,15 @@ mp_rel <- metaphlan_merged_abundance_table[ -c(1) ]
 # Tax table
 ## Check if in order
 tax_table_metaphlan <- read.csv2("tax_table_metaphlan_rel_species.txt", header=F, sep="")
-all(tax_table_metaphlan$V1 == mp_rel$clade_name) #PKY: no clade_name?
 
 tax_table_metaphlan <- data.frame(str_split_fixed(data.frame(tax_table_metaphlan) [,1], ";", 7))
-colnames(tax_table_metaphlan) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus")
+colnames(tax_table_metaphlan) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
 
 tax_table_metaphlan <- apply(tax_table_metaphlan, 2, function(y) (gsub(".__", "", y)))
 
-# remove first column
-#mp_rel <- mp_rel[ -c(1) ]
-
 # Reorder
 match <- match(rownames(metadata), colnames(mp_rel))
-
+mp_rel  <- mp_rel[,match]
 all(rownames(metadata) == colnames(mp_rel))
 
 # Combine into phyloseq object
@@ -219,13 +215,14 @@ metaphlan_PHY_rel <- phyloseq(otu_table(mp_rel, taxa_are_rows=TRUE), sample_data
 # Leave only bacteria
 metaphlan_PHY_rel_bact <- subset_taxa(metaphlan_PHY_rel, Kingdom != "Viruses" & Kingdom != "Eukaryota" & Kingdom != "Archaea")
 
-# Prune to species level
+# Prune to diff taxa level
+metaphlan_PHY_rel_species <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Species")
 metaphlan_PHY_rel_genus <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Genus")
-
-metaphlan_PHY_rel_fam <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Family")
-
-colnames(sample_data(metaphlan_PHY_rel_genus))
-
+metaphlan_PHY_rel_family <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Family")
+metaphlan_PHY_rel_order <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Order")
+metaphlan_PHY_rel_class <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Class")
+metaphlan_PHY_rel_phylum <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Phylum")
+metaphlan_PHY_rel_kingdom <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Kingdom")
 
 ```
 
@@ -1427,35 +1424,26 @@ ggsave(filename = "wilcox.tiff",
 ## Relative abundance of taxa (metaphlan)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-cols <- get_palette(c("#332288", "#117733", "#52BFAD", "#88CCEE", "#DDCC77", "#FDA4B3", 
-                      "#F22D3D", "#882255", "#5F5E98", "#E4C960", "#FD8FD9"), 41)
+metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Genus != "Coprobacillaceae Family")
+metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Genus != "Catenibacterium")
+metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Genus != "NA")
 
-
-metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Coprobacillaceae Family")
-metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Catenibacterium")
-metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "NA")
-
-
-
-metaphlan_PHY_rel_genus%>%
+metaphlan_PHY_rel_species %>%
  tax_fix(
   min_length = 4,
   unknowns = c("NA"),
   sep = " ", anon_unique = TRUE,
   suffix_rank = "classified"
  )
- 
- 
-# p <- metaphlan_PHY_rel_genus %>%
-#   comp_barplot("Genus", facet_by = "hospital", n_taxa = 40) +
-#   coord_flip()
 
-
-p <- metaphlan_PHY_rel_genus %>%
-  comp_barplot(tax_level = "Genus", n_taxa = 40,
-              tax_transform_for_plot = "identity", facet_by  = "hospital", sample_order = "aitchison", other_name = "Other") +
+p <- metaphlan_PHY_rel_species %>%
+  comp_barplot(tax_level = "Species",
+               n_taxa = 40,
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7) +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 taxa (metaphlan)") +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Species (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
         plot.title = element_text(size = 30, face = "bold"),
         axis.text.y = element_text(size = 10),
@@ -1469,60 +1457,172 @@ p <- metaphlan_PHY_rel_genus %>%
         legend.spacing = unit(0.25, 'cm'),
         legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
 
-
-print (p)
+p
 
 # Save plot
-ggsave(filename = "plot12old.tiff",
-       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+ggsave(filename = "plot12_species.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-
-# metaphlan_PHY_rel_fam <- subset_taxa(metaphlan_PHY_rel_fam, Family != "Coprobacillaceae")
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Coprobacillaceae Family")
 metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Catenibacterium")
 metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "NA")
 
-
-
-metaphlan_PHY_rel_genus%>%
+metaphlan_PHY_rel_genus %>%
  tax_fix(
   min_length = 4,
   unknowns = c("NA"),
   sep = " ", anon_unique = TRUE,
   suffix_rank = "classified"
  )
- 
- 
+
 p <- metaphlan_PHY_rel_genus %>%
-  comp_barplot("Genus", facet_by = "hospital", n_taxa = 40) +
-  coord_flip()
+  comp_barplot(tax_level = "Genus",
+               n_taxa = 40,
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7) +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Genera (metaphlan)") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 18, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "bottom", legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
 
-
-# p <- metaphlan_PHY_rel_fam %>%
-#   comp_barplot(tax_level = "Family", n_taxa = 40,
-#               tax_transform_for_plot = "identity", facet_by  = "hospital", )+
-#   coord_flip()  +
-#   labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 taxa (metaphlan)") +
-#   theme(text = element_text(family = "Palatino"),
-#         plot.title = element_text(size = 30, face = "bold"),
-#         axis.text.y = element_text(size = 10),
-#         axis.text.x = element_text(size = 20),
-#         strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-#         strip.background = element_rect(fill = "white", color = "white"),
-#         panel.spacing.y = unit(1, "lines"),
-#         legend.text = element_text(size = 18, face = "italic"),
-#         legend.title = element_blank(),
-#         legend.position = "bottom", legend.direction = "horizontal",
-#         legend.spacing = unit(0.25, 'cm'),
-#         legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-
-print (p)
+p
 
 # Save plot
-ggsave(filename = "plot12oldfam.tiff",
-       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+ggsave(filename = "plot12_genus.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_family <- subset_taxa(metaphlan_PHY_rel_family, Family != "Coprobacillaceae")
+metaphlan_PHY_rel_family <- subset_taxa(metaphlan_PHY_rel_family, Family != "NA")
+
+metaphlan_PHY_rel_family %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c("NA"),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+p <- metaphlan_PHY_rel_family %>%
+  comp_barplot(tax_level = "Family",
+               n_taxa = 40,
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7) +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Families (metaphlan)") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 18, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "bottom", legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
+
+p
+
+# Save plot
+ggsave(filename = "plot12_family.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "Clostridia")
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "Erysipelotrichia")
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "NA")
+
+metaphlan_PHY_rel_class %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c("NA"),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+p <- metaphlan_PHY_rel_class %>%
+  comp_barplot(tax_level = "Class",
+               n_taxa = 40,
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7) +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Classes (metaphlan)") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 18, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "bottom", legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
+
+p
+
+# Save plot
+ggsave(filename = "plot12_class.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_phylum <- subset_taxa(metaphlan_PHY_rel_phylum, Phylum != "NA")
+
+metaphlan_PHY_rel_phylum %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c("NA"),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+p <- metaphlan_PHY_rel_phylum %>%
+  comp_barplot(tax_level = "Phylum",
+               n_taxa = 40,
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7) +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Phyla (metaphlan)") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 18, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "bottom", legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
+
+p
+
+# Save plot
+ggsave(filename = "plot12_phylum.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
