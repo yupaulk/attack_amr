@@ -1354,9 +1354,20 @@ ggsave(filename = "plot7_mge_evenness.tiff",
 ### Relative abundances, ARGs
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 # Gather data
-df<-data.frame(RA=sample_sums(resfinder_PHY_rel_HWW),
-               hospital=as.factor(sample_data(resfinder_PHY_rel_HWW)$hospital))
-M <-lm(RA~hospital, data=df)
+
+#PKY: Is this the correct way? We got 105% for CGH2...
+View(otu_table(resfinder_PHY_rel_HWW))
+colSums(otu_table(resfinder_PHY_rel_HWW))
+
+df <- data.frame(
+  RA = sample_sums(resfinder_PHY_rel_HWW),
+  hospital = as.factor(sample_data(resfinder_PHY_rel_HWW)$hospital)
+)
+M <- lm(RA ~ hospital, data = df)df <- data.frame(
+  RA = sample_sums(resfinder_PHY_rel_HWW),
+  hospital = as.factor(sample_data(resfinder_PHY_rel_HWW)$hospital)
+)
+M <- lm(RA ~ hospital, data = df)
 summary(M)
 shapiro.test(df$RA)
 # Data is not normally distributed.
