@@ -1363,10 +1363,6 @@ df <- data.frame(
   RA = sample_sums(resfinder_PHY_rel_HWW),
   hospital = as.factor(sample_data(resfinder_PHY_rel_HWW)$hospital)
 )
-M <- lm(RA ~ hospital, data = df)df <- data.frame(
-  RA = sample_sums(resfinder_PHY_rel_HWW),
-  hospital = as.factor(sample_data(resfinder_PHY_rel_HWW)$hospital)
-)
 M <- lm(RA ~ hospital, data = df)
 summary(M)
 shapiro.test(df$RA)
@@ -1457,7 +1453,7 @@ metaphlan_PHY_rel_genus%>%
 
 p <- metaphlan_PHY_rel_genus %>%
   comp_barplot(tax_level = "Genus", n_taxa = 40,
-              tax_transform_for_plot = "identity", facet_by  = "hospital", )+
+              tax_transform_for_plot = "identity", facet_by  = "hospital", sample_order = "aitchison", other_name = "Other") +
   coord_flip()  +
   labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 taxa (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
