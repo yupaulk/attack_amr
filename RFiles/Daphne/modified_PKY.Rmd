@@ -222,7 +222,6 @@ metaphlan_PHY_rel_family <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Family")
 metaphlan_PHY_rel_order <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Order")
 metaphlan_PHY_rel_class <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Class")
 metaphlan_PHY_rel_phylum <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Phylum")
-metaphlan_PHY_rel_kingdom <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Kingdom")
 
 ```
 
@@ -1424,9 +1423,7 @@ ggsave(filename = "wilcox.tiff",
 ## Relative abundance of taxa (metaphlan)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Genus != "Coprobacillaceae Family")
-metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Genus != "Catenibacterium")
-metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Genus != "NA")
+metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Species != "NA")
 
 metaphlan_PHY_rel_species %>%
  tax_fix(
