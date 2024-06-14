@@ -591,6 +591,9 @@ diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
 shannon_div$observed <- diversity_observed
 shannon_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
 
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(shannon ~ hospital, shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
+
 # Test the significance
 kruskal.test(shannon ~ hospital, data = shannon_div)
 
@@ -607,7 +610,7 @@ p <- ggplot(shannon_div, aes(x=hospital, y=shannon, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -640,6 +643,9 @@ diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
 simpson_div$observed <- diversity_observed
 simpson_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
 
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(simpson ~ hospital, simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+
 # Test the significance
 kruskal.test(simpson ~ hospital, data = simpson_div)
 
@@ -656,7 +662,7 @@ p <- ggplot(simpson_div, aes(x=hospital, y=simpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -688,6 +694,9 @@ diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
 invsimp_div$observed <- diversity_observed
 invsimp_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
 
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
+
 # Test the significance
 kruskal.test(invsimpson ~ hospital, data = invsimp_div)
 
@@ -704,7 +713,7 @@ p <- ggplot(invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -734,6 +743,9 @@ rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_counts_HWW), 
 all(rownames(rich) == colnames(resfinder_PHY_counts_HWW@otu_table))
 rich$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
 
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(richness ~ hospital, rich, function(x) c(mean = mean(x), sd = sd(x))))
+
 # Test the significance
 kruskal.test(richness ~ hospital, data = rich)
 
@@ -747,12 +759,12 @@ stat.test
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","n.s.","**"))
 
 # Plot
-p <- ggboxplot(rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#64B98F", "#CD3857", "#61A6E3")) + 
+p <- ggboxplot(rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#FEF250")) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj")
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -783,6 +795,10 @@ rownames(even) <- colnames(resfinder_PHY_counts_HWW@otu_table)
 all(rownames(even) == colnames(resfinder_PHY_counts_HWW@otu_table))
 even$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
 
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(evenness ~ hospital, even, function(x) c(mean = mean(x), sd = sd(x))))
+
+
 # Test the significance
 kruskal.test(evenness ~ hospital, data = even)
 
@@ -796,12 +812,12 @@ stat.test
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("n.s.","n.s.","**"))
 
 # Plot
-p <- ggboxplot(even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#64B98F", "#CD3857", "#61A6E3")) + 
+p <- ggboxplot(even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#FEF250")) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 0.85, step.increase = 0.05, label = "p.adj")
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -830,7 +846,7 @@ ggsave(filename = "plot5_arg_evenness.tiff",
 # # Plot
 # p <- ggplot(div, aes(x=hospital, y=shannon, fill = hospital)) + 
 #   geom_dotplot(binaxis='y', stackdir='center', dotsize = 1) + 
-#   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+#   scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
 #   theme_classic() + 
 #   theme(
 #     text = element_text(family = "Palatino"),
@@ -912,7 +928,7 @@ ggsave(filename = "plot5_arg_evenness.tiff",
 # p <- ggplot(div, aes(x=hospital, y=shannon, fill = hospital)) + 
 #   geom_boxplot()
 # p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-#   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+#   scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
 #   theme_classic() + theme(text = element_text(family = "Palatino"),
 #     axis.title.y = element_text(size = 35),
 #     axis.title.x = element_blank(),
@@ -942,7 +958,9 @@ all(rownames(shannon_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
 diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
 shannon_div$observed <- diversity_observed
 shannon_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
-colnames(shannon_div) <- c("shannon", "observed", "hospital")
+
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(shannon ~ hospital, shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
 
 # Test the significance
 kruskal.test(shannon ~ hospital, data = shannon_div)
@@ -960,7 +978,7 @@ p <- ggplot(shannon_div, aes(x=hospital, y=shannon, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -992,7 +1010,9 @@ all(rownames(simpson_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
 diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
 simpson_div$observed <- diversity_observed
 simpson_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
-colnames(simpson_div) <- c("simpson", "observed", "hospital")
+
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(simpson ~ hospital, simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
 
 # Test the significance
 kruskal.test(simpson ~ hospital, data = simpson_div)
@@ -1010,7 +1030,7 @@ p <- ggplot(simpson_div, aes(x=hospital, y=simpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1041,7 +1061,9 @@ all(rownames(invsimp_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
 diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
 invsimp_div$observed <- diversity_observed
 invsimp_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
-colnames(invsimp_div) <- c("invsimpson", "observed", "hospital")
+
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
 
 # Test the significance
 kruskal.test(invsimpson ~ hospital, data = invsimp_div)
@@ -1059,7 +1081,7 @@ p <- ggplot(invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1088,7 +1110,9 @@ ggsave(filename = "plot6_tax_invsimpson.tiff",
 rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_counts_genus), MARGIN=2))
 all(rownames(rich) == colnames(metaphlan_PHY_counts_genus@otu_table))
 rich$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
-colnames(rich) <- c("richness", "hospital")
+
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(richness ~ hospital, rich, function(x) c(mean = mean(x), sd = sd(x))))
 
 # Test the significance
 kruskal.test(richness ~ hospital, data = rich)
@@ -1106,7 +1130,7 @@ p <- ggplot(rich, aes(x=hospital, y=richness, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1137,6 +1161,9 @@ rownames(even) <- colnames(metaphlan_PHY_counts_genus@otu_table)
 all(rownames(even) == colnames(metaphlan_PHY_counts_genus@otu_table))
 even$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
 
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(evenness ~ hospital, even, function(x) c(mean = mean(x), sd = sd(x))))
+
 # Test the significance
 kruskal.test(evenness ~ hospital, data = even)
 
@@ -1153,7 +1180,7 @@ p <- ggplot(even, aes(x=hospital, y=evenness, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1208,7 +1235,7 @@ ggsave(filename = "plot6_tax_evenness.tiff",
 # p <- ggplot(div, aes(x=hospital, y=shannon, fill = hospital)) + 
 #   geom_boxplot()
 # p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-#   scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+#   scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
 #   theme_classic() + theme(text = element_text(family = "Palatino"),
 #     axis.title.y = element_text(size = 35),
 #     axis.title.x = element_blank(),
@@ -1238,7 +1265,9 @@ all(rownames(shannon_div) == colnames(MGE_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
 shannon_div$observed <- diversity_observed
 shannon_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
-colnames(shannon_div) <- c("shannon", "observed", "hospital")
+
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(shannon ~ hospital, shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
 
 # Plot
 p <- ggplot(shannon_div, aes(x=hospital, y=shannon, fill = hospital)) + 
@@ -1256,7 +1285,7 @@ stat.test
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1288,7 +1317,9 @@ all(rownames(simpson_div) == colnames(MGE_PHY_counts_HWW@otu_table))
 diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
 simpson_div$observed <- diversity_observed
 simpson_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
-colnames(simpson_div) <- c("simpson", "observed", "hospital")
+
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(simpson ~ hospital, simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
 
 # Test the significance
 kruskal.test(simpson ~ hospital, data = simpson_div)
@@ -1306,7 +1337,7 @@ p <- ggplot(simpson_div, aes(x=hospital, y=simpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1338,6 +1369,9 @@ diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
 invsimp_div$observed <- diversity_observed
 invsimp_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
 
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
+
 # Test the significance
 kruskal.test(invsimpson ~ hospital, data = invsimp_div)
 
@@ -1354,7 +1388,7 @@ p <- ggplot(invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1384,6 +1418,9 @@ rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_counts_HWW), MARGIN
 all(rownames(rich) == colnames(MGE_PHY_counts_HWW@otu_table))
 rich$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
 
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(richness ~ hospital, rich, function(x) c(mean = mean(x), sd = sd(x))))
+
 # Test the significance
 kruskal.test(richness ~ hospital, data = rich)
 
@@ -1397,12 +1434,12 @@ stat.test
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","*","n.s."))
 
 # Plot
-p <- ggboxplot(rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#64B98F", "#CD3857", "#61A6E3")) + 
+p <- ggboxplot(rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#FEF250")) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj")
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill = hospital)) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1433,6 +1470,9 @@ rownames(even) <- colnames(MGE_PHY_counts_HWW@otu_table)
 all(rownames(even) == colnames(MGE_PHY_counts_HWW@otu_table))
 even$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
 
+# Get mean and standard deviation
+eda <- do.call(data.frame, aggregate(evenness ~ hospital, even, function(x) c(mean = mean(x), sd = sd(x))))
+
 # Test the significance
 kruskal.test(evenness ~ hospital, data = even)
 
@@ -1449,7 +1489,7 @@ p <- ggplot(even, aes(x=hospital, y=evenness, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#64B98F", "#CD3857", "#61A6E3")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
