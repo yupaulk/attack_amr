@@ -1756,6 +1756,41 @@ ggsave(filename = "plot10_mge_rel_gene.tiff",
        width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
+#### Count of MGEs
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+MGE_PHY_counts_HWW <- subset_taxa(MGE_PHY_counts_HWW, Gene != "NA")
+
+p <- MGE_PHY_counts_HWW %>%
+  comp_barplot(tax_level = "Gene",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(MGE_PHY_counts_HWW))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of MGEs (Top 40)") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 10, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "right",
+        legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
+
+p
+
+# Save plot
+ggsave(filename = "plot11_mge_count_gene.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
 #### Relative abundances of Taxa (metaphlan)
 
 ##### Species level
