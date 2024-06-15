@@ -330,16 +330,44 @@ a1 <- resfinder_PHY_counts_HWW %>%
   scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
-a1_plot <- a1 + geom_label_repel(mapping = aes(label = alias), 
-                                 data = a1$data, size = 4, box.padding = 0.5,
-                                 segment.color = "#CECECE", family = "Palatino")
-
-a1_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
+a1_plot <- a1 + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
   theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
         plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
 
 # Save plots for all samples
 ggsave(filename = "plot1_arg_pca.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r}
+a1_load <- resfinder_PHY_counts_HWW %>% 
+  tax_transform("clr") %>% 
+  ord_calc(method = "PCA") %>% 
+  ord_plot(color = "hospital", size = 10, alpha = 0.8, plot_taxa = 1:40, 
+           tax_lab_style = tax_lab_style(size=4, alpha=0.8),
+           tax_vec_length = 10,
+           tax_vec_style_all = vec_tax_all(linewidth = 0.5, alpha = 0.01),
+           tax_vec_style_sel = vec_tax_sel(linewidth = 1.2, alpha = 0.8),
+           taxon_renamer = function(x) tax_table(resfinder_PHY_counts_HWW)[x,3]) +
+  theme(text = element_text(family = "Palatino"),
+    plot.title = element_text(size = 17, hjust = 0.5),
+    axis.title = element_text(size = 17, face = "bold"),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 17),
+    legend.key.size = unit(1, 'cm'),
+    legend.position = c(0.15, 0.9),
+    legend.background = element_rect(color = "#CECECE"),
+    legend.direction = "horizontal",
+    axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+
+a1_load_plot <- a1_load + plot_annotation(title = "PCA loading, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
+  theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
+        plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
+
+# Save plots for all samples
+ggsave(filename = "plot1_arg_pca_load.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -362,21 +390,16 @@ a2 <- resfinder_PHY_counts_HWW %>%
   scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
-a2_plot <- a2 + geom_label_repel(mapping = aes(label = alias), 
-                                 data = a2$data, size = 4, box.padding = 0.5,
-                                 segment.color = "#CECECE", family = "Palatino")
-
 # Add indication for month with different shapes
-a2_plot <- a2_plot + geom_point(aes(shape = factor(month)), size = 5)  
+a2_plot <- a2 + geom_point(aes(shape = factor(month)), size = 5)  
 # Define labels for month legend
 month_labels <- c("May", "June", "July")
 
 a2_plot <- a2_plot +
   scale_shape_manual(name = "Month", 
                      values = c(5, 6, 7),  # Assign shapes to each month
-                     labels = month_labels)
-
-a2_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
+                     labels = month_labels) + 
+  plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
   theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
         plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
 
@@ -410,6 +433,7 @@ resfinder_PHY_counts_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
+
 #### Metaphlan Taxa PCA Plot
 
 ```{r}
@@ -431,16 +455,44 @@ b1 <- metaphlan_PHY_counts_genus %>%
   scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
-b1_plot <- b1 + geom_label_repel(mapping = aes(label = alias), 
-                                 data = b1$data, size = 4, box.padding = 0.5,
-                                 segment.color = "#CECECE", family = "Palatino")
-
-b1_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
+b1_plot <- b1 + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Taxonomic Composition", subtitle = "Metaphlan") & 
   theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
         plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
 
 # Save plots for all samples
 ggsave(filename = "plot1_tax_pca.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r}
+b1_load <- metaphlan_PHY_counts_genus %>% 
+  tax_transform("clr") %>% 
+  ord_calc(method = "PCA") %>% 
+  ord_plot(color = "hospital", size = 10, alpha = 0.8, plot_taxa = 1:40, 
+           tax_lab_style = tax_lab_style(size=4, alpha=0.8),
+           tax_vec_length = 10,
+           tax_vec_style_all = vec_tax_all(linewidth = 0.5, alpha = 0.01),
+           tax_vec_style_sel = vec_tax_sel(linewidth = 1.2, alpha = 0.8),
+           taxon_renamer = function(x) tax_table(metaphlan_PHY_counts_genus)[x,6]) +
+  theme(text = element_text(family = "Palatino"),
+    plot.title = element_text(size = 17, hjust = 0.5),
+    axis.title = element_text(size = 17, face = "bold"),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 17),
+    legend.key.size = unit(1, 'cm'),
+    legend.position = c(0.15, 0.9),
+    legend.background = element_rect(color = "#CECECE"),
+    legend.direction = "horizontal",
+    axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+
+b1_load_plot <- b1_load + plot_annotation(title = "PCA loading, clr-transformed, for three hospitals on Taxonomic Composition", subtitle = "Metaphlan") & 
+  theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
+        plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
+
+# Save plots for all samples
+ggsave(filename = "plot1_tax_pca_load.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -463,21 +515,16 @@ b2 <- metaphlan_PHY_counts_genus %>%
   scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
-b2_plot <- b2 + geom_label_repel(mapping = aes(label = alias), 
-                                 data = b2$data, size = 4, box.padding = 0.5,
-                                 segment.color = "#CECECE", family = "Palatino")
-
 # Add indication for month with different shapes
-b2_plot <- b2_plot + geom_point(aes(shape = factor(month)), size = 5)  
+b2_plot <- b2 + geom_point(aes(shape = factor(month)), size = 5)  
 # Define labels for month legend
 month_labels <- c("May", "June", "July")
 
 b2_plot <- b2_plot +
   scale_shape_manual(name = "Month", 
                      values = c(5, 6, 7),  # Assign shapes to each month
-                     labels = month_labels)
-
-b2_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Taxonomic Composition", subtitle = "Metaphlan") & 
+                     labels = month_labels) + 
+  plot_annotation(title = "PCA, clr-transformed, for three hospitals on Taxonomic Composition", subtitle = "Metaphlan") & 
   theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
         plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
 
@@ -533,16 +580,44 @@ c1 <- MGE_PHY_counts_HWW %>%
   scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
-c1_plot <- c1 + geom_label_repel(mapping = aes(label = alias), 
-                                 data = c1$data, size = 4, box.padding = 0.5,
-                                 segment.color = "#CECECE", family = "Palatino")
-
-c1_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
+c1_plot <- c1 + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Mobilomes", subtitle = "MGEs") & 
   theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
         plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
 
 # Save plots for all samples
 ggsave(filename = "plot1_mge_pca.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r}
+c1_load <- MGE_PHY_counts_HWW %>% 
+  tax_transform("clr") %>% 
+  ord_calc(method = "PCA") %>% 
+  ord_plot(color = "hospital", size = 10, alpha = 0.8, plot_taxa = 1:40, 
+           tax_lab_style = tax_lab_style(size=4, alpha=0.8),
+           tax_vec_length = 10,
+           tax_vec_style_all = vec_tax_all(linewidth = 0.5, alpha = 0.01),
+           tax_vec_style_sel = vec_tax_sel(linewidth = 1.2, alpha = 0.8),
+           taxon_renamer = function(x) tax_table(MGE_PHY_counts_HWW)[x,1]) +
+  theme(text = element_text(family = "Palatino"),
+    plot.title = element_text(size = 17, hjust = 0.5),
+    axis.title = element_text(size = 17, face = "bold"),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 17),
+    legend.key.size = unit(1, 'cm'),
+    legend.position = c(0.15, 0.9),
+    legend.background = element_rect(color = "#CECECE"),
+    legend.direction = "horizontal",
+    axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+
+c1_load_plot <- c1_load + plot_annotation(title = "PCA loading, clr-transformed, for three hospitals on Mobilomes", subtitle = "MGEs") & 
+  theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
+        plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
+
+# Save plots for all samples
+ggsave(filename = "plot1_mge_pca_load.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -565,21 +640,16 @@ c2 <- MGE_PHY_counts_HWW %>%
   scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
-c2_plot <- c2 + geom_label_repel(mapping = aes(label = alias), 
-                                 data = c2$data, size = 4, box.padding = 0.5,
-                                 segment.color = "#CECECE", family = "Palatino")
-
 # Add indication for month with different shapes
-c2_plot <- c2_plot + geom_point(aes(shape = factor(month)), size = 5)  
+c2_plot <- c2 + geom_point(aes(shape = factor(month)), size = 5)  
 # Define labels for month legend
 month_labels <- c("May", "June", "July")
 
 c2_plot <- c2_plot +
   scale_shape_manual(name = "Month", 
                      values = c(5, 6, 7),  # Assign shapes to each month
-                     labels = month_labels)
-
-c2_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Mobilomes", subtitle = "MGEs") & 
+                     labels = month_labels) +
+  plot_annotation(title = "PCA, clr-transformed, for three hospitals on Mobilomes", subtitle = "MGEs") & 
   theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
         plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
 
