@@ -107,7 +107,7 @@ resfinder_PHY_counts_HWW <- subset_samples(resfinder_PHY_counts_uniq, HWW == "YE
 
 ```
 
-### Insert ARG Relative Abundance (Resfinder)
+### Insert ARG Relative Abundances (Resfinder)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 counts_resfinder <-as.matrix(read.table("ARG_genemat.txt", header= T, check.names = F, row.names = 1))
@@ -158,7 +158,7 @@ resfinder_PHY_rel_uniq <- subset_samples(resfinder_PHY_rel_uniq, sample_material
 resfinder_PHY_rel_HWW <- subset_samples(resfinder_PHY_rel_uniq, HWW == "YES")
 ```
 
-### Metaphlan Counts and Relative Abundance
+### Metaphlan Counts and Relative Abundances
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 metaphlan_counts_merged_abundance_table <- read.delim("merged_metaphlan_count_species.txt", header = T)
@@ -1513,15 +1513,150 @@ ggsave(filename = "plot7_mge_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-### Relative abundances of functional genes
+### Relative abundances & Counts of functional genes
 
-#### Relative abundance of ARGs
+#### Relative abundances of ARGs
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Gene != "NA")
+
+p <- resfinder_PHY_rel_HWW %>%
+  comp_barplot(tax_level = "Gene",
+               n_taxa = 40,
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of ARGs (Top 40)") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 10, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "bottom", legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
+
+p
+
+# Save plot
+ggsave(filename = "plot8_arg_rel_gene.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Relative abundances of ARGs by drug class
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Class != "NA")
+
+p <- resfinder_PHY_rel_HWW %>%
+  comp_barplot(tax_level = "Class",
+               n_taxa = 40,
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of ARGs by Drug Class") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 10, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "bottom", legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
+
+p
+
+# Save plot
+ggsave(filename = "plot8_arg_rel_class.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Count of ARGs
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+resfinder_PHY_counts_HWW <- subset_taxa(resfinder_PHY_counts_HWW, Gene != "NA")
+
+p <- resfinder_PHY_counts_HWW %>%
+  comp_barplot(tax_level = "Gene",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(resfinder_PHY_counts_HWW))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of ARGs (Top 40)") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 10, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "right",
+        legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
+
+p
+
+# Save plot
+ggsave(filename = "plot9_arg_count_gene.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Count of ARGs
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+resfinder_PHY_counts_HWW <- subset_taxa(resfinder_PHY_counts_HWW, Class != "NA")
+
+p <- resfinder_PHY_counts_HWW %>%
+  comp_barplot(tax_level = "Class",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(resfinder_PHY_counts_HWW))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of ARGs by Drug Class") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 10, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "right",
+        legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
+
+p
+
+# Save plot
+ggsave(filename = "plot9_arg_count_class.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 # Gather data
 
 #PKY: Is this the correct way? We got 105% for CGH2...
-View(otu_table(resfinder_PHY_rel_HWW))
 colSums(otu_table(resfinder_PHY_rel_HWW))
 
 df <- data.frame(
@@ -1587,9 +1722,41 @@ ggsave(filename = "wilcox.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Relative abundance of MGEs
+#### Relative abundances of MGEs
 
-#### Relative abundance of Taxa (metaphlan)
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+MGE_rel_PHY <- subset_taxa(MGE_rel_PHY, Gene != "NA")
+
+p <- MGE_rel_PHY %>%
+  comp_barplot(tax_level = "Gene",
+               n_taxa = 40,
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of MGEs (Top 40)") +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 10, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "bottom", legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
+
+p
+
+# Save plot
+ggsave(filename = "plot10_mge_rel_gene.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Relative abundances of Taxa (metaphlan)
 
 ##### Species level
 
@@ -1612,7 +1779,7 @@ p <- metaphlan_PHY_rel_species %>%
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Species (metaphlan)") +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Top 40 Species (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
         plot.title = element_text(size = 30, face = "bold"),
         axis.text.y = element_text(size = 10),
@@ -1656,7 +1823,7 @@ p <- metaphlan_PHY_rel_genus %>%
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Genera (metaphlan)") +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Top 40 Genera (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
         plot.title = element_text(size = 30, face = "bold"),
         axis.text.y = element_text(size = 10),
@@ -1699,7 +1866,7 @@ p <- metaphlan_PHY_rel_family %>%
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Families (metaphlan)") +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Top 40 Families (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
         plot.title = element_text(size = 30, face = "bold"),
         axis.text.y = element_text(size = 10),
@@ -1743,7 +1910,7 @@ p <- metaphlan_PHY_rel_class %>%
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Classes (metaphlan)") +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Top 40 Classes (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
         plot.title = element_text(size = 30, face = "bold"),
         axis.text.y = element_text(size = 10),
@@ -1785,7 +1952,7 @@ p <- metaphlan_PHY_rel_phylum %>%
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Top 40 Phyla (metaphlan)") +
+  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Phyla (metaphlan)") +
   theme(text = element_text(family = "Palatino"),
         plot.title = element_text(size = 30, face = "bold"),
         axis.text.y = element_text(size = 10),
