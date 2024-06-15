@@ -723,7 +723,7 @@ ggsave(filename = "plot2b_merged_pca.tiff",
 
 ### Diversity Metrics
 
-#### Shannon for ARGs
+#### Shannon for ARGs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "shannon", MARGIN = 2))
@@ -776,7 +776,64 @@ ggsave(filename = "plot5_arg_shannon.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Simpson for ARGs
+#### Shannon for ARGs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "shannon", MARGIN = 2))
+all(rownames(arg_shannon_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
+arg_shannon_div$observed <- diversity_observed
+arg_shannon_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+arg_shannon_eda <- do.call(data.frame, aggregate(shannon ~ hospital, arg_shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = arg_shannon_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+arg_shannon_stat.test <- pairwise.wilcox.test(arg_shannon_div$shannon, arg_shannon_div$hospital,
+                 p.adjust.method = "BH")
+arg_shannon_stat.test
+
+# Plot
+rownames(arg_shannon_div)
+
+grp <- arg_shannon_div %>%
+  group_by(hospital) %>%
+  mutate(average=mean(shannon))
+
+grp
+
+p <- ggplot(arg_shannon_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
+                subtitle = "Shannon Diversity Index by Hospital",
+                y = "shannon")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot5_arg_shannon_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Simpson for ARGs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "simpson", MARGIN = 2))
@@ -828,7 +885,65 @@ p1  # Display the plot
 ggsave(filename = "plot5_arg_simpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
-#### Inverse Simpson for ARGs
+
+#### Simpson for ARGs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "simpson", MARGIN = 2))
+all(rownames(arg_simpson_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
+arg_simpson_div$observed <- diversity_observed
+arg_simpson_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+arg_simpson_eda <- do.call(data.frame, aggregate(simpson ~ hospital, arg_simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = arg_simpson_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+arg_simpson_stat.test <- pairwise.wilcox.test(arg_simpson_div$simpson, arg_simpson_div$hospital,
+                 p.adjust.method = "BH")
+arg_simpson_stat.test
+
+# Plot
+rownames(arg_simpson_div)
+
+grp <- arg_simpson_div %>%
+  group_by(hospital) %>%
+  mutate(average=mean(simpson))
+
+grp
+
+p <- ggplot(arg_simpson_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
+                subtitle = "Simpson Diversity Index by Hospital",
+                y = "simpson")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot5_arg_simpson_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Inverse Simpson for ARGs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "inv", MARGIN = 2))
@@ -868,7 +983,7 @@ p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) +
 
 # Adjust the scale to be more detailed
 p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
-                subtitle = "Inv Simpson Diversity Index by Hospital") +
+                subtitle = "Inverse Simpson Diversity Index by Hospital") +
                 scale_y_continuous(limits = c(15,max(arg_invsimp_div$invsimpson)), breaks = seq(15,max(arg_invsimp_div$invsimpson), by = 10))
 
 # Add ID as labels
@@ -880,7 +995,65 @@ p1  # Display the plot
 ggsave(filename = "plot5_arg_invsimpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
-#### Richness for ARGs
+
+#### Inverse Simpson for ARGs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "invsimpson", MARGIN = 2))
+all(rownames(arg_invsimp_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
+arg_invsimp_div$observed <- diversity_observed
+arg_invsimp_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+arg_invsimp_eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, arg_invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(invsimpson ~ hospital, data = arg_invsimp_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+arg_invsimp_stat.test <- pairwise.wilcox.test(arg_invsimp_div$invsimpson, arg_invsimp_div$hospital,
+                 p.adjust.method = "BH")
+arg_invsimp_stat.test
+
+# Plot
+rownames(arg_invsimp_div)
+
+grp <- arg_invsimp_div %>%
+  group_by(hospital) %>%
+  mutate(average=mean(invsimpson))
+
+grp
+
+p <- ggplot(arg_invsimp_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
+                subtitle = "Inverse Simpson Diversity Index by Hospital",
+                y = "invsimpson")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot5_arg_invsimp_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Richness for ARGs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_counts_HWW), MARGIN=2))
@@ -920,7 +1093,7 @@ p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=h
 
 # Adjust the scale to be more detailed
 p1 <- p1 + labs(title = "Richness for ARGs Across Hospitals", 
-                subtitle = "Richness by Hospital") +
+                subtitle = "Richness Index by Hospital") +
                 scale_y_continuous(limits = c(350,850), breaks = seq(350,850, by = 50))
 
 # Add ID as labels
@@ -932,7 +1105,63 @@ p1  # Display the plot
 ggsave(filename = "plot5_arg_richness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
-#### Evenness for ARGs
+
+#### Richness for ARGs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_counts_HWW), MARGIN=2))
+all(rownames(arg_rich) == colnames(resfinder_PHY_counts_HWW@otu_table))
+arg_rich$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+arg_invsimp_eda <- do.call(data.frame, aggregate(richness ~ hospital, arg_rich, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = arg_rich)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+arg_rich_stat.test <- pairwise.wilcox.test(arg_rich$richness, arg_rich$hospital,
+                 p.adjust.method = "BH")
+arg_rich_stat.test
+
+# Plot
+rownames(arg_rich)
+
+grp <- arg_rich %>%
+  group_by(hospital) %>%
+  mutate(average=mean(richness))
+
+grp
+
+p <- ggplot(arg_rich, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Richness for ARGs Across Hospitals", 
+                subtitle = "Richness Index by Hospital",
+                y = "richness")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot5_arg_richness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for ARGs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_even <- data.frame("evenness" = arg_shannon_div$shannon / log(arg_rich$richness))
@@ -987,7 +1216,63 @@ ggsave(filename = "plot5_arg_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Shannon for Taxa (metaphlan)
+#### Evenness for ARGs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_even <- data.frame("evenness" = arg_shannon_div$shannon / log(arg_rich$richness))
+rownames(arg_even) <- colnames(resfinder_PHY_counts_HWW@otu_table)
+all(rownames(arg_even) == colnames(resfinder_PHY_counts_HWW@otu_table))
+arg_even$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+arg_even_eda <- do.call(data.frame, aggregate(evenness ~ hospital, arg_even, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(evenness ~ hospital, data = arg_even)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+arg_even_stat.test <- pairwise.wilcox.test(arg_even$evenness, arg_even$hospital,
+                 p.adjust.method = "BH")
+arg_even_stat.test
+
+# Plot
+rownames(arg_even)
+
+grp <- arg_even %>%
+  group_by(hospital) %>%
+  mutate(average=mean(evenness))
+
+grp
+
+p <- ggplot(arg_even, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Evenness for ARGs Across Hospitals", 
+                subtitle = "Pieolou's Evenness by Hospital",
+                y = "evenness")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot5_arg_evenness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Shannon for Taxa (metaphlan) (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "shannon", MARGIN = 2))
@@ -1040,7 +1325,64 @@ ggsave(filename = "plot6_tax_shannon.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Simpson for Taxa (metaphlan)
+#### Shannon for Taxa (metaphlan) (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "shannon", MARGIN = 2))
+all(rownames(tax_shannon_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+tax_shannon_div$observed <- diversity_observed
+tax_shannon_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+
+# Get mean and standard deviation
+tax_shannon_eda <- do.call(data.frame, aggregate(shannon ~ hospital, tax_shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = tax_shannon_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+tax_shannon_stat.test <- pairwise.wilcox.test(tax_shannon_div$shannon, tax_shannon_div$hospital,
+                 p.adjust.method = "BH")
+tax_shannon_stat.test
+
+# Plot
+rownames(tax_shannon_div)
+
+grp <- tax_shannon_div %>%
+  group_by(hospital) %>%
+  mutate(average=mean(shannon))
+
+grp
+
+p <- ggplot(tax_shannon_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+                subtitle = "Shannon Diversity Index by Hospital",
+                y = "shannon")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot6_tax_shannon_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Simpson for Taxa (metaphlan) (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "simpson", MARGIN = 2))
@@ -1093,7 +1435,64 @@ ggsave(filename = "plot6_tax_simpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Inverse Simpson for Taxa (metaphlan)
+#### Simpson for Taxa (metaphlan) (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "simpson", MARGIN = 2))
+all(rownames(tax_simpson_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+tax_simpson_div$observed <- diversity_observed
+tax_simpson_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+
+# Get mean and standard deviation
+tax_simpson_eda <- do.call(data.frame, aggregate(simpson ~ hospital, tax_simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = tax_simpson_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+tax_simpson_stat.test <- pairwise.wilcox.test(tax_simpson_div$simpson, tax_simpson_div$hospital,
+                 p.adjust.method = "BH")
+tax_simpson_stat.test
+
+# Plot
+rownames(tax_simpson_div)
+
+grp <- tax_simpson_div %>%
+  group_by(hospital) %>%
+  mutate(average=mean(simpson))
+
+grp
+
+p <- ggplot(tax_simpson_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+                subtitle = "Simpson Diversity Index by Hospital",
+                y = "simpson")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot6_tax_simpson_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Inverse Simpson for Taxa (metaphlan) (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "inv", MARGIN = 2))
@@ -1133,7 +1532,7 @@ p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) +
 
 # Adjust the scale to be more detailed
 p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
-                subtitle = "Inv Simpson Diversity Index by Hospital") +
+                subtitle = "Inverse Simpson Diversity Index by Hospital") +
                 scale_y_continuous(limits = c(10,max(tax_invsimp_div$invsimpson)), breaks = seq(10,max(tax_invsimp_div$invsimpson), by = 5))
 
 # Add ID as labels
@@ -1146,7 +1545,64 @@ ggsave(filename = "plot6_tax_invsimpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Richness for Taxa (metaphlan)
+#### Inverse Simpson for Taxa (metaphlan) (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "invsimpson", MARGIN = 2))
+all(rownames(tax_invsimp_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+tax_invsimp_div$observed <- diversity_observed
+tax_invsimp_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+
+# Get mean and standard deviation
+tax_invsimp_eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, tax_invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(invsimpson ~ hospital, data = tax_invsimp_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+tax_invsimp_stat.test <- pairwise.wilcox.test(tax_invsimp_div$invsimpson, tax_invsimp_div$hospital,
+                 p.adjust.method = "BH")
+tax_invsimp_stat.test
+
+# Plot
+rownames(tax_invsimp_div)
+
+grp <- tax_invsimp_div %>%
+  group_by(hospital) %>%
+  mutate(average=mean(invsimpson))
+
+grp
+
+p <- ggplot(tax_invsimp_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+                subtitle = "Inverse Simpson Diversity Index by Hospital",
+                y = "invsimpson")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot6_tax_invsimp_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Richness for Taxa (metaphlan) (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_counts_genus), MARGIN=2))
@@ -1197,7 +1653,62 @@ ggsave(filename = "plot6_tax_richness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Evenness for Taxa (metaphlan)
+#### Richness for Taxa (metaphlan) (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_counts_genus), MARGIN=2))
+all(rownames(tax_rich) == colnames(metaphlan_PHY_counts_genus@otu_table))
+tax_rich$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+
+# Get mean and standard deviation
+tax_invsimp_eda <- do.call(data.frame, aggregate(richness ~ hospital, tax_rich, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = tax_rich)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+tax_rich_stat.test <- pairwise.wilcox.test(tax_rich$richness, tax_rich$hospital,
+                 p.adjust.method = "BH")
+tax_rich_stat.test
+
+# Plot
+rownames(tax_rich)
+
+grp <- tax_rich %>%
+  group_by(hospital) %>%
+  mutate(average=mean(richness))
+
+grp
+
+p <- ggplot(tax_rich, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Richness for Taxonomic Composition Across Hospitals", 
+                subtitle = "Richness Index by Hospital",
+                y = "richness")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot6_tax_richness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for Taxa (metaphlan) (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_even <- data.frame("evenness" = tax_shannon_div$shannon / log(tax_rich$richness))
@@ -1249,7 +1760,63 @@ ggsave(filename = "plot6_tax_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Shannon for MGEs
+#### Evenness for Taxa (metaphlan) (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_even <- data.frame("evenness" = tax_shannon_div$shannon / log(tax_rich$richness))
+rownames(tax_even) <- colnames(metaphlan_PHY_counts_genus@otu_table)
+all(rownames(tax_even) == colnames(metaphlan_PHY_counts_genus@otu_table))
+tax_even$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+
+# Get mean and standard deviation
+tax_even_eda <- do.call(data.frame, aggregate(evenness ~ hospital, tax_even, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(evenness ~ hospital, data = tax_even)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+tax_even_stat.test <- pairwise.wilcox.test(tax_even$evenness, tax_even$hospital,
+                 p.adjust.method = "BH")
+tax_even_stat.test
+
+# Plot
+rownames(tax_even)
+
+grp <- tax_even %>%
+  group_by(hospital) %>%
+  mutate(average=mean(evenness))
+
+grp
+
+p <- ggplot(tax_even, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Evenness for Taxonomic Composition Across Hospitals", 
+                subtitle = "Pielou's Evenness by Hospital",
+                y = "evenness")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot6_tax_evenness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Shannon for MGEs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_counts_HWW), index = "shannon", MARGIN = 2))
@@ -1302,7 +1869,64 @@ ggsave(filename = "plot7_mge_shannon.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Simpson for MGEs
+#### Shannon for MGEs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_counts_HWW), index = "shannon", MARGIN = 2))
+all(rownames(mge_shannon_div) == colnames(MGE_PHY_counts_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+mge_shannon_div$observed <- diversity_observed
+mge_shannon_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+mge_shannon_eda <- do.call(data.frame, aggregate(shannon ~ hospital, mge_shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = mge_shannon_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+mge_shannon_stat.test <- pairwise.wilcox.test(mge_shannon_div$shannon, mge_shannon_div$hospital,
+                 p.adjust.method = "BH")
+mge_shannon_stat.test
+
+# Plot
+rownames(mge_shannon_div)
+
+grp <- mge_shannon_div %>%
+  group_by(hospital) %>%
+  mutate(average=mean(shannon))
+
+grp
+
+p <- ggplot(mge_shannon_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+                subtitle = "Shannon Diversity Index by Hospital",
+                y = "shannon")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot7_mge_shannon_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Simpson for MGEs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "simpson", MARGIN = 2))
@@ -1355,7 +1979,64 @@ ggsave(filename = "plot7_mge_simpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Inverse Simpson for MGEs
+#### Simpson for MGEs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "simpson", MARGIN = 2))
+all(rownames(mge_simpson_div) == colnames(MGE_PHY_counts_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+mge_simpson_div$observed <- diversity_observed
+mge_simpson_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+mge_simpson_eda <- do.call(data.frame, aggregate(simpson ~ hospital, mge_simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = mge_simpson_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+mge_simpson_stat.test <- pairwise.wilcox.test(mge_simpson_div$simpson, mge_simpson_div$hospital,
+                 p.adjust.method = "BH")
+mge_simpson_stat.test
+
+# Plot
+rownames(mge_simpson_div)
+
+grp <- mge_simpson_div %>%
+  group_by(hospital) %>%
+  mutate(average=mean(simpson))
+
+grp
+
+p <- ggplot(mge_simpson_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+                subtitle = "Simpson Diversity Index by Hospital",
+                y = "simpson")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot7_mge_simpson_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Inverse Simpson for MGEs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "inv", MARGIN = 2))
@@ -1408,7 +2089,64 @@ ggsave(filename = "plot7_mge_invsimpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Richness for MGEs
+#### Inverse Simpson for MGEs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "invsimpson", MARGIN = 2))
+all(rownames(mge_invsimp_div) == colnames(MGE_PHY_counts_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+mge_invsimp_div$observed <- diversity_observed
+mge_invsimp_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+mge_invsimp_eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, mge_invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(invsimpson ~ hospital, data = mge_invsimp_div)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+mge_invsimp_stat.test <- pairwise.wilcox.test(mge_invsimp_div$invsimpson, mge_invsimp_div$hospital,
+                 p.adjust.method = "BH")
+mge_invsimp_stat.test
+
+# Plot
+rownames(mge_invsimp_div)
+
+grp <- mge_invsimp_div %>%
+  group_by(hospital) %>%
+  mutate(average=mean(invsimpson))
+
+grp
+
+p <- ggplot(mge_invsimp_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+                subtitle = "Inverse Simpson Diversity Index by Hospital",
+                y = "invsimpson")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot7_mge_invsimp_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Richness for MGEs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_counts_HWW), MARGIN=2))
@@ -1461,7 +2199,62 @@ ggsave(filename = "plot7_mge_richness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Evenness for MGEs
+#### Richness for MGEs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_counts_HWW), MARGIN=2))
+all(rownames(mge_rich) == colnames(MGE_PHY_counts_HWW@otu_table))
+mge_rich$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+mge_invsimp_eda <- do.call(data.frame, aggregate(richness ~ hospital, mge_rich, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = mge_rich)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+mge_rich_stat.test <- pairwise.wilcox.test(mge_rich$richness, mge_rich$hospital,
+                 p.adjust.method = "BH")
+mge_rich_stat.test
+
+# Plot
+rownames(mge_rich)
+
+grp <- mge_rich %>%
+  group_by(hospital) %>%
+  mutate(average=mean(richness))
+
+grp
+
+p <- ggplot(mge_rich, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Richness for MGEs Across Hospitals", 
+                subtitle = "Richness Index by Hospital",
+                y = "richness")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot7_mge_richness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for MGEs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_even <- data.frame("evenness" = mge_shannon_div$shannon / log(mge_rich$richness))
@@ -1511,6 +2304,62 @@ p1  # Display the plot
 # Save plot
 ggsave(filename = "plot7_mge_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for MGEs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_even <- data.frame("evenness" = mge_shannon_div$shannon / log(mge_rich$richness))
+rownames(mge_even) <- colnames(MGE_PHY_counts_HWW@otu_table)
+all(rownames(mge_even) == colnames(MGE_PHY_counts_HWW@otu_table))
+mge_even$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+
+# Get mean and standard deviation
+mge_even_eda <- do.call(data.frame, aggregate(evenness ~ hospital, mge_even, function(x) c(mean = mean(x), sd = sd(x))))
+
+# Test the significance
+kruskal.test(evenness ~ hospital, data = mge_even)
+
+# There are no sig. differences
+
+# Test multiple pairwise
+mge_even_stat.test <- pairwise.wilcox.test(mge_even$evenness, mge_even$hospital,
+                 p.adjust.method = "BH")
+mge_even_stat.test
+
+# Plot
+rownames(mge_even)
+
+grp <- mge_even %>%
+  group_by(hospital) %>%
+  mutate(average=mean(evenness))
+
+grp
+
+p <- ggplot(mge_even, aes(x=hospital, y=grp$average, fill = hospital)) + 
+  geom_bar(stat = "identity", width = 0.7)
+
+# Add ID as label to the plot
+p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  theme_classic() + theme(text = element_text(family = "Palatino"),
+                          axis.title.y = element_text(size = 35),
+                          axis.title.x = element_blank(),
+                          axis.text.y = element_text(size = 20),
+                          axis.text.x = element_text(size = 20, face = "bold"),
+                          legend.position = "none",
+                          plot.title = element_text(face = "bold"),
+                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+
+# Adjust the scale to be more detailed
+p1 <- p1 + labs(title = "Evenness for MGEs Across Hospitals", 
+                subtitle = "Pielou's Evenness by Hospital",
+                y = "evenness")
+
+p1  # Display the plot
+
+# Save plot
+ggsave(filename = "plot7_mge_evenness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 ### Relative abundances & Counts of functional genes
