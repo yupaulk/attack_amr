@@ -723,7 +723,8 @@ ggsave(filename = "plot2b_merged_pca.tiff",
 
 ### Diversity Metrics
 
-#### ARGs (Exclude)
+#### Shannon for ARGs
+
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "shannon", MARGIN = 2))
 all(rownames(arg_shannon_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
@@ -775,6 +776,8 @@ ggsave(filename = "plot5_arg_shannon.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
+#### Simpson for ARGs
+
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "simpson", MARGIN = 2))
 all(rownames(arg_simpson_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
@@ -825,6 +828,7 @@ p1  # Display the plot
 ggsave(filename = "plot5_arg_simpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+#### Inverse Simpson for ARGs
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "inv", MARGIN = 2))
@@ -876,6 +880,7 @@ p1  # Display the plot
 ggsave(filename = "plot5_arg_invsimpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+#### Richness for ARGs
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_counts_HWW), MARGIN=2))
@@ -927,6 +932,7 @@ p1  # Display the plot
 ggsave(filename = "plot5_arg_richness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+#### Evenness for ARGs
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_even <- data.frame("evenness" = arg_shannon_div$shannon / log(arg_rich$richness))
@@ -981,7 +987,8 @@ ggsave(filename = "plot5_arg_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Metaphlan
+#### Shannon for Taxa (metaphlan)
+
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "shannon", MARGIN = 2))
 all(rownames(tax_shannon_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
@@ -1032,6 +1039,8 @@ p1  # Display the plot
 ggsave(filename = "plot6_tax_shannon.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+
+#### Simpson for Taxa (metaphlan)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "simpson", MARGIN = 2))
@@ -1084,6 +1093,8 @@ ggsave(filename = "plot6_tax_simpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
+#### Inverse Simpson for Taxa (metaphlan)
+
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "inv", MARGIN = 2))
 all(rownames(tax_invsimp_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
@@ -1135,6 +1146,8 @@ ggsave(filename = "plot6_tax_invsimpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
+#### Richness for Taxa (metaphlan)
+
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_counts_genus), MARGIN=2))
 all(rownames(tax_rich) == colnames(metaphlan_PHY_counts_genus@otu_table))
@@ -1183,6 +1196,8 @@ p1  # Display the plot
 ggsave(filename = "plot6_tax_richness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+
+#### Evenness for Taxa (metaphlan)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_even <- data.frame("evenness" = tax_shannon_div$shannon / log(tax_rich$richness))
@@ -1234,7 +1249,8 @@ ggsave(filename = "plot6_tax_evenness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Mobilomes MGE (Exclude)
+#### Shannon for MGEs
+
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_counts_HWW), index = "shannon", MARGIN = 2))
 all(rownames(mge_shannon_div) == colnames(MGE_PHY_counts_HWW@otu_table))
@@ -1285,6 +1301,8 @@ p1  # Display the plot
 ggsave(filename = "plot7_mge_shannon.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+
+#### Simpson for MGEs
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "simpson", MARGIN = 2))
@@ -1337,6 +1355,8 @@ ggsave(filename = "plot7_mge_simpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
+#### Inverse Simpson for MGEs
+
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "inv", MARGIN = 2))
 all(rownames(mge_invsimp_div) == colnames(MGE_PHY_counts_HWW@otu_table))
@@ -1388,6 +1408,8 @@ ggsave(filename = "plot7_mge_invsimpson.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
+#### Richness for MGEs
+
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_counts_HWW), MARGIN=2))
 all(rownames(mge_rich) == colnames(MGE_PHY_counts_HWW@otu_table))
@@ -1438,6 +1460,8 @@ p1  # Display the plot
 ggsave(filename = "plot7_mge_richness.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+
+#### Evenness for MGEs
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_even <- data.frame("evenness" = mge_shannon_div$shannon / log(mge_rich$richness))
@@ -1491,7 +1515,8 @@ ggsave(filename = "plot7_mge_evenness.tiff",
 
 ### Relative abundances of functional genes
 
-### Relative abundances, ARGs
+#### Relative abundance of ARGs
+
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 # Gather data
 
@@ -1562,7 +1587,11 @@ ggsave(filename = "wilcox.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-## Relative abundance of taxa (metaphlan)
+#### Relative abundance of MGEs
+
+#### Relative abundance of Taxa (metaphlan)
+
+##### Species level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Species != "NA")
@@ -1600,9 +1629,11 @@ p <- metaphlan_PHY_rel_species %>%
 p
 
 # Save plot
-ggsave(filename = "plot12_species.tiff",
+ggsave(filename = "plot12_tax_rel_species.tiff",
        width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+
+##### Genus level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Coprobacillaceae Family")
@@ -1642,9 +1673,11 @@ p <- metaphlan_PHY_rel_genus %>%
 p
 
 # Save plot
-ggsave(filename = "plot12_genus.tiff",
+ggsave(filename = "plot12_tax_rel_genus.tiff",
        width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+
+##### Family level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 metaphlan_PHY_rel_family <- subset_taxa(metaphlan_PHY_rel_family, Family != "Coprobacillaceae")
@@ -1683,9 +1716,11 @@ p <- metaphlan_PHY_rel_family %>%
 p
 
 # Save plot
-ggsave(filename = "plot12_family.tiff",
+ggsave(filename = "plot12_tax_rel_family.tiff",
        width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+
+##### Class level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "Clostridia")
@@ -1725,9 +1760,11 @@ p <- metaphlan_PHY_rel_class %>%
 p
 
 # Save plot
-ggsave(filename = "plot12_class.tiff",
+ggsave(filename = "plot12_tax_rel_class.tiff",
        width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
+
+##### Phylum level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 metaphlan_PHY_rel_phylum <- subset_taxa(metaphlan_PHY_rel_phylum, Phylum != "NA")
@@ -1765,7 +1802,7 @@ p <- metaphlan_PHY_rel_phylum %>%
 p
 
 # Save plot
-ggsave(filename = "plot12_phylum.tiff",
+ggsave(filename = "plot12_tax_rel_phylum.tiff",
        width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
