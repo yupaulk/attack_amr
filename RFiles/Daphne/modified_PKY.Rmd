@@ -26,15 +26,17 @@ library(ggrepel)
 library(cowplot)
 library(microViz)
 library(lubridate, warn.conflicts = FALSE)
-library (lmtest)
-library (tibble)
-library (grDevices)
+library(lmtest)
+library(tibble)
+library(grDevices)
+
 ```
 
 ### Load Metadata
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 metadata <- read.csv("metadata_updated.csv", row.names=1)
+
 ```
 
 ### Loading Metaxa2 Results
@@ -60,13 +62,12 @@ metaxa_PHY <- phyloseq(otu_table(OTU_metaxa,
 # Exclude taxa "Unknown", "Unclassified", "Eukaryota", "Mitochondria", "Archaea", "Chloroplast"
 metaxa_PHY <- subset_taxa(metaxa_PHY, Domain == "Bacteria")
 
-
 # Add SSU counts to metadata
 metadata$SSU_counts <- sample_sums(metaxa_PHY)
 
 ```
 
-### Insert ARG Counts and Relative Abundance (Resfinder)
+### Insert ARG Counts (Resfinder)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE}
 counts_resfinder <-as.matrix(read.table("ARG_genemat.txt", header= T, check.names = F, row.names = 1))
@@ -82,7 +83,6 @@ clusters_tax_table_resfinder <- clusters_tax_table_resfinder[, col_order]
 match <- match(rownames(metadata), colnames(counts_resfinder))
 counts_resfinder <- counts_resfinder[,match]
 all(colnames(counts_resfinder) == rownames(metadata))
-
 
 # Reorder to match tax_table
 match <- match(rownames(counts_resfinder), clusters_tax_table_resfinder$Gene)
@@ -105,8 +105,9 @@ resfinder_PHY_counts_uniq <- subset_samples(resfinder_PHY_counts_uniq, sample_ma
 # Create phyloseq object with only HWW samples
 resfinder_PHY_counts_HWW <- subset_samples(resfinder_PHY_counts_uniq, HWW == "YES")
 
-
 ```
+
+### Insert ARG Relative Abundance (Resfinder)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 counts_resfinder <-as.matrix(read.table("ARG_genemat.txt", header= T, check.names = F, row.names = 1))
@@ -146,7 +147,7 @@ dim(clusters_tax_table_resfinder)
 rownames(clusters_tax_table_resfinder) <- c(1:3146) #PKY: Why hard-coded?
 
 # Combine to phyloseq object
-resfinder_PHY_rel <- phyloseq(otu_table(resfinder_length_SSU_norm, taxa_are_rows = TRUE), 
+resfinder_PHY_rel <- phyloseq(otu_table(resfinder_length_SSU_norm, taxa_are_rows = TRUE),
   sample_data(metadata), tax_table(as.matrix(clusters_tax_table_resfinder)))
 
 # Exclude biological / technical replicates
@@ -166,19 +167,15 @@ mp_counts <- metaphlan_counts_merged_abundance_table[ -c(1) ]
 # Tax table
 ## Check if in order
 tax_table_metaphlan_counts <- read.csv2("tax_table_count_metaphlan_species.txt", header=F, sep="")
-#all(tax_table_metaphlan_counts$V1 == mp_counts$clade_name)
 
 tax_table_metaphlan_counts <- data.frame(str_split_fixed(data.frame(tax_table_metaphlan_counts) [,1], ";", 7))
-colnames(tax_table_metaphlan_counts) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus")
+colnames(tax_table_metaphlan_counts) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
 
 tax_table_metaphlan_counts <- apply(tax_table_metaphlan_counts, 2, function(y) (gsub(".__", "", y)))
-# 
-# # remove first column
-# mp_counts <- mp_counts[ -c(1) ]
 
 # Reorder
 match <- match(rownames(metadata), colnames(mp_counts))
-#mp_counts  <- mp_counts[,match]
+mp_counts  <- mp_counts[,match]
 all(rownames(metadata) == colnames(mp_counts))
 
 # Combine into phyloseq object
@@ -189,6 +186,14 @@ metaphlan_PHY_counts_bact <- subset_taxa(metaphlan_PHY_counts, Kingdom != "Virus
 
 # Prune to species level
 metaphlan_PHY_counts_genus <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Genus")
+
+# Prune to diff taxa level
+metaphlan_PHY_counts_species <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Species")
+metaphlan_PHY_counts_genus <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Genus")
+metaphlan_PHY_counts_family <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Family")
+metaphlan_PHY_counts_order <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Order")
+metaphlan_PHY_counts_class <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Class")
+metaphlan_PHY_counts_phylum <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Phylum")
 ```
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
@@ -302,53 +307,64 @@ MGE_rel_PHY <- phyloseq(otu_table(counts_MGE_length_SSU_norm, taxa_are_rows = TR
                     sample_data(metadata), tax_table(as.matrix(MGE_tax_table_trim)))
 ```
 
-### Analysis and Plots
+### Analyses and Plots
 
 #### Resistomes PCA Plot
+
 ```{r}
-# Plot HWW
-a <- resfinder_PHY_counts_HWW %>% 
+# Plot all samples
+a1 <- resfinder_PHY_counts_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
-  ord_plot(color = "hospital", size = 4, alpha = 0.8) +
+  ord_plot(color = "hospital", size = 10, alpha = 0.8) +
   theme(text = element_text(family = "Palatino"),
     plot.title = element_text(size = 17, hjust = 0.5),
-    axis.title = element_text(size = 15, face = "bold"),
+    axis.title = element_text(size = 17, face = "bold"),
     legend.title = element_blank(),
     legend.text = element_text(size = 17),
     legend.key.size = unit(1, 'cm'),
     legend.position = c(0.15, 0.9),
     legend.background = element_rect(color = "#CECECE"),
     legend.direction = "horizontal",
-    axis.text = element_text(size = 15), aspect.ratio = 1) +
-  scale_color_manual(values=c("#1C4731", "#910C28", "#1E88E5")) +
-  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 0.3)
+    axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
-print(a)
+a1_plot <- a1 + geom_label_repel(mapping = aes(label = alias), 
+                                 data = a1$data, size = 4, box.padding = 0.5,
+                                 segment.color = "#CECECE", family = "Palatino")
+
+a1_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
+  theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
+        plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
+
+# Save plots for all samples
+ggsave(filename = "plot1_arg_pca.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 ```{r}
 # Plot all samples
-a2 <- resfinder_PHY_counts_uniq %>% 
+a2 <- resfinder_PHY_counts_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
-  ord_plot(color = "hospital", size = 4, alpha = 0.8) +
+  ord_plot(color = "hospital", size = 10, alpha = 0.8) +
   theme(text = element_text(family = "Palatino"),
     plot.title = element_text(size = 17, hjust = 0.5),
-    axis.title = element_text(size = 15, face = "bold"),
+    axis.title = element_text(size = 17, face = "bold"),
     legend.title = element_blank(),
     legend.text = element_text(size = 17),
     legend.key.size = unit(1, 'cm'),
     legend.position = c(0.15, 0.9),
     legend.background = element_rect(color = "#CECECE"),
     legend.direction = "horizontal",
-    axis.text = element_text(size = 15), aspect.ratio = 1) +
-  scale_color_manual(values=c("#1C4731", "#910C28", "#1E88E5")) +
-  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 0.3)
+    axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
-a2_plot <- a2 + geom_label_repel(mapping = aes(label = name), data = subset(a2$data, a2$data$HWW == "NO"),
-                          size = 4, box.padding = 0.5, 
-                          segment.color = "#CECECE", family = "Palatino")
+a2_plot <- a2 + geom_label_repel(mapping = aes(label = alias), 
+                                 data = a2$data, size = 4, box.padding = 0.5,
+                                 segment.color = "#CECECE", family = "Palatino")
 
 # Add indication for month with different shapes
 a2_plot <- a2_plot + geom_point(aes(shape = factor(month)), size = 5)  
@@ -357,16 +373,15 @@ month_labels <- c("May", "June", "July")
 
 a2_plot <- a2_plot +
   scale_shape_manual(name = "Month", 
-                     values = c(5, 6,7),  # Assign shapes to each month
+                     values = c(5, 6, 7),  # Assign shapes to each month
                      labels = month_labels)
 
-a2_plot + plot_annotation(tag_levels = list(c("SLMC")), title = "PCA Plot for three hospitals on Resistomes", subtitle = "ARGs") & 
+a2_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
   theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
-        plot.subtitle = element_text(size = 25, family = "Palatino", hjust = 0.5),
-    plot.tag = element_text(size = 25))
+        plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
 
 # Save plots for all samples
-ggsave(filename = "plot1.tiff",
+ggsave(filename = "plot2_arg_pca.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -395,51 +410,80 @@ resfinder_PHY_counts_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
-
 #### Metaphlan Taxa PCA Plot
+
+```{r}
+# Plot all samples
+b1 <- metaphlan_PHY_counts_genus %>% 
+  tax_transform("clr") %>% 
+  ord_calc(method = "PCA") %>% 
+  ord_plot(color = "hospital", size = 10, alpha = 0.8) +
+  theme(text = element_text(family = "Palatino"),
+    plot.title = element_text(size = 17, hjust = 0.5),
+    axis.title = element_text(size = 17, face = "bold"),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 17),
+    legend.key.size = unit(1, 'cm'),
+    legend.position = c(0.15, 0.9),
+    legend.background = element_rect(color = "#CECECE"),
+    legend.direction = "horizontal",
+    axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+
+b1_plot <- b1 + geom_label_repel(mapping = aes(label = alias), 
+                                 data = b1$data, size = 4, box.padding = 0.5,
+                                 segment.color = "#CECECE", family = "Palatino")
+
+b1_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
+  theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
+        plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
+
+# Save plots for all samples
+ggsave(filename = "plot1_tax_pca.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
 
 ```{r}
 # Plot all samples
 b2 <- metaphlan_PHY_counts_genus %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
-  ord_plot(color = "hospital", size = 4, alpha = 0.8) +
+  ord_plot(color = "hospital", size = 10, alpha = 0.8) +
   theme(text = element_text(family = "Palatino"),
     plot.title = element_text(size = 17, hjust = 0.5),
-    axis.title = element_text(size = 15, face = "bold"),
+    axis.title = element_text(size = 17, face = "bold"),
     legend.title = element_blank(),
     legend.text = element_text(size = 17),
     legend.key.size = unit(1, 'cm'),
-    legend.position = c(0.13, 0.95),
+    legend.position = c(0.15, 0.9),
     legend.background = element_rect(color = "#CECECE"),
     legend.direction = "horizontal",
-    axis.text = element_text(size = 15), aspect.ratio = 1) +
-  scale_color_manual(values=c("#1C4731", "#910C28", "#1E88E5")) +
-  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 0.3)
+    axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+
+b2_plot <- b2 + geom_label_repel(mapping = aes(label = alias), 
+                                 data = b2$data, size = 4, box.padding = 0.5,
+                                 segment.color = "#CECECE", family = "Palatino")
+
 # Add indication for month with different shapes
-b2_plot <- b2 + geom_point(aes(shape = factor(month)), size = 5)  
+b2_plot <- b2_plot + geom_point(aes(shape = factor(month)), size = 5)  
 # Define labels for month legend
 month_labels <- c("May", "June", "July")
 
 b2_plot <- b2_plot +
   scale_shape_manual(name = "Month", 
-                     values = c(5, 6,7),  # Assign shapes to each month
+                     values = c(5, 6, 7),  # Assign shapes to each month
                      labels = month_labels)
-# 
-# b2_plot <- b2 + geom_label_repel(mapping = aes(label = name), data = subset(b2$data, b2$data$HWW == "NO"),
-#                           size = 4, box.padding = 0.5, 
-#                           segment.color = "#CECECE", family = "Palatino")
 
-
-b2_plot + plot_annotation(tag_levels = list(c("SLMC")), title = "PCA Plot for three hospitals on Taxonomic Composition", subtitle = "Metaphlan") & 
+b2_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Taxonomic Composition", subtitle = "Metaphlan") & 
   theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
-        plot.subtitle = element_text(size = 25, family = "Palatino", hjust = 0.5),
-    plot.tag = element_text(size = 25))
+        plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
 
 # Save plots for all samples
-ggsave(filename = "plot2.tiff",
+ggsave(filename = "plot2_tax_pca.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
-
 ```
 
 #### Permanova Statistics on Taxa
@@ -471,67 +515,76 @@ metaphlan_PHY_counts_genus_uniq_temp %>%
 #### Mobilomes MGE PCA Plot
 
 ```{r}
-# Plot HWW
-c <- MGE_PHY_counts_HWW %>% 
+# Plot all samples
+c1 <- MGE_PHY_counts_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
-  ord_plot(color = "hospital", size = 4, alpha = 0.8) +
+  ord_plot(color = "hospital", size = 10, alpha = 0.8) +
   theme(text = element_text(family = "Palatino"),
     plot.title = element_text(size = 17, hjust = 0.5),
-    axis.title = element_text(size = 15, face = "bold"),
+    axis.title = element_text(size = 17, face = "bold"),
     legend.title = element_blank(),
     legend.text = element_text(size = 17),
     legend.key.size = unit(1, 'cm'),
-    legend.position = c(0.15, 0.9),
+    legend.position = c(0.8, 0.9),
     legend.background = element_rect(color = "#CECECE"),
     legend.direction = "horizontal",
-    axis.text = element_text(size = 15), aspect.ratio = 1) +
-  scale_color_manual(values=c("#1C4731", "#910C28", "#1E88E5")) +
-  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 0.3)
+    axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+
+c1_plot <- c1 + geom_label_repel(mapping = aes(label = alias), 
+                                 data = c1$data, size = 4, box.padding = 0.5,
+                                 segment.color = "#CECECE", family = "Palatino")
+
+c1_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Resistomes", subtitle = "ARGs") & 
+  theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
+        plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
+
+# Save plots for all samples
+ggsave(filename = "plot1_mge_pca.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 ```{r}
-
 # Plot all samples
-c2 <- MGE_PHY_counts_uniq %>% 
+c2 <- MGE_PHY_counts_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
-  ord_plot(color = "hospital", size = 4, alpha = 0.8) +
+  ord_plot(color = "hospital", size = 10, alpha = 0.8) +
   theme(text = element_text(family = "Palatino"),
     plot.title = element_text(size = 17, hjust = 0.5),
-    axis.title = element_text(size = 15, face = "bold"),
+    axis.title = element_text(size = 17, face = "bold"),
     legend.title = element_blank(),
     legend.text = element_text(size = 17),
     legend.key.size = unit(1, 'cm'),
-    legend.position = c(0.165, 0.125),
+    legend.position = c(0.8, 0.9),
     legend.background = element_rect(color = "#CECECE"),
     legend.direction = "horizontal",
-    axis.text = element_text(size = 15), aspect.ratio = 1) +
-  scale_color_manual(values=c("#1C4731", "#910C28", "#1E88E5")) +
-  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 0.3)
+    axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+
+c2_plot <- c2 + geom_label_repel(mapping = aes(label = alias), 
+                                 data = c2$data, size = 4, box.padding = 0.5,
+                                 segment.color = "#CECECE", family = "Palatino")
 
 # Add indication for month with different shapes
-c2<- c2 + geom_point(aes(shape = factor(month)), size = 5)  
+c2_plot <- c2_plot + geom_point(aes(shape = factor(month)), size = 5)  
 # Define labels for month legend
 month_labels <- c("May", "June", "July")
 
-c2 <- c2 +
+c2_plot <- c2_plot +
   scale_shape_manual(name = "Month", 
-                     values = c(5, 6,7),  # Assign shapes to each month
+                     values = c(5, 6, 7),  # Assign shapes to each month
                      labels = month_labels)
 
-# c2_plot <- c2 + geom_label_repel(mapping = aes(label = name), data = subset(c2$data, c2$data$HWW == "NO"),
-#                           size = 4, box.padding = 0.5, 
-#                           segment.color = "#CECECE", family = "Palatino")
-
+c2_plot + plot_annotation(title = "PCA, clr-transformed, for three hospitals on Mobilomes", subtitle = "MGEs") & 
+  theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
+        plot.subtitle = element_text(size = 22, family = "Palatino", hjust = 0.5))
 
 # Save plots for all samples
-c2+ plot_annotation(tag_levels = list(c("UST")), title = "PCA Plot with clr-transformed data on Mobilomes", subtitle = "MGEs") & 
-  theme(plot.title = element_text(size = 25, family = "Palatino", face = "bold"),
-        plot.subtitle = element_text(size = 25, family = "Palatino", hjust = 0.5),
-    plot.tag = element_text(size = 25))
-
-ggsave(filename = "plot4.tiff",
+ggsave(filename = "plot2_mge_pca.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
@@ -562,19 +615,40 @@ MGE_PHY_counts_uniq_temp %>%
 #### PCA Plot for Resistomes, Taxa and Mobilomes
 
 ```{r}
-
-patchwork0 <- a2_plot + b2_plot + c2 + 
-  plot_annotation(tag_levels = list(c('SLMC', 'CGH', 'UST')), 
-  title = "PCA, clr-transformed for Resistomes, Taxonomic Composition and Mobilomes") & 
+patchwork0 <- a1_plot + b1_plot + c1_plot + 
+  plot_annotation(tag_levels = list(c('ARGs', 'Taxa', 'MGEs')), 
+  title = "PCA, clr-transformed, for Resistomes, Taxonomic Composition and Mobilomes") & 
   theme(legend.position = "bottom",
         plot.title = element_text(size = 30, family = "Palatino", face = "bold"),
-        plot.tag = element_text(size = 25, face = "bold"))
+        plot.tag = element_text(size = 22, face = "bold"),
+        plot.tag.position = c(0.5, 1))
 patchwork <- patchwork0 + plot_layout(guides = "collect")
-#patchwork
+patchwork
 
 # Save plots for HWW samples
-ggsave(filename = "plot3.tiff",
+ggsave(filename = "plot1a_merged_pca.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+ggsave(filename = "plot1b_merged_pca.tiff",
+       width = 32, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r}
+patchwork0 <- a2_plot + b2_plot + c2_plot + 
+  plot_annotation(tag_levels = list(c('ARGs', 'Taxa', 'MGEs')), 
+  title = "PCA, clr-transformed, for Resistomes, Taxonomic Composition and Mobilomes") & 
+  theme(legend.position = "bottom",
+        plot.title = element_text(size = 30, family = "Palatino", face = "bold"),
+        plot.tag = element_text(size = 22, face = "bold"),
+        plot.tag.position = c(0.5, 1))
+patchwork <- patchwork0 + plot_layout(guides = "collect")
+patchwork
+
+# Save plots for HWW samples
+ggsave(filename = "plot2a_merged_pca.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+ggsave(filename = "plot2b_merged_pca.tiff",
+       width = 32, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+
 ```
 
 ### Diversity Metrics
@@ -606,7 +680,7 @@ p <- ggplot(arg_shannon_div, aes(x=hospital, y=shannon, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -657,7 +731,7 @@ p <- ggplot(arg_simpson_div, aes(x=hospital, y=simpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -708,7 +782,7 @@ p <- ggplot(arg_invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -754,12 +828,12 @@ arg_rich_stat.test
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","n.s.","**"))
 
 # Plot
-p <- ggboxplot(arg_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#FEF250")) + 
+p <- ggboxplot(arg_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj")
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -807,12 +881,12 @@ arg_even_stat.test
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("n.s.","n.s.","**"))
 
 # Plot
-p <- ggboxplot(arg_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#FEF250")) + 
+p <- ggboxplot(arg_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 0.85, step.increase = 0.05, label = "p.adj")
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -864,7 +938,7 @@ p <- ggplot(tax_shannon_div, aes(x=hospital, y=shannon, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -915,7 +989,7 @@ p <- ggplot(tax_simpson_div, aes(x=hospital, y=simpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -966,7 +1040,7 @@ p <- ggplot(tax_invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1015,7 +1089,7 @@ p <- ggplot(tax_rich, aes(x=hospital, y=richness, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1065,7 +1139,7 @@ p <- ggplot(tax_even, aes(x=hospital, y=evenness, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1117,7 +1191,7 @@ mge_shannon_stat.test
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1168,7 +1242,7 @@ p <- ggplot(mge_simpson_div, aes(x=hospital, y=simpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1219,7 +1293,7 @@ p <- ggplot(mge_invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1265,12 +1339,12 @@ mge_rich_stat.test
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","*","n.s."))
 
 # Plot
-p <- ggboxplot(mge_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#FEF250")) + 
+p <- ggboxplot(mge_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj")
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill = hospital)) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1320,7 +1394,7 @@ p <- ggplot(mge_even, aes(x=hospital, y=evenness, fill = hospital)) +
 
 # Add ID as label to the plot
 p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#FEF250")) +
+  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
   theme_classic() + theme(text = element_text(family = "Palatino"),
                           axis.title.y = element_text(size = 35),
                           axis.title.x = element_blank(),
@@ -1413,8 +1487,6 @@ p <- ggboxplot(df, x = "hospital", y = "RA", color = "hospital", palette = c("#1
   geom_jitter(data = df, aes(x = hospital, y = RA, color = hospital), size = 3, alpha = 0.7, width = 0.1) +
   geom_text(data = df, aes(x = hospital, y = RA, label = rownames(arg_shannon_div)), size = 3, vjust = -0.5)  +
   labs(title = "Comparison of ARGs/16S rRNA Levels Across Hospitals using Wilcoxx")  # Add title
-
-
 
 ggsave(filename = "wilcox.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
