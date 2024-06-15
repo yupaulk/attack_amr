@@ -2025,3 +2025,41 @@ ggsave(filename = "bar_Resfinder.tiff",
 otu_table_data <- otu_table(resfinder_PHY_rel_HWW)
 print(head(otu_table_data))
 ```
+# Sankey diagram from https://ianartmor.github.io/phyloseq_sankey/
+
+```{r}
+library(phyloseq)
+library(dplyr)
+library(tidyverse)
+library(networkD3)
+library(hiervis)
+
+source("plot_hierarchy.R")
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_species, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_species.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_genus, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_genus.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_family, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_family.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_order, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_order.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_class, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_class.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_phylum, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_phylum.html")
+```
+
+```{r}
+sessionInfo()
+```
