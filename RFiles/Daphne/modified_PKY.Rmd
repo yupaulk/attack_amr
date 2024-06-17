@@ -156,6 +156,7 @@ resfinder_PHY_rel_uniq <- subset_samples(resfinder_PHY_rel_uniq, sample_material
 
 # Create phyloseq object with only HWW samples
 resfinder_PHY_rel_HWW <- subset_samples(resfinder_PHY_rel_uniq, HWW == "YES")
+
 ```
 
 ### Metaphlan Counts and Relative Abundances
@@ -3171,6 +3172,20 @@ htmlwidgets::saveWidget(p, file = "plot3_sankey_class.html")
 p <- plot_hierarchy(physeq = metaphlan_PHY_rel_phylum, number_of_taxa_to_plot = 40)
 p
 htmlwidgets::saveWidget(p, file = "plot3_sankey_phylum.html")
+```
+
+```{r}
+write_csv(psmelt(resfinder_PHY_counts_HWW), file = 'resfinder_PHY_counts_HWW.csv')
+write_csv(psmelt(resfinder_PHY_rel_HWW), file = 'resfinder_PHY_rel_HWW.csv')
+write_csv(psmelt(MGE_PHY_counts_HWW), file = 'MGE_PHY_counts_HWW.csv')
+write_csv(psmelt(MGE_rel_PHY), file = 'MGE_PHY_rel_HWW.csv')
+write_csv(psmelt(metaphlan_PHY_counts_phylum), file = 'metaphlan_PHY_counts_phylum.csv')
+write_csv(psmelt(metaphlan_PHY_counts_class), file = 'metaphlan_PHY_counts_class.csv')
+write_csv(psmelt(metaphlan_PHY_counts_order), file = 'metaphlan_PHY_counts_order.csv')
+write_csv(psmelt(metaphlan_PHY_counts_family), file = 'metaphlan_PHY_counts_family.csv')
+write_csv(psmelt(metaphlan_PHY_counts_genus), file = 'metaphlan_PHY_counts_genus.csv')
+write_csv(psmelt(metaphlan_PHY_counts_species), file = 'metaphlan_PHY_counts_species.csv')
+
 ```
 
 ```{r}
