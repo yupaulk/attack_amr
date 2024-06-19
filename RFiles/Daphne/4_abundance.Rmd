@@ -1,0 +1,665 @@
+# Bioinformatics Analyses of ATTACK-AMR
+## Authors: Paul K. Yu, Daphne Janelyn Go
+
+### Adapted from Melina A. Markkanen, Kaisa Haukka, Katariina M. M. Pärnänen, Victorien Tamegnon Dougnon, Isidore Juste O. Bonkoungou, Zakaria Garba, Halidou Tinto, Anniina Sarekoski, Antti Karkman, Anu Kantele, Marko P. J. Virta. 2023. Metagenomic Analysis of the Abundance and Composition of Antibiotic Resistance Genes in Hospital Wastewater in Benin, Burkina Faso, and Finland mSphere. https://doi.org/10.1128/msphere.00538-22
+### https://github.com/melinamarkkanen/AMRIWA
+
+### Import libraries
+
+```{r, libraries}
+# if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+# BiocManager::install(c("phyloseq", "microbiome", "ComplexHeatmap"), update = FALSE)
+# install.packages("microViz", repos = c(davidbarnett = "https://david-barnett.r-universe.dev", getOption("repos")))
+# install.packages("tidyverse")
+# install.packages("ggpubr")
+# install.packages("patchwork")
+
+library(phyloseq)
+library(tidyverse)
+library(ggpubr)
+library(microViz)
+library(patchwork)
+
+```
+
+### Read rds as phyloseq object
+
+```{r}
+resfinder_PHY_rel_HWW <- readRDS('resfinder_PHY_rel_HWW.rds')
+MGE_PHY_rel_HWW <- readRDS('MGE_PHY_rel_HWW.rds')
+metaphlan_PHY_rel_phylum <- readRDS('metaphlan_PHY_rel_phylum.rds')
+metaphlan_PHY_rel_class <- readRDS('metaphlan_PHY_rel_class.rds')
+metaphlan_PHY_rel_order <- readRDS('metaphlan_PHY_rel_order.rds')
+metaphlan_PHY_rel_family <- readRDS('metaphlan_PHY_rel_family.rds')
+metaphlan_PHY_rel_genus <- readRDS('metaphlan_PHY_rel_genus.rds')
+metaphlan_PHY_rel_species <- readRDS('metaphlan_PHY_rel_species.rds')
+
+```
+
+### Abundances of functional genes
+
+```{r}
+abd_th <- theme_light() + theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 10, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "bottom", 
+        legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm"))
+
+div_th <- theme_classic() + theme(text = element_text(family = "Palatino"), 
+                                  axis.title.y = element_text(size = 35),
+                                  axis.title.x = element_blank(),
+                                  axis.text.y = element_text(size = 20),
+                                  axis.text.x = element_text(size = 16, face = "bold"),
+                                  legend.position = "none",
+                                  plot.title = element_text(face = "bold"),
+                                  plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+```
+
+#### Relative abundances of ARGs
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Gene != "NA")
+
+p <- resfinder_PHY_rel_HWW %>%
+  comp_barplot(tax_level = "Gene",
+               n_taxa = 40,
+               sample_order = sort(rownames(sam_data(resfinder_PHY_rel_HWW)), decreasing=T),
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) + 
+  ggtitle("Relative Abundances of ARGs (Top 40)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot8_arg_rel_gene.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Relative abundances of ARGs by drug class
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Class != "NA")
+
+p <- resfinder_PHY_rel_HWW %>%
+  comp_barplot(tax_level = "Class",
+               n_taxa = 40,
+               sample_order = sort(rownames(sam_data(resfinder_PHY_rel_HWW)), decreasing=T),
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of ARGs by Drug Class") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot8_arg_rel_class.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Total Abundances of ARGs
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Gene != "NA")
+
+p <- resfinder_PHY_rel_HWW %>%
+  comp_barplot(tax_level = "Gene",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(resfinder_PHY_rel_HWW))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of ARGs (Top 40)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot9_arg_count_gene.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Total Abundances of ARGs
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Class != "NA")
+
+p <- resfinder_PHY_rel_HWW %>%
+  comp_barplot(tax_level = "Class",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(resfinder_PHY_rel_HWW))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of ARGs by Drug Class") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot9_arg_count_class.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Relative abundances of MGEs
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+MGE_PHY_rel_HWW <- subset_taxa(MGE_PHY_rel_HWW, Gene != "NA")
+
+p <- MGE_PHY_rel_HWW %>%
+  comp_barplot(tax_level = "Gene",
+               n_taxa = 40,
+               sample_order = sort(rownames(sam_data(MGE_PHY_rel_HWW)), decreasing=T),
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) + 
+  ggtitle("Relative Abundances of MGEs (Top 40)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot10_mge_rel_gene.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Total Abundances of MGEs
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+MGE_PHY_rel_HWW <- subset_taxa(MGE_PHY_rel_HWW, Gene != "NA")
+
+p <- MGE_PHY_rel_HWW %>%
+  comp_barplot(tax_level = "Gene",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(MGE_PHY_rel_HWW))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of MGEs (Top 40)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot11_mge_count_gene.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Relative abundances of Taxa (metaphlan)
+
+##### Species level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Species != "NA")
+
+metaphlan_PHY_rel_species %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c("NA"),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+p <- metaphlan_PHY_rel_species %>%
+  comp_barplot(tax_level = "Species",
+               n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_species)), decreasing=T),
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Species (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_species.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Genus level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Coprobacillaceae Family")
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Catenibacterium")
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "NA")
+
+metaphlan_PHY_rel_genus %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c("NA"),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+p <- metaphlan_PHY_rel_genus %>%
+  comp_barplot(tax_level = "Genus",
+               n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_genus)), decreasing=T),
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Genera (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_genus.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Family level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_family <- subset_taxa(metaphlan_PHY_rel_family, Family != "Coprobacillaceae")
+metaphlan_PHY_rel_family <- subset_taxa(metaphlan_PHY_rel_family, Family != "NA")
+
+metaphlan_PHY_rel_family %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c("NA"),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+p <- metaphlan_PHY_rel_family %>%
+  comp_barplot(tax_level = "Family",
+               n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_family)), decreasing=T),
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Families (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_family.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Order level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_order <- subset_taxa(metaphlan_PHY_rel_order, Order != "Eubacteriales")
+metaphlan_PHY_rel_order <- subset_taxa(metaphlan_PHY_rel_order, Order != "Erysipelotrichales")
+metaphlan_PHY_rel_order <- subset_taxa(metaphlan_PHY_rel_order, Order != "NA")
+
+metaphlan_PHY_rel_order %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c("NA"),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+p <- metaphlan_PHY_rel_order %>%
+  comp_barplot(tax_level = "Order",
+               n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_order)), decreasing=T),
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Orders (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_order.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Class level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "Clostridia")
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "Erysipelotrichia")
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "NA")
+
+metaphlan_PHY_rel_class %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c("NA"),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+p <- metaphlan_PHY_rel_class %>%
+  comp_barplot(tax_level = "Class",
+               n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_class)), decreasing=T),
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Classes (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_class.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Phylum level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_phylum <- subset_taxa(metaphlan_PHY_rel_phylum, Phylum != "NA")
+
+metaphlan_PHY_rel_phylum %>%
+ tax_fix(
+  min_length = 4,
+  unknowns = c("NA"),
+  sep = " ", anon_unique = TRUE,
+  suffix_rank = "classified"
+ )
+
+p <- metaphlan_PHY_rel_phylum %>%
+  comp_barplot(tax_level = "Phylum",
+               n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_phylum)), decreasing=T),
+               bar_outline_colour = NA,
+               facet_by  = "hospital",
+               bar_width = 0.7,
+               other_name = "Others") +
+  coord_flip()  +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Phyla (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_phylum.tiff",
+       width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Total Abundances of Taxa (metaphlan)
+
+##### Species level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Species != "NA")
+
+p <- metaphlan_PHY_rel_species %>%
+  comp_barplot(tax_level = "Species",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_species))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Species (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot13_tax_count_species.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Genus level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Coprobacillaceae Family")
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Catenibacterium")
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "NA")
+
+p <- metaphlan_PHY_rel_genus %>%
+  comp_barplot(tax_level = "Genus",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_genus))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Genera (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot13_tax_count_genus.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Family level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_family <- subset_taxa(metaphlan_PHY_rel_family, Family != "Coprobacillaceae")
+metaphlan_PHY_rel_family <- subset_taxa(metaphlan_PHY_rel_family, Family != "NA")
+
+p <- metaphlan_PHY_rel_family %>%
+  comp_barplot(tax_level = "Family",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_family))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Families (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot13_tax_count_family.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Order level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_order <- subset_taxa(metaphlan_PHY_rel_order, Order != "Eubacteriales")
+metaphlan_PHY_rel_order <- subset_taxa(metaphlan_PHY_rel_order, Order != "Erysipelotrichales")
+metaphlan_PHY_rel_order <- subset_taxa(metaphlan_PHY_rel_order, Order != "NA")
+
+p <- metaphlan_PHY_rel_order %>%
+  comp_barplot(tax_level = "Order",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_order))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Orders (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot13_tax_count_order.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Class level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "Clostridia")
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "Erysipelotrichia")
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "NA")
+
+p <- metaphlan_PHY_rel_class %>%
+  comp_barplot(tax_level = "Class",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_class))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Classes (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot13_tax_count_class.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+##### Phylum level
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_PHY_rel_phylum <- subset_taxa(metaphlan_PHY_rel_phylum, Phylum != "NA")
+
+p <- metaphlan_PHY_rel_phylum %>%
+  comp_barplot(tax_level = "Phylum",
+               n_taxa = 40,
+               tax_transform_for_plot = "identity",
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_phylum))),
+               bar_outline_colour = NA,
+               bar_width = 0.7,
+               other_name = "Others") +
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Phyla (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
+
+# Save plot
+ggsave(filename = "plot13_tax_count_phylum.tiff",
+       width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+### Sum of Relative Abundance of ARGs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_observed <- data.frame("observed" = apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum))
+all(rownames(arg_observed) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_observed$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_observed_eda <- arg_observed %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(observed),
+    sd = sd(observed),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(observed ~ hospital, data = arg_observed)
+
+# Test multiple pairwise
+arg_observed_stat.test <- pairwise.wilcox.test(arg_observed$observed, arg_observed$hospital, p.adjust.method = "BH")
+arg_observed_stat.test 
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0032 -     
+# UST  0.0032 0.6991
+
+# Plot
+p1_plot <- ggboxplot(arg_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Total Abundances for ARGs Across Hospitals", y = "ARGs/16S rRNA") +
+  scale_y_continuous(limits = c(350,max(arg_observed$observed)), breaks = seq(350,max(arg_observed$observed), by = 50)) + 
+  geom_text(aes(label = paste(rownames(arg_observed), arg_observed$observed)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot14_arg_observed.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+### Sum of Relative Abundance of MGEs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_observed <- data.frame("observed" = apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum))
+all(rownames(mge_observed) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_observed$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_observed_eda <- mge_observed %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(observed),
+    sd = sd(observed),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(observed ~ hospital, data = mge_observed)
+
+# Test multiple pairwise
+mge_observed_stat.test <- pairwise.wilcox.test(mge_observed$observed, mge_observed$hospital, p.adjust.method = "BH")
+mge_observed_stat.test 
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0032 -     
+# UST  0.0032 0.6991
+
+# Plot
+p2_plot <- ggboxplot(mge_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Total Abundances for MGEs Across Hospitals", y = "MGEs/16S rRNA") +
+  scale_y_continuous(limits = c(350,max(mge_observed$observed)), breaks = seq(350,max(mge_observed$observed), by = 50)) +
+  geom_text(aes(label = paste(rownames(mge_observed), mge_observed$observed)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot14_mge_observed.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+
+```{r}
+p1_plot <- p1_plot + labs(title="")
+p2_plot <- p2_plot + labs(title="")
+patchwork0 <- p1_plot + p2_plot + 
+  plot_annotation(tag_levels = list(c('ARGs', 'MGEs')), 
+  title = "Total Abundances for ARGS, MGEs Across Hospitals") & 
+  theme(plot.title = element_text(size = 30, family = "Palatino", face = "bold"),
+        plot.tag = element_text(size = 22, face = "bold"),
+        plot.tag.position = c(0.5, 1))
+patchwork <- patchwork0 + plot_layout(guides = "collect")
+patchwork
+
+# Save plots for HWW samples
+ggsave(filename = "plot14a_merged_sum.tiff",
+       width = 16, height = 10, dpi = 300, units = "in", device='tiff', scale = 1)
+ggsave(filename = "plot14b_merged_sum.tiff",
+       width = 32, height = 10, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+```{r}
+sessionInfo()
+```
