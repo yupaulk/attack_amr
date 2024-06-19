@@ -1,0 +1,541 @@
+OTU,Sample,Abundance,alias,month,name,hospital,replicate,HWW,hospital_description,no_of_beds,lat,long,sample_material,DNA_ng_µl,A260.280,plot_name,SSU_counts,Kingdom,Phylum
+sp12,SLMC4,412.43792,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Proteobacteria
+sp12,SLMC5,398.17437,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Proteobacteria
+sp12,SLMC6,394.86304,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Proteobacteria
+sp12,SLMC3,372.13122,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Proteobacteria
+sp12,CGH1,368.24986,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Proteobacteria
+sp12,CGH6,359.06596,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Proteobacteria
+sp12,CGH2,344.10339,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Proteobacteria
+sp12,CGH5,343.10073,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Proteobacteria
+sp12,UST5,340.68483,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Proteobacteria
+sp12,CGH3,334.5302,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Proteobacteria
+sp12,UST4,330.15228,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Proteobacteria
+sp12,CGH4,328.36892,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Proteobacteria
+sp12,SLMC2,328.15822000000003,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Proteobacteria
+sp12,SLMC1,323.68378,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Proteobacteria
+sp12,UST6,321.68131999999997,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Proteobacteria
+sp12,UST1,307.06043,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Proteobacteria
+sp1,UST3,307.04708,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Actinobacteria
+sp1,SLMC2,306.24881,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Actinobacteria
+sp1,UST5,295.27863,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Actinobacteria
+sp12,UST2,293.51896,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Proteobacteria
+sp1,UST2,292.52982000000003,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Actinobacteria
+sp1,CGH2,291.19769,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Actinobacteria
+sp1,CGH5,286.69676,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Actinobacteria
+sp1,UST6,282.50034,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Actinobacteria
+sp1,CGH4,275.63196,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Actinobacteria
+sp1,CGH3,266.89894,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Actinobacteria
+sp1,UST1,265.27625,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Actinobacteria
+sp1,UST4,245.99802,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Actinobacteria
+sp1,CGH1,241.18304,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Actinobacteria
+sp12,UST3,240.51962,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Proteobacteria
+sp1,SLMC5,239.5759,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Actinobacteria
+sp1,SLMC4,238.41987,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Actinobacteria
+sp1,SLMC3,228.37621,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Actinobacteria
+sp1,CGH6,226.37456,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Actinobacteria
+sp1,SLMC6,225.91443,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Actinobacteria
+sp1,SLMC1,221.63037,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Actinobacteria
+sp78,SLMC3,119.19623,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Bacteroidota
+sp78,UST6,117.23522,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Bacteroidota
+sp78,CGH3,110.21239,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Bacteroidota
+sp78,UST1,108.87935,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Bacteroidota
+sp78,UST3,108.32964,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Bacteroidota
+sp78,UST2,99.07721000000001,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Bacteroidota
+sp78,UST4,97.97381,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Bacteroidota
+sp149,SLMC1,94.50288,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Firmicutes
+sp78,CGH1,94.07353,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Bacteroidota
+sp78,SLMC2,89.47125,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Bacteroidota
+sp78,CGH4,87.0694,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Bacteroidota
+sp78,CGH2,86.98287,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Bacteroidota
+sp78,CGH5,83.65455,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Bacteroidota
+sp149,UST3,83.48293,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Firmicutes
+sp78,SLMC6,80.88404,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Bacteroidota
+sp78,SLMC1,80.24942,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Bacteroidota
+sp78,CGH6,78.33862,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Bacteroidota
+sp39,SLMC1,74.28868000000001,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Archaea,Euryarchaeota
+sp149,CGH6,71.34449,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Firmicutes
+sp78,SLMC5,70.63103,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Bacteroidota
+sp149,UST5,67.57694000000001,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Firmicutes
+sp149,SLMC5,61.8412,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Firmicutes
+sp78,UST5,60.58472,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Bacteroidota
+sp39,CGH6,59.479549999999996,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Archaea,Euryarchaeota
+sp39,UST4,58.34408,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Archaea,Euryarchaeota
+sp149,SLMC4,57.86539,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Firmicutes
+sp149,SLMC3,56.492760000000004,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Firmicutes
+sp78,SLMC4,54.758540000000004,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Bacteroidota
+sp149,SLMC6,53.49391,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Firmicutes
+sp149,CGH1,51.991839999999996,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Firmicutes
+sp39,UST1,51.53743,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Archaea,Euryarchaeota
+sp149,CGH3,50.98446,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Firmicutes
+sp149,UST4,48.95151,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Firmicutes
+sp149,UST6,48.39965,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Firmicutes
+sp149,SLMC2,47.07009,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Firmicutes
+sp149,CGH2,45.519259999999996,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Firmicutes
+sp39,UST2,44.59466,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Archaea,Euryarchaeota
+sp149,UST2,44.5045,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Firmicutes
+sp39,UST3,40.00305,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Archaea,Euryarchaeota
+sp149,UST1,39.78467,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Firmicutes
+sp149,CGH4,39.58215,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Firmicutes
+sp39,SLMC6,38.85733,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Archaea,Euryarchaeota
+sp149,CGH5,38.85711,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Firmicutes
+sp39,CGH1,36.70021,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Archaea,Euryarchaeota
+sp39,SLMC4,31.24885,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Archaea,Euryarchaeota
+sp39,CGH5,30.02721,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Archaea,Euryarchaeota
+sp39,UST5,26.15602,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Archaea,Euryarchaeota
+sp39,CGH4,25.638589999999997,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Archaea,Euryarchaeota
+sp39,CGH3,25.453699999999998,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Archaea,Euryarchaeota
+sp39,SLMC5,21.44126,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Archaea,Euryarchaeota
+sp39,SLMC3,17.22327,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Archaea,Euryarchaeota
+sp39,CGH2,16.92304,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Archaea,Euryarchaeota
+sp39,SLMC2,14.10962,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Archaea,Euryarchaeota
+sp39,UST6,13.2265,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Archaea,Euryarchaeota
+sp143,SLMC2,11.75846,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Verrucomicrobia
+sp153,CGH4,10.975670000000001,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Candidatus_Melainabacteria
+sp1633,UST1,7.69992,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Spirochaetes
+sp143,CGH2,7.16942,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Verrucomicrobia
+sp143,CGH5,7.00535,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Verrucomicrobia
+sp1230,UST2,6.80989,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Synergistetes
+sp143,CGH3,6.77177,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Verrucomicrobia
+sp1977,UST1,5.95148,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Archaea,Candidatus_Thermoplasmatota
+sp1230,CGH4,5.59586,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Synergistetes
+sp143,UST5,5.55472,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Verrucomicrobia
+sp1230,UST6,5.46638,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Synergistetes
+sp1230,UST1,4.96195,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Synergistetes
+sp1633,CGH5,4.82735,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Spirochaetes
+sp143,UST4,4.66624,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Verrucomicrobia
+sp1230,UST4,4.58424,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Synergistetes
+sp143,UST3,4.50778,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Verrucomicrobia
+sp83,UST3,4.48412,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Chloroflexi
+sp153,CGH2,4.44017,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Candidatus_Melainabacteria
+sp143,SLMC5,4.21491,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Verrucomicrobia
+sp143,CGH4,4.14194,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Verrucomicrobia
+sp83,UST2,4.07879,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Chloroflexi
+sp143,CGH1,3.55268,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Verrucomicrobia
+sp1230,UST3,3.40697,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Synergistetes
+sp143,UST1,3.35892,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Verrucomicrobia
+sp1633,UST2,3.3250200000000003,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Spirochaetes
+sp1230,SLMC3,2.45139,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Synergistetes
+sp1633,UST3,2.31137,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Spirochaetes
+sp143,UST2,2.18127,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Verrucomicrobia
+sp143,SLMC4,1.8231899999999999,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Verrucomicrobia
+sp995,UST6,1.80874,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Candidatus_Omnitrophica
+sp143,UST6,1.52167,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Verrucomicrobia
+sp1977,UST3,1.51333,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Archaea,Candidatus_Thermoplasmatota
+sp1230,CGH5,1.48486,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Synergistetes
+sp143,SLMC6,1.42714,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Verrucomicrobia
+sp1633,CGH4,1.4262199999999998,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Spirochaetes
+sp143,CGH6,1.41873,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Verrucomicrobia
+sp1230,SLMC4,1.36686,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Synergistetes
+sp995,CGH4,1.2086299999999999,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Candidatus_Omnitrophica
+sp1230,CGH1,1.1829399999999999,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Synergistetes
+sp153,SLMC6,1.17178,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Candidatus_Melainabacteria
+sp2134,UST2,1.1246,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Bacteria_unclassified
+sp83,SLMC2,1.10805,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Chloroflexi
+sp143,SLMC3,1.05172,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Verrucomicrobia
+sp153,CGH1,0.92681,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Candidatus_Melainabacteria
+sp1633,UST5,0.92582,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Spirochaetes
+sp153,SLMC2,0.91725,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Candidatus_Melainabacteria
+sp995,UST1,0.91354,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Candidatus_Omnitrophica
+sp3905,UST6,0.87603,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Gemmatimonadetes
+sp2979,SLMC3,0.80389,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Acidobacteria
+sp83,SLMC6,0.76165,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Chloroflexi
+sp83,UST6,0.72562,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Chloroflexi
+sp2134,UST4,0.69106,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Bacteria_unclassified
+sp153,SLMC5,0.6760400000000001,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Candidatus_Melainabacteria
+sp1443,UST6,0.6616599999999999,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Nitrospirae
+sp1230,SLMC1,0.6188,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Synergistetes
+sp1230,SLMC5,0.61231,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Synergistetes
+sp2134,UST6,0.60729,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Bacteria_unclassified
+sp2134,CGH3,0.58385,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Bacteria_unclassified
+sp995,CGH5,0.57296,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Candidatus_Omnitrophica
+sp153,SLMC4,0.5598700000000001,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Candidatus_Melainabacteria
+sp2134,UST1,0.5532,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Bacteria_unclassified
+sp2189,UST1,0.5501600000000001,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Lentisphaerae
+sp995,CGH2,0.5484199999999999,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Candidatus_Omnitrophica
+sp2189,UST5,0.54478,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Lentisphaerae
+sp1966,UST6,0.5403,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Candidatus_Hydrogenedentes
+sp1966,UST3,0.53126,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Candidatus_Hydrogenedentes
+sp1273,CGH2,0.53006,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Planctomycetota
+sp153,CGH3,0.5219,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Candidatus_Melainabacteria
+sp2339,SLMC6,0.51234,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Atribacterota
+sp2134,UST3,0.49315,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Bacteria_unclassified
+sp2957,CGH5,0.46413,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Deferribacteres
+sp1633,SLMC6,0.44675,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Spirochaetes
+sp995,CGH3,0.44601999999999997,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Candidatus_Omnitrophica
+sp3299,UST5,0.4326,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Cyanobacteria
+sp1443,SLMC4,0.42393000000000003,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Nitrospirae
+sp83,UST5,0.42183,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Chloroflexi
+sp153,UST1,0.40981,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Candidatus_Melainabacteria
+sp1230,CGH2,0.37165,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Synergistetes
+sp153,CGH5,0.35372000000000003,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Candidatus_Melainabacteria
+sp1966,UST1,0.32054,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Candidatus_Hydrogenedentes
+sp2189,UST6,0.31504000000000004,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Lentisphaerae
+sp1230,UST5,0.3132,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Synergistetes
+sp3172,UST5,0.30870000000000003,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Deinococcus_Thermus
+sp995,UST4,0.30854,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Candidatus_Omnitrophica
+sp1633,UST6,0.29431,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Spirochaetes
+sp1977,UST2,0.29346,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Archaea,Candidatus_Thermoplasmatota
+sp1633,UST4,0.28979,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Spirochaetes
+sp1633,CGH3,0.27799999999999997,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Spirochaetes
+sp1273,CGH5,0.27784,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Planctomycetota
+sp153,UST6,0.27571,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Candidatus_Melainabacteria
+sp3299,UST6,0.26699,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Cyanobacteria
+sp153,UST5,0.25062,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Candidatus_Melainabacteria
+sp83,CGH5,0.24397,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Chloroflexi
+sp995,SLMC2,0.24394000000000002,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Candidatus_Omnitrophica
+sp1273,CGH3,0.24374,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Planctomycetota
+sp1230,CGH6,0.22737,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Synergistetes
+sp1443,SLMC5,0.22322,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Nitrospirae
+sp1273,SLMC5,0.22053,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Planctomycetota
+sp153,CGH6,0.21746,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Candidatus_Melainabacteria
+sp1273,CGH6,0.20124,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Planctomycetota
+sp1273,CGH1,0.19999999999999998,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Planctomycetota
+sp2189,UST3,0.19952999999999999,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Lentisphaerae
+sp1443,CGH3,0.19680999999999998,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Nitrospirae
+sp995,UST2,0.19594999999999999,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Candidatus_Omnitrophica
+sp2189,UST2,0.19403,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Lentisphaerae
+sp143,SLMC1,0.18846,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Verrucomicrobia
+sp1977,UST5,0.18832,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Archaea,Candidatus_Thermoplasmatota
+sp1273,CGH4,0.18537,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Planctomycetota
+sp1889,UST2,0.18532,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Candidatus_Saccharibacteria
+sp1443,UST3,0.18132,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Nitrospirae
+sp83,SLMC4,0.18011,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Chloroflexi
+sp1230,SLMC2,0.15888999999999998,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Synergistetes
+sp1542,CGH4,0.15119,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Elusimicrobia
+sp1977,UST6,0.14257,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Archaea,Candidatus_Thermoplasmatota
+sp2134,CGH2,0.14149,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Bacteria_unclassified
+sp1273,SLMC3,0.13574,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Planctomycetota
+sp83,CGH3,0.13429000000000002,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Chloroflexi
+sp1230,SLMC6,0.13288,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Synergistetes
+sp995,SLMC4,0.13158,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Candidatus_Omnitrophica
+sp995,SLMC5,0.13148,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Candidatus_Omnitrophica
+sp3172,CGH4,0.1291,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Deinococcus_Thermus
+sp1443,UST5,0.12749,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Nitrospirae
+sp2189,CGH3,0.12748,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Lentisphaerae
+sp83,CGH4,0.12746,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Chloroflexi
+sp2134,SLMC5,0.12114,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Bacteria_unclassified
+sp2339,UST1,0.11903,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Atribacterota
+sp153,SLMC3,0.11782999999999999,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Candidatus_Melainabacteria
+sp1230,CGH3,0.11660999999999999,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Synergistetes
+sp83,UST4,0.11594,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Chloroflexi
+sp1966,UST5,0.11558,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Candidatus_Hydrogenedentes
+sp83,SLMC5,0.11109,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Chloroflexi
+sp995,CGH1,0.10793,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Candidatus_Omnitrophica
+sp2187,UST1,0.1029,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Candidatus_Aminicenantes
+sp1273,SLMC4,0.09712,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Planctomycetota
+sp1633,CGH2,0.09607,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Spirochaetes
+sp1273,UST6,0.09391999999999999,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Planctomycetota
+sp1966,UST4,0.09114,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Candidatus_Hydrogenedentes
+sp3172,UST2,0.07741,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Deinococcus_Thermus
+sp2187,UST3,0.07634,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Candidatus_Aminicenantes
+sp1273,UST2,0.07354000000000001,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Planctomycetota
+sp1633,SLMC5,0.06754,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Spirochaetes
+sp83,CGH2,0.06748,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Chloroflexi
+sp2979,UST2,0.06673,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Acidobacteria
+sp83,SLMC3,0.06593,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Chloroflexi
+sp1966,CGH6,0.06532,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Candidatus_Hydrogenedentes
+sp1273,SLMC1,0.06497,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Planctomycetota
+sp2189,UST4,0.06332,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Lentisphaerae
+sp1633,CGH6,0.06121,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Spirochaetes
+sp3299,UST2,0.05445,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Cyanobacteria
+sp3172,UST6,0.05298,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Deinococcus_Thermus
+sp1617,CGH4,0.0511,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Candidatus_Cloacimonetes
+sp1977,UST4,0.05095,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Archaea,Candidatus_Thermoplasmatota
+sp2187,UST4,0.049909999999999996,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Candidatus_Aminicenantes
+sp995,SLMC1,0.04946,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Candidatus_Omnitrophica
+sp2134,UST5,0.04934,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Bacteria_unclassified
+sp1443,SLMC6,0.04836,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Nitrospirae
+sp2979,UST6,0.04757,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Acidobacteria
+sp995,CGH6,0.04636,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Candidatus_Omnitrophica
+sp1977,SLMC6,0.04491,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Archaea,Candidatus_Thermoplasmatota
+sp1542,UST4,0.04347,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Elusimicrobia
+sp2134,CGH4,0.0426,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Bacteria_unclassified
+sp1443,UST2,0.04249,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Nitrospirae
+sp995,SLMC3,0.041460000000000004,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Candidatus_Omnitrophica
+sp1889,UST4,0.04116,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Candidatus_Saccharibacteria
+sp1443,CGH2,0.03991,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Nitrospirae
+sp2889,CGH4,0.03959,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Chlamydiae
+sp2382,UST1,0.03914,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Tenericutes
+sp2979,CGH5,0.03834,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Acidobacteria
+sp2189,CGH4,0.037079999999999995,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Lentisphaerae
+sp83,CGH1,0.035679999999999996,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Chloroflexi
+sp1542,CGH6,0.03564,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Elusimicrobia
+sp2187,UST5,0.035,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Candidatus_Aminicenantes
+sp1273,UST4,0.03492,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Planctomycetota
+sp2889,CGH5,0.03429,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Chlamydiae
+sp2979,CGH4,0.03347,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Acidobacteria
+sp1542,SLMC4,0.03337,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Elusimicrobia
+sp1798,UST5,0.03211,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Bacillota
+sp1542,CGH5,0.0321,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Elusimicrobia
+sp1443,SLMC3,0.03101,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Nitrospirae
+sp2187,UST6,0.03086,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Candidatus_Aminicenantes
+sp1798,UST1,0.03046,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Bacillota
+sp83,UST1,0.0292,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Chloroflexi
+sp3299,UST3,0.02796,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Cyanobacteria
+sp1966,SLMC6,0.026950000000000002,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Candidatus_Hydrogenedentes
+sp1273,UST5,0.02535,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Planctomycetota
+sp995,SLMC6,0.025160000000000002,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Candidatus_Omnitrophica
+sp1617,CGH5,0.02434,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Candidatus_Cloacimonetes
+sp2339,UST6,0.02373,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Atribacterota
+sp2979,SLMC4,0.022469999999999997,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Acidobacteria
+sp1542,CGH1,0.02137,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Elusimicrobia
+sp1542,UST6,0.021329999999999998,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Elusimicrobia
+sp1443,CGH1,0.02066,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Nitrospirae
+sp83,CGH6,0.019,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Chloroflexi
+sp2979,UST5,0.01825,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Acidobacteria
+sp2339,CGH2,0.01792,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Atribacterota
+sp1889,UST3,0.01613,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Candidatus_Saccharibacteria
+sp2339,UST4,0.01545,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Atribacterota
+sp2889,UST3,0.01467,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Chlamydiae
+sp2957,CGH4,0.01454,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Deferribacteres
+sp1273,UST3,0.01411,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Planctomycetota
+sp1633,SLMC4,0.01387,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Spirochaetes
+sp153,SLMC1,0.01218,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Candidatus_Melainabacteria
+sp1542,UST1,0.012070000000000001,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Elusimicrobia
+sp3905,CGH3,0.01133,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Gemmatimonadetes
+sp995,UST5,0.01127,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Candidatus_Omnitrophica
+sp1966,CGH3,0.01051,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Candidatus_Hydrogenedentes
+sp1798,UST6,0.010329999999999999,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Bacillota
+sp2189,CGH2,0.00957,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Lentisphaerae
+sp2187,CGH2,0.00934,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Candidatus_Aminicenantes
+sp1273,SLMC6,0.00907,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Planctomycetota
+sp1889,CGH2,0.00903,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Candidatus_Saccharibacteria
+sp2187,UST2,0.00886,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Candidatus_Aminicenantes
+sp1966,CGH5,0.00885,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Candidatus_Hydrogenedentes
+sp1273,SLMC2,0.00858,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Planctomycetota
+sp1889,CGH4,0.00816,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Candidatus_Saccharibacteria
+sp1617,UST4,0.00814,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Candidatus_Cloacimonetes
+sp2187,CGH5,0.00732,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Candidatus_Aminicenantes
+sp2187,CGH6,0.00729,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Candidatus_Aminicenantes
+sp1542,SLMC5,0.00717,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Elusimicrobia
+sp3172,CGH5,0.0070999999999999995,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Deinococcus_Thermus
+sp1966,UST2,0.00657,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Candidatus_Hydrogenedentes
+sp2979,SLMC5,0.00651,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Acidobacteria
+sp3905,CGH4,0.00622,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Gemmatimonadetes
+sp2189,CGH5,0.00608,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Lentisphaerae
+sp1617,SLMC4,0.00598,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Candidatus_Cloacimonetes
+sp1542,SLMC6,0.00575,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Elusimicrobia
+sp1617,CGH2,0.00575,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Candidatus_Cloacimonetes
+sp1443,CGH6,0.00506,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Nitrospirae
+sp1633,SLMC3,0.00456,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Spirochaetes
+sp153,UST4,0.0045,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Candidatus_Melainabacteria
+sp1542,SLMC1,0.00438,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Elusimicrobia
+sp1617,SLMC5,0.00426,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Candidatus_Cloacimonetes
+sp1542,SLMC3,0.00422,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Elusimicrobia
+sp1443,CGH5,0.0041,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Nitrospirae
+sp1443,CGH4,0.00387,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Nitrospirae
+sp1966,CGH4,0.00364,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Candidatus_Hydrogenedentes
+sp2187,CGH4,0.00349,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Candidatus_Aminicenantes
+sp1798,UST4,0.00332,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Bacillota
+sp995,UST3,0.00277,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Candidatus_Omnitrophica
+sp2339,UST5,0.00264,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Atribacterota
+sp153,UST2,0.00263,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Candidatus_Melainabacteria
+sp1798,UST3,0.00248,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Bacillota
+sp2979,UST3,0.00215,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Acidobacteria
+sp2339,CGH6,0.002,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Atribacterota
+sp2979,SLMC6,0.00172,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Acidobacteria
+sp1966,SLMC3,0.0017,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Candidatus_Hydrogenedentes
+sp3172,UST3,0.00144,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Deinococcus_Thermus
+sp1798,CGH3,0.00134,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Bacillota
+sp1889,UST6,0.00128,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Candidatus_Saccharibacteria
+sp2134,SLMC3,0.0012200000000000002,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Bacteria_unclassified
+sp2382,UST2,0.00115,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Tenericutes
+sp1798,CGH5,0.00112,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Bacillota
+sp1273,UST1,9.2e-4,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Planctomycetota
+sp1798,CGH2,6.6e-4,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Bacillota
+sp1798,SLMC5,5.1e-4,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Bacillota
+sp3172,CGH3,3.5e-4,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Deinococcus_Thermus
+sp1966,CGH2,2.9e-4,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Candidatus_Hydrogenedentes
+sp2382,UST6,2.5e-4,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Tenericutes
+sp1977,CGH2,1.8e-4,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Archaea,Candidatus_Thermoplasmatota
+sp2187,SLMC3,9e-5,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Candidatus_Aminicenantes
+sp1443,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Nitrospirae
+sp1443,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Nitrospirae
+sp1443,UST4,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Nitrospirae
+sp1443,UST1,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Nitrospirae
+sp153,UST3,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Candidatus_Melainabacteria
+sp1542,CGH2,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Elusimicrobia
+sp1542,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Elusimicrobia
+sp1542,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Elusimicrobia
+sp1542,UST5,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Elusimicrobia
+sp1542,UST2,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Elusimicrobia
+sp1542,UST3,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Elusimicrobia
+sp1617,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Candidatus_Cloacimonetes
+sp1617,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Candidatus_Cloacimonetes
+sp1617,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Candidatus_Cloacimonetes
+sp1617,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Candidatus_Cloacimonetes
+sp1617,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Candidatus_Cloacimonetes
+sp1617,UST1,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Candidatus_Cloacimonetes
+sp1617,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Candidatus_Cloacimonetes
+sp1617,UST2,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Candidatus_Cloacimonetes
+sp1617,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Candidatus_Cloacimonetes
+sp1617,UST3,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Candidatus_Cloacimonetes
+sp1617,UST5,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Candidatus_Cloacimonetes
+sp1617,UST6,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Candidatus_Cloacimonetes
+sp1633,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Spirochaetes
+sp1633,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Spirochaetes
+sp1633,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Spirochaetes
+sp1798,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Bacillota
+sp1798,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Bacillota
+sp1798,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Bacillota
+sp1798,CGH4,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Bacillota
+sp1798,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Bacillota
+sp1798,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Bacillota
+sp1798,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Bacillota
+sp1798,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Bacillota
+sp1798,UST2,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Bacillota
+sp1889,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Candidatus_Saccharibacteria
+sp1889,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Candidatus_Saccharibacteria
+sp1889,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Candidatus_Saccharibacteria
+sp1889,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Candidatus_Saccharibacteria
+sp1889,CGH5,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Candidatus_Saccharibacteria
+sp1889,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Candidatus_Saccharibacteria
+sp1889,UST1,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Candidatus_Saccharibacteria
+sp1889,UST5,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Candidatus_Saccharibacteria
+sp1889,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Candidatus_Saccharibacteria
+sp1889,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Candidatus_Saccharibacteria
+sp1889,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Candidatus_Saccharibacteria
+sp1889,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Candidatus_Saccharibacteria
+sp1966,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Candidatus_Hydrogenedentes
+sp1966,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Candidatus_Hydrogenedentes
+sp1966,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Candidatus_Hydrogenedentes
+sp1966,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Candidatus_Hydrogenedentes
+sp1966,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Candidatus_Hydrogenedentes
+sp1977,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Archaea,Candidatus_Thermoplasmatota
+sp1977,CGH5,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Archaea,Candidatus_Thermoplasmatota
+sp1977,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Archaea,Candidatus_Thermoplasmatota
+sp1977,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Archaea,Candidatus_Thermoplasmatota
+sp1977,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Archaea,Candidatus_Thermoplasmatota
+sp1977,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Archaea,Candidatus_Thermoplasmatota
+sp1977,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Archaea,Candidatus_Thermoplasmatota
+sp1977,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Archaea,Candidatus_Thermoplasmatota
+sp1977,CGH4,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Archaea,Candidatus_Thermoplasmatota
+sp1977,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Archaea,Candidatus_Thermoplasmatota
+sp2134,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Bacteria_unclassified
+sp2134,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Bacteria_unclassified
+sp2134,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Bacteria_unclassified
+sp2134,CGH5,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Bacteria_unclassified
+sp2134,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Bacteria_unclassified
+sp2134,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Bacteria_unclassified
+sp2134,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Bacteria_unclassified
+sp2187,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Candidatus_Aminicenantes
+sp2187,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Candidatus_Aminicenantes
+sp2187,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Candidatus_Aminicenantes
+sp2187,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Candidatus_Aminicenantes
+sp2187,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Candidatus_Aminicenantes
+sp2187,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Candidatus_Aminicenantes
+sp2187,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Candidatus_Aminicenantes
+sp2189,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Lentisphaerae
+sp2189,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Lentisphaerae
+sp2189,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Lentisphaerae
+sp2189,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Lentisphaerae
+sp2189,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Lentisphaerae
+sp2189,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Lentisphaerae
+sp2189,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Lentisphaerae
+sp2189,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Lentisphaerae
+sp2339,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Atribacterota
+sp2339,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Atribacterota
+sp2339,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Atribacterota
+sp2339,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Atribacterota
+sp2339,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Atribacterota
+sp2339,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Atribacterota
+sp2339,CGH4,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Atribacterota
+sp2339,UST2,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Atribacterota
+sp2339,CGH5,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Atribacterota
+sp2339,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Atribacterota
+sp2339,UST3,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Atribacterota
+sp2382,CGH4,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Tenericutes
+sp2382,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Tenericutes
+sp2382,CGH5,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Tenericutes
+sp2382,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Tenericutes
+sp2382,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Tenericutes
+sp2382,CGH2,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Tenericutes
+sp2382,UST4,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Tenericutes
+sp2382,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Tenericutes
+sp2382,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Tenericutes
+sp2382,UST5,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Tenericutes
+sp2382,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Tenericutes
+sp2382,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Tenericutes
+sp2382,UST3,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Tenericutes
+sp2382,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Tenericutes
+sp2382,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Tenericutes
+sp2889,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Chlamydiae
+sp2889,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Chlamydiae
+sp2889,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Chlamydiae
+sp2889,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Chlamydiae
+sp2889,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Chlamydiae
+sp2889,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Chlamydiae
+sp2889,CGH2,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Chlamydiae
+sp2889,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Chlamydiae
+sp2889,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Chlamydiae
+sp2889,UST1,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Chlamydiae
+sp2889,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Chlamydiae
+sp2889,UST5,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Chlamydiae
+sp2889,UST4,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Chlamydiae
+sp2889,UST2,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Chlamydiae
+sp2889,UST6,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Chlamydiae
+sp2957,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Deferribacteres
+sp2957,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Deferribacteres
+sp2957,CGH2,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Deferribacteres
+sp2957,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Deferribacteres
+sp2957,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Deferribacteres
+sp2957,UST6,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,16.57,1.96,hospital influent,66752,Bacteria,Deferribacteres
+sp2957,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Deferribacteres
+sp2957,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Deferribacteres
+sp2957,UST3,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Deferribacteres
+sp2957,UST1,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Deferribacteres
+sp2957,UST5,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Deferribacteres
+sp2957,UST4,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Deferribacteres
+sp2957,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Deferribacteres
+sp2957,UST2,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Deferribacteres
+sp2957,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Deferribacteres
+sp2957,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Deferribacteres
+sp2979,CGH2,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Acidobacteria
+sp2979,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Acidobacteria
+sp2979,UST4,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Acidobacteria
+sp2979,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Acidobacteria
+sp2979,UST1,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Acidobacteria
+sp2979,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Acidobacteria
+sp2979,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Acidobacteria
+sp2979,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Acidobacteria
+sp3172,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Deinococcus_Thermus
+sp3172,CGH2,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Deinococcus_Thermus
+sp3172,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Deinococcus_Thermus
+sp3172,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Deinococcus_Thermus
+sp3172,UST1,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Deinococcus_Thermus
+sp3172,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Deinococcus_Thermus
+sp3172,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Deinococcus_Thermus
+sp3172,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Deinococcus_Thermus
+sp3172,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Deinococcus_Thermus
+sp3172,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Deinococcus_Thermus
+sp3172,UST4,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Deinococcus_Thermus
+sp3299,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Cyanobacteria
+sp3299,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Cyanobacteria
+sp3299,CGH4,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,39.53,1.84,hospital influent,71661,Bacteria,Cyanobacteria
+sp3299,CGH2,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Cyanobacteria
+sp3299,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Cyanobacteria
+sp3299,CGH5,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Cyanobacteria
+sp3299,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Cyanobacteria
+sp3299,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Cyanobacteria
+sp3299,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Cyanobacteria
+sp3299,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Cyanobacteria
+sp3299,CGH3,0,CGH,6,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,36.44,1.81,hospital influent,60900,Bacteria,Cyanobacteria
+sp3299,UST4,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Cyanobacteria
+sp3299,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Cyanobacteria
+sp3299,UST1,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Cyanobacteria
+sp3905,SLMC4,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,42.02,1.87,hospital influent,49907,Bacteria,Gemmatimonadetes
+sp3905,UST5,0,UST,7,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,85.43,1.76,hospital influent,59244,Bacteria,Gemmatimonadetes
+sp3905,UST4,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,52.82,1.75,hospital influent,77262,Bacteria,Gemmatimonadetes
+sp3905,UST2,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,34.21,1.64,hospital influent,50995,Bacteria,Gemmatimonadetes
+sp3905,CGH1,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,32.25,1.88,hospital influent,62494,Bacteria,Gemmatimonadetes
+sp3905,CGH6,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,22.9,1.86,hospital influent,64583,Bacteria,Gemmatimonadetes
+sp3905,CGH2,0,CGH,5,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,44.44,1.76,hospital influent,70797,Bacteria,Gemmatimonadetes
+sp3905,UST3,0,UST,6,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6117895,120.9899073,water,23.08,1.85,hospital influent,55100,Bacteria,Gemmatimonadetes
+sp3905,SLMC5,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,40.49,1.81,hospital influent,61488,Bacteria,Gemmatimonadetes
+sp3905,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Gemmatimonadetes
+sp3905,SLMC6,0,SLMC,7,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,14.06,1.99,hospital influent,70670,Bacteria,Gemmatimonadetes
+sp3905,SLMC2,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,25.14,2.3,hospital influent,76756,Bacteria,Gemmatimonadetes
+sp3905,UST1,0,UST,5,University of Santo Tomas Hospital,UST,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,16.55,1.8,hospital influent,38257,Bacteria,Gemmatimonadetes
+sp3905,SLMC3,0,SLMC,6,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,17.05,1.89,hospital influent,66726,Bacteria,Gemmatimonadetes
+sp3905,CGH5,0,CGH,7,Chinese General Hospital,CGH,NO,YES,tertiary hospital,NA,14.6261,120.9884419,water,18.53,1.82,hospital influent,56106,Bacteria,Gemmatimonadetes
+sp83,SLMC1,0,SLMC,5,St. Lukes Medical Center,SLMC,NO,YES,tertiary hospital,NA,14.6235414,121.0227282,water,23.27,1.96,hospital influent,49234,Bacteria,Chloroflexi

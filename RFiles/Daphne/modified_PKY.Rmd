@@ -1,14 +1,14 @@
+# Bioinformatics Analyses of ATTACK-AMR
+## Authors: Paul K. Yu, Daphne Janelyn Go
+
+### Adapted from Melina A. Markkanen, Kaisa Haukka, Katariina M. M. Pärnänen, Victorien Tamegnon Dougnon, Isidore Juste O. Bonkoungou, Zakaria Garba, Halidou Tinto, Anniina Sarekoski, Antti Karkman, Anu Kantele, Marko P. J. Virta. 2023. Metagenomic Analysis of the Abundance and Composition of Antibiotic Resistance Genes in Hospital Wastewater in Benin, Burkina Faso, and Finland mSphere. https://doi.org/10.1128/msphere.00538-22
+### https://github.com/melinamarkkanen/AMRIWA
+
 ### Libraries for Installation
 
-`{# {r} # install.packages("BiocManager") # BiocManager::install("ALDEx2") # BiocManager::install(c("phyloseq", "microbiome", "ComplexHeatmap"), update = FALSE) # install.packages("microViz",repos = c(davidbarnett = "https://david-barnett.r-universe.dev", getOption("repos"))) # install.packages("ggraph") # for taxatree_plots() # install.packages("DT") # for tax_fix_interactive() # install.packages("corncob") # for example datasets and beta binomial models # install.packages("patchwork") # install.packages("ggpubr") # install.packages("ggrepel") # install.packages ("cowplot") # install.packages("rnaturalearth") # install.packages("rnaturalearthdata") # install.packages ("ggspatial") # install.packages("maps") # install.packages("microViz")`
+```{r} 
+# install.packages("BiocManager") # BiocManager::install("ALDEx2") # BiocManager::install(c("phyloseq", "microbiome", "ComplexHeatmap"), update = FALSE) # install.packages("microViz",repos = c(davidbarnett = "https://david-barnett.r-universe.dev", getOption("repos"))) # install.packages("ggraph") # for taxatree_plots() # install.packages("DT") # for tax_fix_interactive() # install.packages("corncob") # for example datasets and beta binomial models # install.packages("patchwork") # install.packages("ggpubr") # install.packages("ggrepel") # install.packages ("cowplot") # install.packages("rnaturalearth") # install.packages("rnaturalearthdata") # install.packages ("ggspatial") # install.packages("maps") # install.packages("microViz") #install.packages("lmtest") #install.packages("tibble") # install.packages("grDevices")
 
-```{r}
-#install.packages("lmtest")
-```
-
-```{r}
-#install.packages("tibble")
-# install.packages("grDevices")
 ```
 
 ### Add Installed Libraries to Pipeline
@@ -29,6 +29,7 @@ library(lubridate, warn.conflicts = FALSE)
 library(lmtest)
 library(tibble)
 library(grDevices)
+library(dplyr)
 
 ```
 
@@ -39,7 +40,7 @@ metadata <- read.csv("metadata_updated.csv", row.names=1)
 
 ```
 
-### Loading Metaxa2 Results
+### Load Metaxa2 Results
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 metaxa_genus <- read.delim("metaxa_genus.txt")
@@ -67,47 +68,7 @@ metadata$SSU_counts <- sample_sums(metaxa_PHY)
 
 ```
 
-### Insert ARG Counts (Resfinder)
-
-```{r, warning=FALSE, error=FALSE, message=FALSE}
-counts_resfinder <-as.matrix(read.table("ARG_genemat.txt", header= T, check.names = F, row.names = 1))
-
-# Tax_table
-clusters_tax_table_resfinder <- read.csv("clusters_tax_table.txt", header=FALSE, sep=";")
-colnames(clusters_tax_table_resfinder) <- c("Gene",  "Cluster_name", "Class")
-# Reorder columns
-col_order <- c("Class", "Cluster_name", "Gene")
-clusters_tax_table_resfinder <- clusters_tax_table_resfinder[, col_order]
-
-# Reorder to match metadata
-match <- match(rownames(metadata), colnames(counts_resfinder))
-counts_resfinder <- counts_resfinder[,match]
-all(colnames(counts_resfinder) == rownames(metadata))
-
-# Reorder to match tax_table
-match <- match(rownames(counts_resfinder), clusters_tax_table_resfinder$Gene)
-clusters_tax_table_resfinder <- clusters_tax_table_resfinder[match,]
-all(rownames(counts_resfinder) == clusters_tax_table_resfinder$Gene)
-
-# remove rownames
-counts_resfinder_phy <- counts_resfinder
-rownames(counts_resfinder_phy) <- c(1:3146) #PKY: Why hard-coded?
-rownames(clusters_tax_table_resfinder) <- c(1:3146) #PKY: Why hard-coded?
-
-# Phyloseq
-resfinder_PHY_counts <- phyloseq(otu_table(counts_resfinder_phy, taxa_are_rows = TRUE), 
-  sample_data(metadata), tax_table(as.matrix(clusters_tax_table_resfinder)))
-
-# Exclude biological / technical replicates
-resfinder_PHY_counts_uniq <- subset_samples(resfinder_PHY_counts, replicate == "NO")
-resfinder_PHY_counts_uniq <- subset_samples(resfinder_PHY_counts_uniq, sample_material == "water")
-
-# Create phyloseq object with only HWW samples
-resfinder_PHY_counts_HWW <- subset_samples(resfinder_PHY_counts_uniq, HWW == "YES")
-
-```
-
-### Insert ARG Relative Abundances (Resfinder)
+### Make Phyloseq ARG RPKSSU (Resfinder)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 counts_resfinder <-as.matrix(read.table("ARG_genemat.txt", header= T, check.names = F, row.names = 1))
@@ -159,43 +120,7 @@ resfinder_PHY_rel_HWW <- subset_samples(resfinder_PHY_rel_uniq, HWW == "YES")
 
 ```
 
-### Metaphlan Counts and Relative Abundances
-
-```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-metaphlan_counts_merged_abundance_table <- read.delim("merged_metaphlan_count_species.txt", header = T)
-mp_counts <- metaphlan_counts_merged_abundance_table[ -c(1) ]
-
-# Tax table
-## Check if in order
-tax_table_metaphlan_counts <- read.csv2("tax_table_count_metaphlan_species.txt", header=F, sep="")
-
-tax_table_metaphlan_counts <- data.frame(str_split_fixed(data.frame(tax_table_metaphlan_counts) [,1], ";", 7))
-colnames(tax_table_metaphlan_counts) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
-
-tax_table_metaphlan_counts <- apply(tax_table_metaphlan_counts, 2, function(y) (gsub(".__", "", y)))
-
-# Reorder
-match <- match(rownames(metadata), colnames(mp_counts))
-mp_counts  <- mp_counts[,match]
-all(rownames(metadata) == colnames(mp_counts))
-
-# Combine into phyloseq object
-metaphlan_PHY_counts <- phyloseq(otu_table(mp_counts, taxa_are_rows=TRUE), sample_data(metadata), tax_table(as.matrix(tax_table_metaphlan_counts), errorIfNULL = TRUE))
-
-# Leave only bacteria
-metaphlan_PHY_counts_bact <- subset_taxa(metaphlan_PHY_counts, Kingdom != "Viruses" & Kingdom != "Eukaryota" & Kingdom != "Archaea")
-
-# Prune to species level
-metaphlan_PHY_counts_genus <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Genus")
-
-# Prune to diff taxa level
-metaphlan_PHY_counts_species <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Species")
-metaphlan_PHY_counts_genus <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Genus")
-metaphlan_PHY_counts_family <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Family")
-metaphlan_PHY_counts_order <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Order")
-metaphlan_PHY_counts_class <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Class")
-metaphlan_PHY_counts_phylum <- tax_glom(metaphlan_PHY_counts_bact, taxrank = "Phylum")
-```
+### Make Phyloseq Metaphlan Relative Abundances
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 metaphlan_merged_abundance_table <- read.delim("merged_metaphlan_rel_species.txt", header = T)
@@ -219,7 +144,7 @@ all(rownames(metadata) == colnames(mp_rel))
 metaphlan_PHY_rel <- phyloseq(otu_table(mp_rel, taxa_are_rows=TRUE), sample_data(metadata), tax_table(as.matrix(tax_table_metaphlan)))
 
 # Leave only bacteria
-metaphlan_PHY_rel_bact <- subset_taxa(metaphlan_PHY_rel, Kingdom != "Viruses" & Kingdom != "Eukaryota" & Kingdom != "Archaea")
+metaphlan_PHY_rel_bact <- subset_taxa(metaphlan_PHY_rel, Kingdom != "Viruses" & Kingdom != "Eukaryota")
 
 # Prune to diff taxa level
 metaphlan_PHY_rel_species <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Species")
@@ -231,7 +156,7 @@ metaphlan_PHY_rel_phylum <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Phylum")
 
 ```
 
-### MGE Counts
+### Make Phyloseq MGE RPKSSU
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 counts_MGE <-as.matrix(read.table("MGE_genemat.txt", header= T, check.names = F, row.names = 1))
@@ -242,70 +167,49 @@ counts_MGE <- counts_MGE[,match]
 all(colnames(counts_MGE) == rownames(metadata))
 
 # Tax table
-MGE_tax_table_trim <- read.delim("MGE_tax_table_trim.txt", header=T)
+MGE_tax_table_trim <- read.delim("MGE_tax_table_trim.txt", header=F)
+nrow(MGE_tax_table_trim)
 colnames(MGE_tax_table_trim) <- c("Gene", "Element", "Class")
+MGE_tax_table_trim <- MGE_tax_table_trim[,!is.na(colnames(MGE_tax_table_trim))]
+MGE_tax_table_trim <- MGE_tax_table_trim[!is.na(MGE_tax_table_trim[,1]),]
+rownames(MGE_tax_table_trim) <- c(1:nrow(MGE_tax_table_trim)+1)
 
 # Reorder tax_table to match
 match <- match(rownames(counts_MGE), MGE_tax_table_trim$Gene)
 MGE_tax_table_trim <- MGE_tax_table_trim[match,]
-all(rownames(counts_MGE) == MGE_tax_table_trim$Gene)
-
-# remove rownames
-counts_MGE_phy <- counts_MGE
-rownames(counts_MGE_phy) <- c(1:nrow(counts_MGE)+1)
-
-# Combine into phyloseq object
-MGE_PHY_counts <- phyloseq(otu_table(counts_MGE_phy, taxa_are_rows=TRUE), 
-                       tax_table(as.matrix(MGE_tax_table_trim)), sample_data(metadata))
-
-# Exclude biological / technical replicates
-MGE_PHY_counts_uniq <- subset_samples(MGE_PHY_counts, replicate == "NO")
-MGE_PHY_counts_uniq <- subset_samples(MGE_PHY_counts_uniq, sample_material == "water")
-
-# Create phyloseq object with only HWW samples
-MGE_PHY_counts_HWW <- subset_samples(MGE_PHY_counts_uniq, HWW == "YES")
-```
-
-```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-counts_MGE <-as.matrix(read.table("cp_MGE_genemat.txt", header= T, check.names = F, row.names = 1))
-
-# Reorder to match metadata
-match <- match(rownames(metadata), colnames(counts_MGE))
-counts_MGE <- counts_MGE[,match]
-all(colnames(counts_MGE) == rownames(metadata))
-
-# Tax table
-MGE_tax_table_trim <- read.delim("MGE_tax_table_trim.txt", header=T)
-colnames(MGE_tax_table_trim) <- c("Gene", "Element", "Class")
-
-# Reorder tax_table to match
-match <- match(rownames(counts_MGE), MGE_tax_table_trim$Gene)
-MGE_tax_table_trim <- MGE_tax_table_trim[match,]
-all(rownames(counts_MGE) == MGE_tax_table_trim$Gene)
+MGE_tax_table_trim <- MGE_tax_table_trim[!is.na(MGE_tax_table_trim[,1]),]
+all(MGE_tax_table_trim$Gene %in% rownames(counts_MGE))
 
 # Normalization to MGE lengths
 MGE_lengths <- read.delim("MGE_lengths.txt", 
                           header=FALSE, comment.char="#", check.names = F)
 match <- match(rownames(counts_MGE), MGE_lengths$V1)
 MGE_lengths <- MGE_lengths[match,]
+MGE_lengths <- MGE_lengths[!is.na(MGE_lengths[,1]),]
 all(rownames(MGE_tax_table_trim$Gene) == MGE_lengths$V1)
 counts_MGE_length_norm <- counts_MGE/MGE_lengths[, 2]
 
 # Normalization with Metaxa2 SSU counts
-counts_MGE_length_SSU_norm <- t(t(counts_MGE_length_norm)/metadata$SSU_counts) * 1540
+counts_MGE_length_SSU_norm <- t(t(counts_MGE_length_norm)/metadata$SSU_counts) * 1540 # 1540 is the 16S average length
 all(rownames(metadata) == colnames(counts_MGE_length_SSU_norm))
 identical((counts_MGE_length_norm[1, 5]/metadata$SSU_counts[5]) * 1540, counts_MGE_length_SSU_norm[1, 5])
-all(rownames(counts_MGE_length_norm) == MGE_tax_table_trim$Gene)
+all(MGE_tax_table_trim$Gene %in% rownames(counts_MGE_length_norm))
 
 # Hide rownames
 rownames(counts_MGE_length_SSU_norm) <- c(1:nrow(counts_MGE_length_SSU_norm)+1)
-
-dim(MGE_tax_table_trim)
-rownames(MGE_tax_table_trim) <- c(1:nrow(counts_MGE_length_SSU_norm)+1)
+rownames(MGE_tax_table_trim) <- c(1:nrow(MGE_tax_table_trim)+1)
 
 # Combine to phyloseq object
-MGE_rel_PHY <- phyloseq(otu_table(counts_MGE_length_SSU_norm, taxa_are_rows = TRUE), 
+MGE_PHY_rel_HWW <- phyloseq(otu_table(counts_MGE_length_SSU_norm, taxa_are_rows = TRUE), 
                     sample_data(metadata), tax_table(as.matrix(MGE_tax_table_trim)))
+
+# Exclude biological / technical replicates
+MGE_PHY_rel_uniq <- subset_samples(MGE_PHY_rel_HWW, replicate == "NO")
+MGE_PHY_rel_uniq <- subset_samples(MGE_PHY_rel_uniq, sample_material == "water")
+
+# Create phyloseq object with only HWW samples
+MGE_PHY_rel_HWW <- subset_samples(MGE_PHY_rel_uniq, HWW == "YES")
+
 ```
 
 ### Analyses and Plots
@@ -314,7 +218,7 @@ MGE_rel_PHY <- phyloseq(otu_table(counts_MGE_length_SSU_norm, taxa_are_rows = TR
 
 ```{r}
 # Plot all samples
-a1 <- resfinder_PHY_counts_HWW %>% 
+a1 <- resfinder_PHY_rel_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
   ord_plot(color = "hospital", size = 10, alpha = 0.8) +
@@ -341,7 +245,7 @@ ggsave(filename = "plot1_arg_pca.tiff",
 ```
 
 ```{r}
-a1_load <- resfinder_PHY_counts_HWW %>% 
+a1_load <- resfinder_PHY_rel_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
   ord_plot(color = "hospital", size = 10, alpha = 0.8, plot_taxa = 1:40, 
@@ -349,7 +253,7 @@ a1_load <- resfinder_PHY_counts_HWW %>%
            tax_vec_length = 10,
            tax_vec_style_all = vec_tax_all(linewidth = 0.5, alpha = 0.01),
            tax_vec_style_sel = vec_tax_sel(linewidth = 1.2, alpha = 0.8),
-           taxon_renamer = function(x) tax_table(resfinder_PHY_counts_HWW)[x,3]) +
+           taxon_renamer = function(x) tax_table(resfinder_PHY_rel_HWW)[x,3]) +
   theme(text = element_text(family = "Palatino"),
     plot.title = element_text(size = 17, hjust = 0.5),
     axis.title = element_text(size = 17, face = "bold"),
@@ -374,7 +278,7 @@ ggsave(filename = "plot1_arg_pca_load.tiff",
 
 ```{r}
 # Plot all samples
-a2 <- resfinder_PHY_counts_HWW %>% 
+a2 <- resfinder_PHY_rel_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
   ord_plot(color = "hospital", size = 10, alpha = 0.8) +
@@ -392,7 +296,9 @@ a2 <- resfinder_PHY_counts_HWW %>%
   stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
 # Add indication for month with different shapes
-a2_plot <- a2 + geom_point(aes(shape = factor(month)), size = 5)  
+a2_plot <- a2 + geom_point(aes(shape = factor(month)), size = 5) +
+  geom_text(aes(label = rownames(sample_data(resfinder_PHY_rel_HWW))), hjust = -0.3, vjust = 0.5, size = 4)
+
 # Define labels for month legend
 month_labels <- c("May", "June", "July")
 
@@ -413,24 +319,24 @@ ggsave(filename = "plot2_arg_pca.tiff",
 
 ```{r}
 # Test the significance 
-resfinder_PHY_counts_uniq_temp <- subset_samples(resfinder_PHY_counts_uniq, (hospital == "SLMC" | hospital == "UST"))
-resfinder_PHY_counts_uniq_temp %>%
+resfinder_PHY_rel_uniq_temp <- subset_samples(resfinder_PHY_rel_uniq, (hospital == "SLMC" | hospital == "UST"))
+resfinder_PHY_rel_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
 
 ```{r}
 # Test the significance 
-resfinder_PHY_counts_uniq_temp <- subset_samples(resfinder_PHY_counts_uniq, (hospital == "SLMC" | hospital == "CGH"))
-resfinder_PHY_counts_uniq_temp %>%
+resfinder_PHY_rel_uniq_temp <- subset_samples(resfinder_PHY_rel_uniq, (hospital == "SLMC" | hospital == "CGH"))
+resfinder_PHY_rel_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
 
 ```{r}
 # Test the significance 
-resfinder_PHY_counts_uniq_temp <- subset_samples(resfinder_PHY_counts_uniq, (hospital == "CGH" | hospital == "UST"))
-resfinder_PHY_counts_uniq_temp %>%
+resfinder_PHY_rel_uniq_temp <- subset_samples(resfinder_PHY_rel_uniq, (hospital == "CGH" | hospital == "UST"))
+resfinder_PHY_rel_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
@@ -439,7 +345,7 @@ resfinder_PHY_counts_uniq_temp %>%
 
 ```{r}
 # Plot all samples
-b1 <- metaphlan_PHY_counts_genus %>% 
+b1 <- metaphlan_PHY_rel_genus %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
   ord_plot(color = "hospital", size = 10, alpha = 0.8) +
@@ -466,7 +372,7 @@ ggsave(filename = "plot1_tax_pca.tiff",
 ```
 
 ```{r}
-b1_load <- metaphlan_PHY_counts_genus %>% 
+b1_load <- metaphlan_PHY_rel_genus %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
   ord_plot(color = "hospital", size = 10, alpha = 0.8, plot_taxa = 1:40, 
@@ -474,7 +380,7 @@ b1_load <- metaphlan_PHY_counts_genus %>%
            tax_vec_length = 10,
            tax_vec_style_all = vec_tax_all(linewidth = 0.5, alpha = 0.01),
            tax_vec_style_sel = vec_tax_sel(linewidth = 1.2, alpha = 0.8),
-           taxon_renamer = function(x) tax_table(metaphlan_PHY_counts_genus)[x,6]) +
+           taxon_renamer = function(x) tax_table(metaphlan_PHY_rel_genus)[x,6]) +
   theme(text = element_text(family = "Palatino"),
     plot.title = element_text(size = 17, hjust = 0.5),
     axis.title = element_text(size = 17, face = "bold"),
@@ -499,7 +405,7 @@ ggsave(filename = "plot1_tax_pca_load.tiff",
 
 ```{r}
 # Plot all samples
-b2 <- metaphlan_PHY_counts_genus %>% 
+b2 <- metaphlan_PHY_rel_genus %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
   ord_plot(color = "hospital", size = 10, alpha = 0.8) +
@@ -517,7 +423,9 @@ b2 <- metaphlan_PHY_counts_genus %>%
   stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
 # Add indication for month with different shapes
-b2_plot <- b2 + geom_point(aes(shape = factor(month)), size = 5)  
+b2_plot <- b2 + geom_point(aes(shape = factor(month)), size = 5) +
+  geom_text(aes(label = rownames(sample_data(metaphlan_PHY_rel_genus))), hjust = -0.3, vjust = 0.5, size = 4)
+
 # Define labels for month legend
 month_labels <- c("May", "June", "July")
 
@@ -538,24 +446,24 @@ ggsave(filename = "plot2_tax_pca.tiff",
 
 ```{r}
 # Test significance
-metaphlan_PHY_counts_genus_uniq_temp <- subset_samples(metaphlan_PHY_counts_genus, (hospital == "SLMC" | hospital == "UST"))
-metaphlan_PHY_counts_genus_uniq_temp %>%
+metaphlan_PHY_rel_genus_uniq_temp <- subset_samples(metaphlan_PHY_rel_genus, (hospital == "SLMC" | hospital == "UST"))
+metaphlan_PHY_rel_genus_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
 
 ```{r}
 # Test significance
-metaphlan_PHY_counts_genus_uniq_temp <- subset_samples(metaphlan_PHY_counts_genus, (hospital == "SLMC" | hospital == "CGH"))
-metaphlan_PHY_counts_genus_uniq_temp %>%
+metaphlan_PHY_rel_genus_uniq_temp <- subset_samples(metaphlan_PHY_rel_genus, (hospital == "SLMC" | hospital == "CGH"))
+metaphlan_PHY_rel_genus_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
 
 ```{r}
 # Test significance
-metaphlan_PHY_counts_genus_uniq_temp <- subset_samples(metaphlan_PHY_counts_genus, (hospital == "CGH" | hospital == "UST"))
-metaphlan_PHY_counts_genus_uniq_temp %>%
+metaphlan_PHY_rel_genus_uniq_temp <- subset_samples(metaphlan_PHY_rel_genus, (hospital == "CGH" | hospital == "UST"))
+metaphlan_PHY_rel_genus_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
@@ -564,7 +472,7 @@ metaphlan_PHY_counts_genus_uniq_temp %>%
 
 ```{r}
 # Plot all samples
-c1 <- MGE_PHY_counts_HWW %>% 
+c1 <- MGE_PHY_rel_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
   ord_plot(color = "hospital", size = 10, alpha = 0.8) +
@@ -591,7 +499,7 @@ ggsave(filename = "plot1_mge_pca.tiff",
 ```
 
 ```{r}
-c1_load <- MGE_PHY_counts_HWW %>% 
+c1_load <- MGE_PHY_rel_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
   ord_plot(color = "hospital", size = 10, alpha = 0.8, plot_taxa = 1:40, 
@@ -599,7 +507,7 @@ c1_load <- MGE_PHY_counts_HWW %>%
            tax_vec_length = 10,
            tax_vec_style_all = vec_tax_all(linewidth = 0.5, alpha = 0.01),
            tax_vec_style_sel = vec_tax_sel(linewidth = 1.2, alpha = 0.8),
-           taxon_renamer = function(x) tax_table(MGE_PHY_counts_HWW)[x,1]) +
+           taxon_renamer = function(x) tax_table(MGE_PHY_rel_HWW)[x,1]) +
   theme(text = element_text(family = "Palatino"),
     plot.title = element_text(size = 17, hjust = 0.5),
     axis.title = element_text(size = 17, face = "bold"),
@@ -624,7 +532,7 @@ ggsave(filename = "plot1_mge_pca_load.tiff",
 
 ```{r}
 # Plot all samples
-c2 <- MGE_PHY_counts_HWW %>% 
+c2 <- MGE_PHY_rel_HWW %>% 
   tax_transform("clr") %>% 
   ord_calc(method = "PCA") %>% 
   ord_plot(color = "hospital", size = 10, alpha = 0.8) +
@@ -642,7 +550,9 @@ c2 <- MGE_PHY_counts_HWW %>%
   stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
 
 # Add indication for month with different shapes
-c2_plot <- c2 + geom_point(aes(shape = factor(month)), size = 5)  
+c2_plot <- c2 + geom_point(aes(shape = factor(month)), size = 5) +
+  geom_text(aes(label = rownames(sample_data(MGE_PHY_rel_HWW))), hjust = -0.3, vjust = 0.5, size = 4)
+
 # Define labels for month legend
 month_labels <- c("May", "June", "July")
 
@@ -662,22 +572,22 @@ ggsave(filename = "plot2_mge_pca.tiff",
 #### Permanova Statistics for MGE
 
 ```{r}
-MGE_PHY_counts_uniq_temp <- subset_samples(MGE_PHY_counts_uniq, (hospital == "SLMC" | hospital == "UST"))
-MGE_PHY_counts_uniq_temp %>%
+MGE_PHY_rel_uniq_temp <- subset_samples(MGE_PHY_rel_uniq, (hospital == "SLMC" | hospital == "UST"))
+MGE_PHY_rel_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
 
 ```{r}
-MGE_PHY_counts_uniq_temp <- subset_samples(MGE_PHY_counts_uniq, (hospital == "SLMC" | hospital == "CGH"))
-MGE_PHY_counts_uniq_temp %>%
+MGE_PHY_rel_uniq_temp <- subset_samples(MGE_PHY_rel_uniq, (hospital == "SLMC" | hospital == "CGH"))
+MGE_PHY_rel_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 ```
 
 ```{r}
-MGE_PHY_counts_uniq_temp <- subset_samples(MGE_PHY_counts_uniq, (hospital == "CGH" | hospital == "UST"))
-MGE_PHY_counts_uniq_temp %>%
+MGE_PHY_rel_uniq_temp <- subset_samples(MGE_PHY_rel_uniq, (hospital == "CGH" | hospital == "UST"))
+MGE_PHY_rel_uniq_temp %>%
   dist_calc("aitchison") %>%
   dist_permanova(variables = c("hospital"), n_perms = 9999, seed = 12345)
 
@@ -723,54 +633,59 @@ ggsave(filename = "plot2b_merged_pca.tiff",
 ```
 
 ### Diversity Metrics
+```{r}
+div_th <- theme_classic() + theme(text = element_text(family = "Palatino"), 
+                                  axis.title.y = element_text(size = 35),
+                                  axis.title.x = element_blank(),
+                                  axis.text.y = element_text(size = 20),
+                                  axis.text.x = element_text(size = 16, angle = 30, 
+                                                            hjust = 1, face = "bold"),
+                                  legend.position = "none",
+                                  plot.title = element_text(face = "bold"),
+                                  plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+```
 
 #### Shannon for ARGs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-arg_shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "shannon", MARGIN = 2))
-all(rownames(arg_shannon_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
+arg_shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_rel_HWW), index = "shannon", MARGIN = 2))
+all(rownames(arg_shannon_div) == colnames(resfinder_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum)
 arg_shannon_div$observed <- diversity_observed
-arg_shannon_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+arg_shannon_div$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-arg_shannon_eda <- do.call(data.frame, aggregate(shannon ~ hospital, arg_shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+arg_shannon_eda <- arg_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(shannon ~ hospital, data = arg_shannon_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-arg_shannon_stat.test <- pairwise.wilcox.test(arg_shannon_div$shannon, arg_shannon_div$hospital,
-                 p.adjust.method = "BH")
-arg_shannon_stat.test
+arg_shannon_stat.test <- pairwise.wilcox.test(arg_shannon_div$shannon, arg_shannon_div$hospital, p.adjust.method = "BH")
+arg_shannon_stat.test 
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.19 -   
+# UST  0.46 0.48
 
 # Plot
-p <- ggplot(arg_shannon_div, aes(x=hospital, y=shannon, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
+p <- ggboxplot(arg_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Diversity Metrics for ARGs Across Hospitals", 
                 subtitle = "Shannon Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(4,max(arg_shannon_div$shannon)), breaks = seq(4,max(arg_shannon_div$shannon), by = 0.5))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(arg_shannon_div), arg_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(4,max(arg_shannon_div$shannon)), breaks = seq(4,max(arg_shannon_div$shannon), by = 0.5)) + 
+  geom_text(aes(label = paste(rownames(arg_shannon_div), arg_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot5_arg_shannon.tiff",
@@ -780,54 +695,43 @@ ggsave(filename = "plot5_arg_shannon.tiff",
 #### Shannon for ARGs (bar plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-arg_shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "shannon", MARGIN = 2))
-all(rownames(arg_shannon_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
+arg_shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_rel_HWW), index = "shannon", MARGIN = 2))
+all(rownames(arg_shannon_div) == colnames(resfinder_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum)
 arg_shannon_div$observed <- diversity_observed
-arg_shannon_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+arg_shannon_div$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-arg_shannon_eda <- do.call(data.frame, aggregate(shannon ~ hospital, arg_shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+arg_shannon_eda <- arg_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(shannon ~ hospital, data = arg_shannon_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-arg_shannon_stat.test <- pairwise.wilcox.test(arg_shannon_div$shannon, arg_shannon_div$hospital,
-                 p.adjust.method = "BH")
+arg_shannon_stat.test <- pairwise.wilcox.test(arg_shannon_div$shannon, arg_shannon_div$hospital, p.adjust.method = "BH")
 arg_shannon_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.19 -   
+# UST  0.46 0.48
+
 # Plot
-rownames(arg_shannon_div)
-
-grp <- arg_shannon_div %>%
-  group_by(hospital) %>%
-  mutate(average=mean(shannon))
-
-grp
-
-p <- ggplot(arg_shannon_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
+p <- ggbarplot(arg_shannon_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th + 
+  labs(title = "Diversity Metrics for ARGs Across Hospitals", 
                 subtitle = "Shannon Diversity Index by Hospital",
                 y = "shannon")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot5_arg_shannon_bar.tiff",
@@ -837,50 +741,44 @@ ggsave(filename = "plot5_arg_shannon_bar.tiff",
 #### Simpson for ARGs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-arg_simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "simpson", MARGIN = 2))
-all(rownames(arg_simpson_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
+arg_simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_rel_HWW), index = "simpson", MARGIN = 2))
+all(rownames(arg_simpson_div) == colnames(resfinder_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum)
 arg_simpson_div$observed <- diversity_observed
-arg_simpson_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+arg_simpson_div$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-arg_simpson_eda <- do.call(data.frame, aggregate(simpson ~ hospital, arg_simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+arg_simpson_eda <- arg_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(simpson ~ hospital, data = arg_simpson_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-arg_simpson_stat.test <- pairwise.wilcox.test(arg_simpson_div$simpson, arg_simpson_div$hospital,
-                 p.adjust.method = "BH")
+arg_simpson_stat.test <- pairwise.wilcox.test(arg_simpson_div$simpson, arg_simpson_div$hospital, p.adjust.method = "BH")
 arg_simpson_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.59 -   
+# UST  0.59 0.59
+
 # Plot
-p <- ggplot(arg_simpson_div, aes(x=hospital, y=simpson, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
+p <- ggboxplot(arg_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Diversity Metrics for ARGs Across Hospitals", 
                 subtitle = "Simpson Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(0.94,max(arg_simpson_div$simpson)), breaks = seq(0.94,max(arg_simpson_div$simpson), by = 0.02))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(arg_simpson_div), arg_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(0.94,max(arg_simpson_div$simpson)), breaks = seq(0.94,max(arg_simpson_div$simpson), by = 0.02)) +
+  geom_text(aes(label = paste(rownames(arg_simpson_div), arg_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot5_arg_simpson.tiff",
@@ -890,217 +788,91 @@ ggsave(filename = "plot5_arg_simpson.tiff",
 #### Simpson for ARGs (bar plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-arg_simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "simpson", MARGIN = 2))
-all(rownames(arg_simpson_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
+arg_simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_rel_HWW), index = "simpson", MARGIN = 2))
+all(rownames(arg_simpson_div) == colnames(resfinder_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum)
 arg_simpson_div$observed <- diversity_observed
-arg_simpson_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+arg_simpson_div$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-arg_simpson_eda <- do.call(data.frame, aggregate(simpson ~ hospital, arg_simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+arg_simpson_eda <- arg_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(simpson ~ hospital, data = arg_simpson_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-arg_simpson_stat.test <- pairwise.wilcox.test(arg_simpson_div$simpson, arg_simpson_div$hospital,
-                 p.adjust.method = "BH")
+arg_simpson_stat.test <- pairwise.wilcox.test(arg_simpson_div$simpson, arg_simpson_div$hospital, p.adjust.method = "BH")
 arg_simpson_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.59 -   
+# UST  0.59 0.59
+
 # Plot
-rownames(arg_simpson_div)
-
-grp <- arg_simpson_div %>%
-  group_by(hospital) %>%
-  mutate(average=mean(simpson))
-
-grp
-
-p <- ggplot(arg_simpson_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
+p <- ggbarplot(arg_simpson_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) + 
+  div_th +
+  labs(title = "Diversity Metrics for ARGs Across Hospitals", 
                 subtitle = "Simpson Diversity Index by Hospital",
                 y = "simpson")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot5_arg_simpson_bar.tiff",
        width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Inverse Simpson for ARGs (box plot)
-
-```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-arg_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "inv", MARGIN = 2))
-all(rownames(arg_invsimp_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
-arg_invsimp_div$observed <- diversity_observed
-arg_invsimp_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
-
-# Get mean and standard deviation
-arg_invsimp_eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, arg_invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
-
-# Test the significance
-kruskal.test(invsimpson ~ hospital, data = arg_invsimp_div)
-
-# There are no sig. differences
-
-# Test multiple pairwise
-arg_invsimp_stat.test <- pairwise.wilcox.test(arg_invsimp_div$invsimpson, arg_invsimp_div$hospital,
-                 p.adjust.method = "BH")
-arg_invsimp_stat.test
-
-# Plot
-p <- ggplot(arg_invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
-                subtitle = "Inverse Simpson Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(15,max(arg_invsimp_div$invsimpson)), breaks = seq(15,max(arg_invsimp_div$invsimpson), by = 10))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(arg_invsimp_div), arg_invsimp_div$invsimpson)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
-
-# Save plot
-ggsave(filename = "plot5_arg_invsimpson.tiff",
-       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
-```
-
-#### Inverse Simpson for ARGs (bar plot)
-
-```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-arg_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(resfinder_PHY_counts_HWW), index = "invsimpson", MARGIN = 2))
-all(rownames(arg_invsimp_div) == colnames(resfinder_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(resfinder_PHY_counts_HWW@otu_table > 0, 2, sum)
-arg_invsimp_div$observed <- diversity_observed
-arg_invsimp_div$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
-
-# Get mean and standard deviation
-arg_invsimp_eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, arg_invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
-
-# Test the significance
-kruskal.test(invsimpson ~ hospital, data = arg_invsimp_div)
-
-# There are no sig. differences
-
-# Test multiple pairwise
-arg_invsimp_stat.test <- pairwise.wilcox.test(arg_invsimp_div$invsimpson, arg_invsimp_div$hospital,
-                 p.adjust.method = "BH")
-arg_invsimp_stat.test
-
-# Plot
-rownames(arg_invsimp_div)
-
-grp <- arg_invsimp_div %>%
-  group_by(hospital) %>%
-  mutate(average=mean(invsimpson))
-
-grp
-
-p <- ggplot(arg_invsimp_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for ARGs Across Hospitals", 
-                subtitle = "Inverse Simpson Diversity Index by Hospital",
-                y = "invsimpson")
-
-p1  # Display the plot
-
-# Save plot
-ggsave(filename = "plot5_arg_invsimp_bar.tiff",
-       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
-```
-
 #### Richness for ARGs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-arg_rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_counts_HWW), MARGIN=2))
-all(rownames(arg_rich) == colnames(resfinder_PHY_counts_HWW@otu_table))
-arg_rich$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+arg_rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_rel_HWW), MARGIN=2))
+all(rownames(arg_rich) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_rich$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-arg_rich_eda <- do.call(data.frame, aggregate(richness ~ hospital, arg_rich, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+arg_rich_eda <- arg_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(richness ~ hospital, data = arg_rich)
 
-# There are sig. differences
-
 # Test multiple pairwise
-arg_rich_stat.test <- pairwise.wilcox.test(arg_rich$richness, arg_rich$hospital,
-                 p.adjust.method = "BH")
+arg_rich_stat.test <- pairwise.wilcox.test(arg_rich$richness, arg_rich$hospital, p.adjust.method = "BH")
 arg_rich_stat.test
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0032 -     
+# UST  0.0032 0.6991
 
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","n.s.","**"))
 
 # Plot
 p <- ggboxplot(arg_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) + 
-  stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj")
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Richness for ARGs Across Hospitals", 
+  stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj") +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Richness for ARGs Across Hospitals", 
                 subtitle = "Richness Index by Hospital") +
-                scale_y_continuous(limits = c(350,850), breaks = seq(350,850, by = 50))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(arg_rich), arg_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(350,850), breaks = seq(350,850, by = 50)) +
+  geom_text(aes(label = paste(rownames(arg_rich), arg_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot5_arg_richness.tiff",
@@ -1110,52 +882,44 @@ ggsave(filename = "plot5_arg_richness.tiff",
 #### Richness for ARGs (bar plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-arg_rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_counts_HWW), MARGIN=2))
-all(rownames(arg_rich) == colnames(resfinder_PHY_counts_HWW@otu_table))
-arg_rich$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+arg_rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_rel_HWW), MARGIN=2))
+all(rownames(arg_rich) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_rich$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-arg_invsimp_eda <- do.call(data.frame, aggregate(richness ~ hospital, arg_rich, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+arg_rich_eda <- arg_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(richness ~ hospital, data = arg_rich)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-arg_rich_stat.test <- pairwise.wilcox.test(arg_rich$richness, arg_rich$hospital,
-                 p.adjust.method = "BH")
+arg_rich_stat.test <- pairwise.wilcox.test(arg_rich$richness, arg_rich$hospital, p.adjust.method = "BH")
 arg_rich_stat.test
 
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0032 -     
+# UST  0.0032 0.6991
+
+pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","n.s.","**"))
+
 # Plot
-rownames(arg_rich)
-
-grp <- arg_rich %>%
-  group_by(hospital) %>%
-  mutate(average=mean(richness))
-
-grp
-
-p <- ggplot(arg_rich, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Richness for ARGs Across Hospitals", 
+p <- ggbarplot(arg_rich_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj") +
+  div_th +
+  labs(title = "Richness for ARGs Across Hospitals", 
                 subtitle = "Richness Index by Hospital",
                 y = "richness")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot5_arg_richness_bar.tiff",
@@ -1166,51 +930,42 @@ ggsave(filename = "plot5_arg_richness_bar.tiff",
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_even <- data.frame("evenness" = arg_shannon_div$shannon / log(arg_rich$richness))
-rownames(arg_even) <- colnames(resfinder_PHY_counts_HWW@otu_table)
-all(rownames(arg_even) == colnames(resfinder_PHY_counts_HWW@otu_table))
-arg_even$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+rownames(arg_even) <- colnames(resfinder_PHY_rel_HWW@otu_table)
+all(rownames(arg_even) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_even$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-arg_even_eda <- do.call(data.frame, aggregate(evenness ~ hospital, arg_even, function(x) c(mean = mean(x), sd = sd(x))))
-
+# Exploratory data analysis
+arg_even_eda <- arg_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(evenness ~ hospital, data = arg_even)
 
-# There are sig. differences
-
 # Test multiple pairwise
-arg_even_stat.test <- pairwise.wilcox.test(arg_even$evenness, arg_even$hospital,
-                 p.adjust.method = "BH")
+arg_even_stat.test <- pairwise.wilcox.test(arg_even$evenness, arg_even$hospital, p.adjust.method = "BH")
 arg_even_stat.test
 
-pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("n.s.","n.s.","**"))
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.82 -   
+# UST  0.82 0.82
 
 # Plot
-p <- ggboxplot(arg_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) + 
-  stat_pvalue_manual(pvalues, size = 6, y.position = 0.85, step.increase = 0.05, label = "p.adj")
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Evenness for ARGs Across Hospitals", 
+p <- ggboxplot(arg_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  div_th +
+  labs(title = "Evenness for ARGs Across Hospitals", 
                 subtitle = "Pielou's Evenness by Hospital") +
-                scale_y_continuous(limits = c(0.65,0.9), breaks = seq(0.65,0.9, by = 0.05))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(arg_even), arg_even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(0.65,0.9), breaks = seq(0.65,0.9, by = 0.05)) +
+  geom_text(aes(label = paste(rownames(arg_even), arg_even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot5_arg_evenness.tiff",
@@ -1221,52 +976,41 @@ ggsave(filename = "plot5_arg_evenness.tiff",
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 arg_even <- data.frame("evenness" = arg_shannon_div$shannon / log(arg_rich$richness))
-rownames(arg_even) <- colnames(resfinder_PHY_counts_HWW@otu_table)
-all(rownames(arg_even) == colnames(resfinder_PHY_counts_HWW@otu_table))
-arg_even$hospital <- as.factor(resfinder_PHY_counts_HWW@sam_data$hospital)
+rownames(arg_even) <- colnames(resfinder_PHY_rel_HWW@otu_table)
+all(rownames(arg_even) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_even$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-arg_even_eda <- do.call(data.frame, aggregate(evenness ~ hospital, arg_even, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+arg_even_eda <- arg_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(evenness ~ hospital, data = arg_even)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-arg_even_stat.test <- pairwise.wilcox.test(arg_even$evenness, arg_even$hospital,
-                 p.adjust.method = "BH")
+arg_even_stat.test <- pairwise.wilcox.test(arg_even$evenness, arg_even$hospital, p.adjust.method = "BH")
 arg_even_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.82 -   
+# UST  0.82 0.82
+
 # Plot
-rownames(arg_even)
-
-grp <- arg_even %>%
-  group_by(hospital) %>%
-  mutate(average=mean(evenness))
-
-grp
-
-p <- ggplot(arg_even, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Evenness for ARGs Across Hospitals", 
+p <- ggbarplot(arg_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Evenness for ARGs Across Hospitals", 
                 subtitle = "Pieolou's Evenness by Hospital",
                 y = "evenness")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot5_arg_evenness_bar.tiff",
@@ -1276,50 +1020,45 @@ ggsave(filename = "plot5_arg_evenness_bar.tiff",
 #### Shannon for Taxa (metaphlan) (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-tax_shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "shannon", MARGIN = 2))
-all(rownames(tax_shannon_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
-diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+tax_shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_rel_genus), index = "shannon", MARGIN = 2))
+all(rownames(tax_shannon_div) == colnames(metaphlan_PHY_rel_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_rel_genus@otu_table > 0, 2, sum)
 tax_shannon_div$observed <- diversity_observed
-tax_shannon_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+tax_shannon_div$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
 
-# Get mean and standard deviation
-tax_shannon_eda <- do.call(data.frame, aggregate(shannon ~ hospital, tax_shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+tax_shannon_eda <- tax_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
 
 # Test the significance
 kruskal.test(shannon ~ hospital, data = tax_shannon_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-tax_shannon_stat.test <- pairwise.wilcox.test(tax_shannon_div$shannon, tax_shannon_div$hospital,
-                 p.adjust.method = "BH")
+tax_shannon_stat.test <- pairwise.wilcox.test(tax_shannon_div$shannon, tax_shannon_div$hospital, p.adjust.method = "BH")
 tax_shannon_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.20 -   
+# UST  0.59 0.20
+
 # Plot
-p <- ggplot(tax_shannon_div, aes(x=hospital, y=shannon, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+p <- ggboxplot(tax_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
                 subtitle = "Shannon Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(2.5,max(tax_shannon_div$shannon)), breaks = seq(2.5,max(tax_shannon_div$shannon), by = 0.5))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(tax_shannon_div), tax_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(2.5,max(tax_shannon_div$shannon)), breaks = seq(2.5,max(tax_shannon_div$shannon), by = 0.5)) +
+  geom_text(aes(label = paste(rownames(tax_shannon_div), tax_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot6_tax_shannon.tiff",
@@ -1329,54 +1068,43 @@ ggsave(filename = "plot6_tax_shannon.tiff",
 #### Shannon for Taxa (metaphlan) (bar plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-tax_shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "shannon", MARGIN = 2))
-all(rownames(tax_shannon_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
-diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+tax_shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_rel_genus), index = "shannon", MARGIN = 2))
+all(rownames(tax_shannon_div) == colnames(metaphlan_PHY_rel_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_rel_genus@otu_table > 0, 2, sum)
 tax_shannon_div$observed <- diversity_observed
-tax_shannon_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+tax_shannon_div$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
 
-# Get mean and standard deviation
-tax_shannon_eda <- do.call(data.frame, aggregate(shannon ~ hospital, tax_shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+tax_shannon_eda <- tax_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(shannon ~ hospital, data = tax_shannon_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-tax_shannon_stat.test <- pairwise.wilcox.test(tax_shannon_div$shannon, tax_shannon_div$hospital,
-                 p.adjust.method = "BH")
+tax_shannon_stat.test <- pairwise.wilcox.test(tax_shannon_div$shannon, tax_shannon_div$hospital, p.adjust.method = "BH")
 tax_shannon_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.20 -   
+# UST  0.59 0.20
+
 # Plot
-rownames(tax_shannon_div)
-
-grp <- tax_shannon_div %>%
-  group_by(hospital) %>%
-  mutate(average=mean(shannon))
-
-grp
-
-p <- ggplot(tax_shannon_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+p <- ggbarplot(tax_shannon_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
                 subtitle = "Shannon Diversity Index by Hospital",
                 y = "shannon")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot6_tax_shannon_bar.tiff",
@@ -1386,50 +1114,44 @@ ggsave(filename = "plot6_tax_shannon_bar.tiff",
 #### Simpson for Taxa (metaphlan) (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-tax_simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "simpson", MARGIN = 2))
-all(rownames(tax_simpson_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
-diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+tax_simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_rel_genus), index = "simpson", MARGIN = 2))
+all(rownames(tax_simpson_div) == colnames(metaphlan_PHY_rel_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_rel_genus@otu_table > 0, 2, sum)
 tax_simpson_div$observed <- diversity_observed
-tax_simpson_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+tax_simpson_div$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
 
-# Get mean and standard deviation
-tax_simpson_eda <- do.call(data.frame, aggregate(simpson ~ hospital, tax_simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+tax_simpson_eda <- tax_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(simpson ~ hospital, data = tax_simpson_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-tax_simpson_stat.test <- pairwise.wilcox.test(tax_simpson_div$simpson, tax_simpson_div$hospital,
-                 p.adjust.method = "BH")
+tax_simpson_stat.test <- pairwise.wilcox.test(tax_simpson_div$simpson, tax_simpson_div$hospital, p.adjust.method = "BH")
 tax_simpson_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.24 -   
+# UST  0.24 0.24
+
 # Plot
-p <- ggplot(tax_simpson_div, aes(x=hospital, y=simpson, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+p <- ggboxplot(tax_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
                 subtitle = "Simpson Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(0.9,max(tax_simpson_div$simpson)), breaks = seq(0.9,max(tax_simpson_div$simpson), by = 0.02))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(tax_simpson_div), tax_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(0.9,max(tax_simpson_div$simpson)), breaks = seq(0.9,max(tax_simpson_div$simpson), by = 0.02)) +
+  geom_text(aes(label = paste(rownames(tax_simpson_div), tax_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot6_tax_simpson.tiff",
@@ -1439,215 +1161,88 @@ ggsave(filename = "plot6_tax_simpson.tiff",
 #### Simpson for Taxa (metaphlan) (bar plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-tax_simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "simpson", MARGIN = 2))
-all(rownames(tax_simpson_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
-diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
+tax_simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_rel_genus), index = "simpson", MARGIN = 2))
+all(rownames(tax_simpson_div) == colnames(metaphlan_PHY_rel_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_rel_genus@otu_table > 0, 2, sum)
 tax_simpson_div$observed <- diversity_observed
-tax_simpson_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+tax_simpson_div$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
 
-# Get mean and standard deviation
-tax_simpson_eda <- do.call(data.frame, aggregate(simpson ~ hospital, tax_simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+tax_simpson_eda <- tax_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(simpson ~ hospital, data = tax_simpson_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-tax_simpson_stat.test <- pairwise.wilcox.test(tax_simpson_div$simpson, tax_simpson_div$hospital,
-                 p.adjust.method = "BH")
+tax_simpson_stat.test <- pairwise.wilcox.test(tax_simpson_div$simpson, tax_simpson_div$hospital, p.adjust.method = "BH")
 tax_simpson_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.24 -   
+# UST  0.24 0.24
+
 # Plot
-rownames(tax_simpson_div)
-
-grp <- tax_simpson_div %>%
-  group_by(hospital) %>%
-  mutate(average=mean(simpson))
-
-grp
-
-p <- ggplot(tax_simpson_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
+p <- ggbarplot(tax_simpson_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
                 subtitle = "Simpson Diversity Index by Hospital",
                 y = "simpson")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot6_tax_simpson_bar.tiff",
        width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Inverse Simpson for Taxa (metaphlan) (box plot)
-
-```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-tax_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "inv", MARGIN = 2))
-all(rownames(tax_invsimp_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
-diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
-tax_invsimp_div$observed <- diversity_observed
-tax_invsimp_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
-
-# Get mean and standard deviation
-tax_invsimp_eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, tax_invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
-
-# Test the significance
-kruskal.test(invsimpson ~ hospital, data = tax_invsimp_div)
-
-# There are no sig. differences
-
-# Test multiple pairwise
-tax_invsimp_stat.test <- pairwise.wilcox.test(tax_invsimp_div$invsimpson, tax_invsimp_div$hospital,
-                 p.adjust.method = "BH")
-tax_invsimp_stat.test
-
-# Plot
-p <- ggplot(tax_invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
-                subtitle = "Inverse Simpson Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(10,max(tax_invsimp_div$invsimpson)), breaks = seq(10,max(tax_invsimp_div$invsimpson), by = 5))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(tax_invsimp_div), tax_invsimp_div$invsimpson)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
-
-# Save plot
-ggsave(filename = "plot6_tax_invsimpson.tiff",
-       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
-```
-
-#### Inverse Simpson for Taxa (metaphlan) (bar plot)
-
-```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-tax_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(metaphlan_PHY_counts_genus), index = "invsimpson", MARGIN = 2))
-all(rownames(tax_invsimp_div) == colnames(metaphlan_PHY_counts_genus@otu_table))
-diversity_observed <- apply(metaphlan_PHY_counts_genus@otu_table > 0, 2, sum)
-tax_invsimp_div$observed <- diversity_observed
-tax_invsimp_div$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
-
-# Get mean and standard deviation
-tax_invsimp_eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, tax_invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
-
-# Test the significance
-kruskal.test(invsimpson ~ hospital, data = tax_invsimp_div)
-
-# There are no sig. differences
-
-# Test multiple pairwise
-tax_invsimp_stat.test <- pairwise.wilcox.test(tax_invsimp_div$invsimpson, tax_invsimp_div$hospital,
-                 p.adjust.method = "BH")
-tax_invsimp_stat.test
-
-# Plot
-rownames(tax_invsimp_div)
-
-grp <- tax_invsimp_div %>%
-  group_by(hospital) %>%
-  mutate(average=mean(invsimpson))
-
-grp
-
-p <- ggplot(tax_invsimp_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
-                subtitle = "Inverse Simpson Diversity Index by Hospital",
-                y = "invsimpson")
-
-p1  # Display the plot
-
-# Save plot
-ggsave(filename = "plot6_tax_invsimp_bar.tiff",
-       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
-```
-
 #### Richness for Taxa (metaphlan) (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-tax_rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_counts_genus), MARGIN=2))
-all(rownames(tax_rich) == colnames(metaphlan_PHY_counts_genus@otu_table))
-tax_rich$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+tax_rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_rel_genus), MARGIN=2))
+all(rownames(tax_rich) == colnames(metaphlan_PHY_rel_genus@otu_table))
+tax_rich$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
 
-# Get mean and standard deviation
-tax_rich_eda <- do.call(data.frame, aggregate(richness ~ hospital, tax_rich, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+tax_rich_eda <- tax_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(richness ~ hospital, data = tax_rich)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-tax_rich_stat.test <- pairwise.wilcox.test(tax_rich$richness, tax_rich$hospital,
-                 p.adjust.method = "BH")
+tax_rich_stat.test <- pairwise.wilcox.test(tax_rich$richness, tax_rich$hospital, p.adjust.method = "BH")
 tax_rich_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.14 -   
+# UST  0.59 0.14
+
 # Plot
-p <- ggplot(tax_rich, aes(x=hospital, y=richness, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Richness for Taxonomic Composition Across Hospitals", 
+p <- ggboxplot(tax_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  div_th +
+  labs(title = "Richness for Taxonomic Composition Across Hospitals", 
                 subtitle = "Richness by Hospital") +
-                scale_y_continuous(limits = c(200,max(tax_rich$richness)), breaks = seq(200,max(tax_rich$richness), by = 50))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(tax_rich), tax_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(200,max(tax_rich$richness)), breaks = seq(200,max(tax_rich$richness), by = 50)) +
+  geom_text(aes(label = paste(rownames(tax_rich), tax_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot6_tax_richness.tiff",
@@ -1657,52 +1252,41 @@ ggsave(filename = "plot6_tax_richness.tiff",
 #### Richness for Taxa (metaphlan) (bar plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-tax_rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_counts_genus), MARGIN=2))
-all(rownames(tax_rich) == colnames(metaphlan_PHY_counts_genus@otu_table))
-tax_rich$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+tax_rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_rel_genus), MARGIN=2))
+all(rownames(tax_rich) == colnames(metaphlan_PHY_rel_genus@otu_table))
+tax_rich$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
 
-# Get mean and standard deviation
-tax_invsimp_eda <- do.call(data.frame, aggregate(richness ~ hospital, tax_rich, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+tax_rich_eda <- tax_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(richness ~ hospital, data = tax_rich)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-tax_rich_stat.test <- pairwise.wilcox.test(tax_rich$richness, tax_rich$hospital,
-                 p.adjust.method = "BH")
+tax_rich_stat.test <- pairwise.wilcox.test(tax_rich$richness, tax_rich$hospital, p.adjust.method = "BH")
 tax_rich_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.14 -   
+# UST  0.59 0.14
+
 # Plot
-rownames(tax_rich)
-
-grp <- tax_rich %>%
-  group_by(hospital) %>%
-  mutate(average=mean(richness))
-
-grp
-
-p <- ggplot(tax_rich, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Richness for Taxonomic Composition Across Hospitals", 
+p <- ggbarplot(tax_rich_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Richness for Taxonomic Composition Across Hospitals", 
                 subtitle = "Richness Index by Hospital",
                 y = "richness")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot6_tax_richness_bar.tiff",
@@ -1713,48 +1297,42 @@ ggsave(filename = "plot6_tax_richness_bar.tiff",
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_even <- data.frame("evenness" = tax_shannon_div$shannon / log(tax_rich$richness))
-rownames(tax_even) <- colnames(metaphlan_PHY_counts_genus@otu_table)
-all(rownames(tax_even) == colnames(metaphlan_PHY_counts_genus@otu_table))
-tax_even$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+rownames(tax_even) <- colnames(metaphlan_PHY_rel_genus@otu_table)
+all(rownames(tax_even) == colnames(metaphlan_PHY_rel_genus@otu_table))
+tax_even$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
 
-# Get mean and standard deviation
-tax_even_eda <- do.call(data.frame, aggregate(evenness ~ hospital, tax_even, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+tax_even_eda <- tax_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(evenness ~ hospital, data = tax_even)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-tax_even_stat.test <- pairwise.wilcox.test(tax_even$evenness, tax_even$hospital,
-                 p.adjust.method = "BH")
+tax_even_stat.test <- pairwise.wilcox.test(tax_even$evenness, tax_even$hospital, p.adjust.method = "BH")
 tax_even_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.59 -   
+# UST  0.59 0.59
+
 # Plot
-p <- ggplot(tax_even, aes(x=hospital, y=evenness, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Evenness for Taxonomic Composition Across Hospitals", 
+p <- ggboxplot(tax_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  div_th +
+  labs(title = "Evenness for Taxonomic Composition Across Hospitals", 
                 subtitle = "Pielou's Evenness by Hospital") +
-                scale_y_continuous(limits = c(0.5,max(tax_even$evenness)), breaks = seq(0.5,max(tax_even$evenness), by = 0.05))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(tax_even), tax_even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(0.5,max(tax_even$evenness)), breaks = seq(0.52,max(tax_even$evenness), by = 0.05)) +
+  geom_text(aes(label = paste(rownames(tax_even), tax_even$evenness)), hjust = -0.1, vjust = 0.52, size = 4)
 
 # Save plot
 ggsave(filename = "plot6_tax_evenness.tiff",
@@ -1765,52 +1343,41 @@ ggsave(filename = "plot6_tax_evenness.tiff",
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 tax_even <- data.frame("evenness" = tax_shannon_div$shannon / log(tax_rich$richness))
-rownames(tax_even) <- colnames(metaphlan_PHY_counts_genus@otu_table)
-all(rownames(tax_even) == colnames(metaphlan_PHY_counts_genus@otu_table))
-tax_even$hospital <- as.factor(metaphlan_PHY_counts_genus@sam_data$hospital)
+rownames(tax_even) <- colnames(metaphlan_PHY_rel_genus@otu_table)
+all(rownames(tax_even) == colnames(metaphlan_PHY_rel_genus@otu_table))
+tax_even$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
 
-# Get mean and standard deviation
-tax_even_eda <- do.call(data.frame, aggregate(evenness ~ hospital, tax_even, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+tax_even_eda <- tax_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(evenness ~ hospital, data = tax_even)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-tax_even_stat.test <- pairwise.wilcox.test(tax_even$evenness, tax_even$hospital,
-                 p.adjust.method = "BH")
+tax_even_stat.test <- pairwise.wilcox.test(tax_even$evenness, tax_even$hospital, p.adjust.method = "BH")
 tax_even_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.59 -   
+# UST  0.59 0.59
+
 # Plot
-rownames(tax_even)
-
-grp <- tax_even %>%
-  group_by(hospital) %>%
-  mutate(average=mean(evenness))
-
-grp
-
-p <- ggplot(tax_even, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Evenness for Taxonomic Composition Across Hospitals", 
+p <- ggbarplot(tax_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Evenness for Taxonomic Composition Across Hospitals", 
                 subtitle = "Pielou's Evenness by Hospital",
                 y = "evenness")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot6_tax_evenness_bar.tiff",
@@ -1820,50 +1387,44 @@ ggsave(filename = "plot6_tax_evenness_bar.tiff",
 #### Shannon for MGEs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-mge_shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_counts_HWW), index = "shannon", MARGIN = 2))
-all(rownames(mge_shannon_div) == colnames(MGE_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+mge_shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_rel_HWW), index = "shannon", MARGIN = 2))
+all(rownames(mge_shannon_div) == colnames(MGE_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum)
 mge_shannon_div$observed <- diversity_observed
-mge_shannon_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+mge_shannon_div$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-mge_shannon_eda <- do.call(data.frame, aggregate(shannon ~ hospital, mge_shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
-
-# Plot
-p <- ggplot(mge_shannon_div, aes(x=hospital, y=shannon, fill = hospital)) + 
-  geom_boxplot()
+# Exploratory data analysis
+mge_shannon_eda <- mge_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(shannon ~ hospital, data = mge_shannon_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-mge_shannon_stat.test <- pairwise.wilcox.test(mge_shannon_div$shannon, mge_shannon_div$hospital,
-                 p.adjust.method = "BH")
+mge_shannon_stat.test <- pairwise.wilcox.test(mge_shannon_div$shannon, mge_shannon_div$hospital, p.adjust.method = "BH")
 mge_shannon_stat.test
 
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+# There are no sig. differences
+#      CGH   SLMC 
+# SLMC 0.078 -    
+# UST  0.310 0.140
 
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+# Plot
+p <- ggboxplot(mge_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  div_th +
+  labs(title = "Diversity Metrics for MGEs Across Hospitals", 
                 subtitle = "Shannon Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(3.5,max(mge_shannon_div$shannon)), breaks = seq(3.5,max(mge_shannon_div$shannon), by = 0.5))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(mge_shannon_div), mge_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(4.5,max(mge_shannon_div$shannon)), breaks = seq(4.5,max(mge_shannon_div$shannon), by = 0.5)) +
+  geom_text(aes(label = paste(rownames(mge_shannon_div), mge_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot7_mge_shannon.tiff",
@@ -1873,54 +1434,43 @@ ggsave(filename = "plot7_mge_shannon.tiff",
 #### Shannon for MGEs (bar plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-mge_shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_counts_HWW), index = "shannon", MARGIN = 2))
-all(rownames(mge_shannon_div) == colnames(MGE_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+mge_shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_rel_HWW), index = "shannon", MARGIN = 2))
+all(rownames(mge_shannon_div) == colnames(MGE_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum)
 mge_shannon_div$observed <- diversity_observed
-mge_shannon_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+mge_shannon_div$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-mge_shannon_eda <- do.call(data.frame, aggregate(shannon ~ hospital, mge_shannon_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+mge_shannon_eda <- mge_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(shannon ~ hospital, data = mge_shannon_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-mge_shannon_stat.test <- pairwise.wilcox.test(mge_shannon_div$shannon, mge_shannon_div$hospital,
-                 p.adjust.method = "BH")
+mge_shannon_stat.test <- pairwise.wilcox.test(mge_shannon_div$shannon, mge_shannon_div$hospital, p.adjust.method = "BH")
 mge_shannon_stat.test
 
+# There are no sig. differences
+#      CGH   SLMC 
+# SLMC 0.078 -    
+# UST  0.310 0.140
+
 # Plot
-rownames(mge_shannon_div)
-
-grp <- mge_shannon_div %>%
-  group_by(hospital) %>%
-  mutate(average=mean(shannon))
-
-grp
-
-p <- ggplot(mge_shannon_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+p <- ggbarplot(mge_shannon_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Diversity Metrics for MGEs Across Hospitals", 
                 subtitle = "Shannon Diversity Index by Hospital",
                 y = "shannon")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot7_mge_shannon_bar.tiff",
@@ -1930,50 +1480,44 @@ ggsave(filename = "plot7_mge_shannon_bar.tiff",
 #### Simpson for MGEs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-mge_simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "simpson", MARGIN = 2))
-all(rownames(mge_simpson_div) == colnames(MGE_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+mge_simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_rel_HWW), index = "simpson", MARGIN = 2))
+all(rownames(mge_simpson_div) == colnames(MGE_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum)
 mge_simpson_div$observed <- diversity_observed
-mge_simpson_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+mge_simpson_div$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-mge_simpson_eda <- do.call(data.frame, aggregate(simpson ~ hospital, mge_simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+mge_simpson_eda <- mge_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(simpson ~ hospital, data = mge_simpson_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-mge_simpson_stat.test <- pairwise.wilcox.test(mge_simpson_div$simpson, mge_simpson_div$hospital,
-                 p.adjust.method = "BH")
+mge_simpson_stat.test <- pairwise.wilcox.test(mge_simpson_div$simpson, mge_simpson_div$hospital, p.adjust.method = "BH")
 mge_simpson_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.28 -   
+# UST  0.59 0.36
+
 # Plot
-p <- ggplot(mge_simpson_div, aes(x=hospital, y=simpson, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+p <- ggboxplot(mge_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  div_th +
+  labs(title = "Diversity Metrics for MGEs Across Hospitals", 
                 subtitle = "Simpson Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(0.92,max(mge_simpson_div$simpson)), breaks = seq(0.92,max(mge_simpson_div$simpson), by = 0.02))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(mge_simpson_div), mge_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(0.96,max(mge_simpson_div$simpson)), breaks = seq(0.96,max(mge_simpson_div$simpson), by = 0.02)) +
+  geom_text(aes(label = paste(rownames(mge_simpson_div), mge_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot7_mge_simpson.tiff",
@@ -1983,217 +1527,91 @@ ggsave(filename = "plot7_mge_simpson.tiff",
 #### Simpson for MGEs (bar plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-mge_simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "simpson", MARGIN = 2))
-all(rownames(mge_simpson_div) == colnames(MGE_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
+mge_simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_rel_HWW), index = "simpson", MARGIN = 2))
+all(rownames(mge_simpson_div) == colnames(MGE_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum)
 mge_simpson_div$observed <- diversity_observed
-mge_simpson_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+mge_simpson_div$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-mge_simpson_eda <- do.call(data.frame, aggregate(simpson ~ hospital, mge_simpson_div, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+mge_simpson_eda <- mge_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(simpson ~ hospital, data = mge_simpson_div)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-mge_simpson_stat.test <- pairwise.wilcox.test(mge_simpson_div$simpson, mge_simpson_div$hospital,
-                 p.adjust.method = "BH")
+mge_simpson_stat.test <- pairwise.wilcox.test(mge_simpson_div$simpson, mge_simpson_div$hospital, p.adjust.method = "BH")
 mge_simpson_stat.test
 
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.28 -   
+# UST  0.59 0.36
+
 # Plot
-rownames(mge_simpson_div)
-
-grp <- mge_simpson_div %>%
-  group_by(hospital) %>%
-  mutate(average=mean(simpson))
-
-grp
-
-p <- ggplot(mge_simpson_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
+p <- ggbarplot(mge_simpson_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Diversity Metrics for MGEs Across Hospitals", 
                 subtitle = "Simpson Diversity Index by Hospital",
                 y = "simpson")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot7_mge_simpson_bar.tiff",
        width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Inverse Simpson for MGEs (box plot)
-
-```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-mge_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "inv", MARGIN = 2))
-all(rownames(mge_invsimp_div) == colnames(MGE_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
-mge_invsimp_div$observed <- diversity_observed
-mge_invsimp_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
-
-# Get mean and standard deviation
-mge_invsimp_eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, mge_invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
-
-# Test the significance
-kruskal.test(invsimpson ~ hospital, data = mge_invsimp_div)
-
-# There are no sig. differences
-
-# Test multiple pairwise
-mge_invsimp_stat.test <- pairwise.wilcox.test(mge_invsimp_div$invsimpson, mge_invsimp_div$hospital,
-                 p.adjust.method = "BH")
-mge_invsimp_stat.test
-
-# Plot
-p <- ggplot(mge_invsimp_div, aes(x=hospital, y=invsimpson, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
-                subtitle = "Inv Simpson Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(15,max(mge_invsimp_div$invsimpson)), breaks = seq(15,max(mge_invsimp_div$invsimpson), by = 10))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(mge_invsimp_div), mge_invsimp_div$invsimpson)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
-
-# Save plot
-ggsave(filename = "plot7_mge_invsimpson.tiff",
-       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
-```
-
-#### Inverse Simpson for MGEs (bar plot)
-
-```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-mge_invsimp_div <- data.frame("invsimpson" = diversity(otu_table(MGE_PHY_counts_HWW), index = "invsimpson", MARGIN = 2))
-all(rownames(mge_invsimp_div) == colnames(MGE_PHY_counts_HWW@otu_table))
-diversity_observed <- apply(MGE_PHY_counts_HWW@otu_table > 0, 2, sum)
-mge_invsimp_div$observed <- diversity_observed
-mge_invsimp_div$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
-
-# Get mean and standard deviation
-mge_invsimp_eda <- do.call(data.frame, aggregate(invsimpson ~ hospital, mge_invsimp_div, function(x) c(mean = mean(x), sd = sd(x))))
-
-# Test the significance
-kruskal.test(invsimpson ~ hospital, data = mge_invsimp_div)
-
-# There are no sig. differences
-
-# Test multiple pairwise
-mge_invsimp_stat.test <- pairwise.wilcox.test(mge_invsimp_div$invsimpson, mge_invsimp_div$hospital,
-                 p.adjust.method = "BH")
-mge_invsimp_stat.test
-
-# Plot
-rownames(mge_invsimp_div)
-
-grp <- mge_invsimp_div %>%
-  group_by(hospital) %>%
-  mutate(average=mean(invsimpson))
-
-grp
-
-p <- ggplot(mge_invsimp_div, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Diversity Metrics for MGEs Across Hospitals", 
-                subtitle = "Inverse Simpson Diversity Index by Hospital",
-                y = "invsimpson")
-
-p1  # Display the plot
-
-# Save plot
-ggsave(filename = "plot7_mge_invsimp_bar.tiff",
-       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
-```
-
 #### Richness for MGEs (box plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-mge_rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_counts_HWW), MARGIN=2))
-all(rownames(mge_rich) == colnames(MGE_PHY_counts_HWW@otu_table))
-mge_rich$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+mge_rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_rel_HWW), MARGIN=2))
+all(rownames(mge_rich) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_rich$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-mge_rich_eda <- do.call(data.frame, aggregate(richness ~ hospital, mge_rich, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+mge_rich_eda <- mge_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(richness ~ hospital, data = mge_rich)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-mge_rich_stat.test <- pairwise.wilcox.test(mge_rich$richness, mge_rich$hospital,
-                 p.adjust.method = "BH")
+mge_rich_stat.test <- pairwise.wilcox.test(mge_rich$richness, mge_rich$hospital, p.adjust.method = "BH")
 mge_rich_stat.test
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0065 -     
+# UST  0.0931 0.0390
 
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","*","n.s."))
 
 # Plot
 p <- ggboxplot(mge_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) + 
-  stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj")
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill = hospital)) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Richness for MGEs Across Hospitals", 
+  stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj") +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill = hospital)) + 
+  div_th +
+  labs(title = "Richness for MGEs Across Hospitals", 
                 subtitle = "Richness by Hospital") +
-                scale_y_continuous(limits = c(400,950), breaks = seq(400,950, by = 50))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(mge_rich), mge_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(400,950), breaks = seq(400,950, by = 50)) +
+  geom_text(aes(label = paste(rownames(mge_rich), mge_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot7_mge_richness.tiff",
@@ -2203,52 +1621,44 @@ ggsave(filename = "plot7_mge_richness.tiff",
 #### Richness for MGEs (bar plot)
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-mge_rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_counts_HWW), MARGIN=2))
-all(rownames(mge_rich) == colnames(MGE_PHY_counts_HWW@otu_table))
-mge_rich$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+mge_rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_rel_HWW), MARGIN=2))
+all(rownames(mge_rich) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_rich$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-mge_invsimp_eda <- do.call(data.frame, aggregate(richness ~ hospital, mge_rich, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+mge_rich_eda <- mge_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(richness ~ hospital, data = mge_rich)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-mge_rich_stat.test <- pairwise.wilcox.test(mge_rich$richness, mge_rich$hospital,
-                 p.adjust.method = "BH")
+mge_rich_stat.test <- pairwise.wilcox.test(mge_rich$richness, mge_rich$hospital, p.adjust.method = "BH")
 mge_rich_stat.test
 
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0065 -     
+# UST  0.0931 0.0390
+
+pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","*","n.s."))
+
 # Plot
-rownames(mge_rich)
-
-grp <- mge_rich %>%
-  group_by(hospital) %>%
-  mutate(average=mean(richness))
-
-grp
-
-p <- ggplot(mge_rich, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Richness for MGEs Across Hospitals", 
+p <- ggbarplot(mge_rich_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj") +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Richness for MGEs Across Hospitals", 
                 subtitle = "Richness Index by Hospital",
                 y = "richness")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot7_mge_richness_bar.tiff",
@@ -2259,48 +1669,42 @@ ggsave(filename = "plot7_mge_richness_bar.tiff",
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_even <- data.frame("evenness" = mge_shannon_div$shannon / log(mge_rich$richness))
-rownames(mge_even) <- colnames(MGE_PHY_counts_HWW@otu_table)
-all(rownames(mge_even) == colnames(MGE_PHY_counts_HWW@otu_table))
-mge_even$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+rownames(mge_even) <- colnames(MGE_PHY_rel_HWW@otu_table)
+all(rownames(mge_even) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_even$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-mge_even_eda <- do.call(data.frame, aggregate(evenness ~ hospital, mge_even, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+mge_even_eda <- mge_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(evenness ~ hospital, data = mge_even)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-mge_even_stat.test <- pairwise.wilcox.test(mge_even$evenness, mge_even$hospital,
-                 p.adjust.method = "BH")
+mge_even_stat.test <- pairwise.wilcox.test(mge_even$evenness, mge_even$hospital, p.adjust.method = "BH")
 mge_even_stat.test
 
+# There are no sig. differences
+#      CGH SLMC
+# SLMC 1   -   
+# UST  1   1 
+
 # Plot
-p <- ggplot(mge_even, aes(x=hospital, y=evenness, fill = hospital)) + 
-  geom_boxplot()
-
-# Add ID as label to the plot
-p1 <- p + geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4) + 
-  scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 16, angle = 30, hjust = 1, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Evenness for MGEs Across Hospitals", 
+p <- ggboxplot(mge_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Evenness for MGEs Across Hospitals", 
                 subtitle = "Pielou's Evenness by Hospital") +
-                scale_y_continuous(limits = c(0.65,max(mge_even$evenness)), breaks = seq(0.65,max(mge_even$evenness), by = 0.05))
-
-# Add ID as labels
-p1 <- p1 + geom_text(aes(label = paste(rownames(mge_even), mge_even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
-
-p1  # Display the plot
+                scale_y_continuous(limits = c(0.74,max(mge_even$evenness)), breaks = seq(0.74,max(mge_even$evenness), by = 0.05)) +
+  geom_text(aes(label = paste(rownames(mge_even), mge_even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot7_mge_evenness.tiff",
@@ -2311,59 +1715,65 @@ ggsave(filename = "plot7_mge_evenness.tiff",
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
 mge_even <- data.frame("evenness" = mge_shannon_div$shannon / log(mge_rich$richness))
-rownames(mge_even) <- colnames(MGE_PHY_counts_HWW@otu_table)
-all(rownames(mge_even) == colnames(MGE_PHY_counts_HWW@otu_table))
-mge_even$hospital <- as.factor(MGE_PHY_counts_HWW@sam_data$hospital)
+rownames(mge_even) <- colnames(MGE_PHY_rel_HWW@otu_table)
+all(rownames(mge_even) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_even$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
 
-# Get mean and standard deviation
-mge_even_eda <- do.call(data.frame, aggregate(evenness ~ hospital, mge_even, function(x) c(mean = mean(x), sd = sd(x))))
+# Exploratory data analysis
+mge_even_eda <- mge_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
 
 # Test the significance
 kruskal.test(evenness ~ hospital, data = mge_even)
 
-# There are no sig. differences
-
 # Test multiple pairwise
-mge_even_stat.test <- pairwise.wilcox.test(mge_even$evenness, mge_even$hospital,
-                 p.adjust.method = "BH")
+mge_even_stat.test <- pairwise.wilcox.test(mge_even$evenness, mge_even$hospital, p.adjust.method = "BH")
 mge_even_stat.test
 
+# There are no sig. differences
+#      CGH SLMC
+# SLMC 1   -   
+# UST  1   1 
+
 # Plot
-rownames(mge_even)
-
-grp <- mge_even %>%
-  group_by(hospital) %>%
-  mutate(average=mean(evenness))
-
-grp
-
-p <- ggplot(mge_even, aes(x=hospital, y=grp$average, fill = hospital)) + 
-  geom_bar(stat = "identity", width = 0.7)
-
-# Add ID as label to the plot
-p1 <- p + scale_fill_manual(values=c("#CD3857", "#61A6E3", "#CC7722")) +
-  theme_classic() + theme(text = element_text(family = "Palatino"),
-                          axis.title.y = element_text(size = 35),
-                          axis.title.x = element_blank(),
-                          axis.text.y = element_text(size = 20),
-                          axis.text.x = element_text(size = 20, face = "bold"),
-                          legend.position = "none",
-                          plot.title = element_text(face = "bold"),
-                          plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
-
-# Adjust the scale to be more detailed
-p1 <- p1 + labs(title = "Evenness for MGEs Across Hospitals", 
+p <- ggbarplot(mge_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Evenness for MGEs Across Hospitals", 
                 subtitle = "Pielou's Evenness by Hospital",
                 y = "evenness")
-
-p1  # Display the plot
 
 # Save plot
 ggsave(filename = "plot7_mge_evenness_bar.tiff",
        width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-### Relative abundances & Counts of functional genes
+### Abundances of functional genes
+
+```{r}
+abd_th <- theme_light() + theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 30, face = "bold"),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(size = 20),
+        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
+        strip.background = element_rect(fill = "white", color = "white"),
+        panel.spacing.y = unit(1, "lines"),
+        legend.text = element_text(size = 10, face = "italic"),
+        legend.title = element_blank(),
+        legend.position = "bottom", 
+        legend.direction = "horizontal",
+        legend.spacing = unit(0.25, 'cm'),
+        legend.key.size = unit(0.85, "cm"))
+
+```
 
 #### Relative abundances of ARGs
 
@@ -2373,26 +1783,16 @@ resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Gene != "NA")
 p <- resfinder_PHY_rel_HWW %>%
   comp_barplot(tax_level = "Gene",
                n_taxa = 40,
+               sample_order = sort(rownames(sam_data(resfinder_PHY_rel_HWW)), decreasing=T),
                bar_outline_colour = NA,
                facet_by  = "hospital",
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of ARGs (Top 40)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "bottom", legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) + 
+  ggtitle("Relative Abundances of ARGs (Top 40)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot8_arg_rel_gene.tiff",
@@ -2407,96 +1807,62 @@ resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Class != "NA")
 p <- resfinder_PHY_rel_HWW %>%
   comp_barplot(tax_level = "Class",
                n_taxa = 40,
+               sample_order = sort(rownames(sam_data(resfinder_PHY_rel_HWW)), decreasing=T),
                bar_outline_colour = NA,
                facet_by  = "hospital",
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of ARGs by Drug Class") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "bottom", legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of ARGs by Drug Class") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot8_arg_rel_class.tiff",
        width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Count of ARGs
+#### Total Abundances of ARGs
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-resfinder_PHY_counts_HWW <- subset_taxa(resfinder_PHY_counts_HWW, Gene != "NA")
+resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Gene != "NA")
 
-p <- resfinder_PHY_counts_HWW %>%
+p <- resfinder_PHY_rel_HWW %>%
   comp_barplot(tax_level = "Gene",
                n_taxa = 40,
                tax_transform_for_plot = "identity",
-               sample_order = sort(rownames(sam_data(resfinder_PHY_counts_HWW))),
+               sample_order = sort(rownames(sam_data(resfinder_PHY_rel_HWW))),
                bar_outline_colour = NA,
                bar_width = 0.7,
                other_name = "Others") +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of ARGs (Top 40)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "right",
-        legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of ARGs (Top 40)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot9_arg_count_gene.tiff",
        width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Count of ARGs
+#### Total Abundances of ARGs
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-resfinder_PHY_counts_HWW <- subset_taxa(resfinder_PHY_counts_HWW, Class != "NA")
+resfinder_PHY_rel_HWW <- subset_taxa(resfinder_PHY_rel_HWW, Class != "NA")
 
-p <- resfinder_PHY_counts_HWW %>%
+p <- resfinder_PHY_rel_HWW %>%
   comp_barplot(tax_level = "Class",
                n_taxa = 40,
                tax_transform_for_plot = "identity",
-               sample_order = sort(rownames(sam_data(resfinder_PHY_counts_HWW))),
+               sample_order = sort(rownames(sam_data(resfinder_PHY_rel_HWW))),
                bar_outline_colour = NA,
                bar_width = 0.7,
                other_name = "Others") +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of ARGs by Drug Class") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "right",
-        legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of ARGs by Drug Class") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot9_arg_count_class.tiff",
@@ -2535,8 +1901,7 @@ kruskal.test(RA ~ hospital, data = df)
 
 ```{r}
 # Test multiple pairwise
-stat.test <- pairwise.wilcox.test(df$RA, df$hospital,
-                 p.adjust.method = "BH")
+stat.test <- pairwise.wilcox.test(df$RA, df$hospital, p.adjust.method = "BH")
 stat.test
 
 pvalues <- tibble::tribble(
@@ -2575,66 +1940,44 @@ ggsave(filename = "wilcox.tiff",
 #### Relative abundances of MGEs
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-MGE_rel_PHY <- subset_taxa(MGE_rel_PHY, Gene != "NA")
+MGE_PHY_rel_HWW <- subset_taxa(MGE_PHY_rel_HWW, Gene != "NA")
 
-p <- MGE_rel_PHY %>%
+p <- MGE_PHY_rel_HWW %>%
   comp_barplot(tax_level = "Gene",
                n_taxa = 40,
+               sample_order = sort(rownames(sam_data(MGE_PHY_rel_HWW)), decreasing=T),
                bar_outline_colour = NA,
                facet_by  = "hospital",
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of MGEs (Top 40)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "bottom", legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) + 
+  ggtitle("Relative Abundances of MGEs (Top 40)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot10_mge_rel_gene.tiff",
        width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-#### Count of MGEs
+#### Total Abundances of MGEs
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-MGE_PHY_counts_HWW <- subset_taxa(MGE_PHY_counts_HWW, Gene != "NA")
+MGE_PHY_rel_HWW <- subset_taxa(MGE_PHY_rel_HWW, Gene != "NA")
 
-p <- MGE_PHY_counts_HWW %>%
+p <- MGE_PHY_rel_HWW %>%
   comp_barplot(tax_level = "Gene",
                n_taxa = 40,
                tax_transform_for_plot = "identity",
-               sample_order = sort(rownames(sam_data(MGE_PHY_counts_HWW))),
+               sample_order = sort(rownames(sam_data(MGE_PHY_rel_HWW))),
                bar_outline_colour = NA,
                bar_width = 0.7,
                other_name = "Others") +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of MGEs (Top 40)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "right",
-        legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of MGEs (Top 40)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot11_mge_count_gene.tiff",
@@ -2659,26 +2002,16 @@ metaphlan_PHY_rel_species %>%
 p <- metaphlan_PHY_rel_species %>%
   comp_barplot(tax_level = "Species",
                n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_species)), decreasing=T),
                bar_outline_colour = NA,
                facet_by  = "hospital",
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Top 40 Species (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "bottom", legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Species (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot12_tax_rel_species.tiff",
@@ -2703,26 +2036,16 @@ metaphlan_PHY_rel_genus %>%
 p <- metaphlan_PHY_rel_genus %>%
   comp_barplot(tax_level = "Genus",
                n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_genus)), decreasing=T),
                bar_outline_colour = NA,
                facet_by  = "hospital",
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Top 40 Genera (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 12, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "bottom", legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Genera (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot12_tax_rel_genus.tiff",
@@ -2746,26 +2069,16 @@ metaphlan_PHY_rel_family %>%
 p <- metaphlan_PHY_rel_family %>%
   comp_barplot(tax_level = "Family",
                n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_family)), decreasing=T),
                bar_outline_colour = NA,
                facet_by  = "hospital",
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Top 40 Families (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 12, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "bottom", legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Families (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot12_tax_rel_family.tiff",
@@ -2790,26 +2103,16 @@ metaphlan_PHY_rel_order %>%
 p <- metaphlan_PHY_rel_order %>%
   comp_barplot(tax_level = "Order",
                n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_order)), decreasing=T),
                bar_outline_colour = NA,
                facet_by  = "hospital",
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Top 40 Orders (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 12, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "bottom", legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Orders (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot12_tax_rel_order.tiff",
@@ -2834,26 +2137,16 @@ metaphlan_PHY_rel_class %>%
 p <- metaphlan_PHY_rel_class %>%
   comp_barplot(tax_level = "Class",
                n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_class)), decreasing=T),
                bar_outline_colour = NA,
                facet_by  = "hospital",
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Top 40 Classes (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 12, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "bottom", legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Top 40 Classes (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot12_tax_rel_class.tiff",
@@ -2876,64 +2169,41 @@ metaphlan_PHY_rel_phylum %>%
 p <- metaphlan_PHY_rel_phylum %>%
   comp_barplot(tax_level = "Phylum",
                n_taxa = 40,
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_phylum)), decreasing=T),
                bar_outline_colour = NA,
                facet_by  = "hospital",
                bar_width = 0.7,
                other_name = "Others") +
   coord_flip()  +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Relative Abundances of Phyla (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 12, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "bottom", legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Relative Abundances of Phyla (metaphlan)") +
+  abd_th +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot12_tax_rel_phylum.tiff",
        width = 16, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
-
-#### Count of MGEs
+#### Total Abundances of Taxa (metaphlan)
 
 ##### Species level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-metaphlan_PHY_counts_species <- subset_taxa(metaphlan_PHY_counts_species, Species != "NA")
+metaphlan_PHY_rel_species <- subset_taxa(metaphlan_PHY_rel_species, Species != "NA")
 
-p <- metaphlan_PHY_counts_species %>%
+p <- metaphlan_PHY_rel_species %>%
   comp_barplot(tax_level = "Species",
                n_taxa = 40,
                tax_transform_for_plot = "identity",
-               sample_order = sort(rownames(sam_data(metaphlan_PHY_counts_species))),
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_species))),
                bar_outline_colour = NA,
                bar_width = 0.7,
                other_name = "Others") +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of Top 40 Species (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "right",
-        legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Species (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot13_tax_count_species.tiff",
@@ -2943,34 +2213,22 @@ ggsave(filename = "plot13_tax_count_species.tiff",
 ##### Genus level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-metaphlan_PHY_counts_genus <- subset_taxa(metaphlan_PHY_counts_genus, Genus != "Coprobacillaceae Family")
-metaphlan_PHY_counts_genus <- subset_taxa(metaphlan_PHY_counts_genus, Genus != "Catenibacterium")
-metaphlan_PHY_counts_genus <- subset_taxa(metaphlan_PHY_counts_genus, Genus != "NA")
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Coprobacillaceae Family")
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "Catenibacterium")
+metaphlan_PHY_rel_genus <- subset_taxa(metaphlan_PHY_rel_genus, Genus != "NA")
 
-p <- metaphlan_PHY_counts_genus %>%
+p <- metaphlan_PHY_rel_genus %>%
   comp_barplot(tax_level = "Genus",
                n_taxa = 40,
                tax_transform_for_plot = "identity",
-               sample_order = sort(rownames(sam_data(metaphlan_PHY_counts_genus))),
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_genus))),
                bar_outline_colour = NA,
                bar_width = 0.7,
                other_name = "Others") +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of Top 40 Genera (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "right",
-        legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Genera (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot13_tax_count_genus.tiff",
@@ -2980,33 +2238,21 @@ ggsave(filename = "plot13_tax_count_genus.tiff",
 ##### Family level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-metaphlan_PHY_counts_family <- subset_taxa(metaphlan_PHY_counts_family, Family != "Coprobacillaceae")
-metaphlan_PHY_counts_family <- subset_taxa(metaphlan_PHY_counts_family, Family != "NA")
+metaphlan_PHY_rel_family <- subset_taxa(metaphlan_PHY_rel_family, Family != "Coprobacillaceae")
+metaphlan_PHY_rel_family <- subset_taxa(metaphlan_PHY_rel_family, Family != "NA")
 
-p <- metaphlan_PHY_counts_family %>%
+p <- metaphlan_PHY_rel_family %>%
   comp_barplot(tax_level = "Family",
                n_taxa = 40,
                tax_transform_for_plot = "identity",
-               sample_order = sort(rownames(sam_data(metaphlan_PHY_counts_family))),
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_family))),
                bar_outline_colour = NA,
                bar_width = 0.7,
                other_name = "Others") +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of Top 40 Families (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "right",
-        legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Families (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot13_tax_count_family.tiff",
@@ -3016,34 +2262,22 @@ ggsave(filename = "plot13_tax_count_family.tiff",
 ##### Order level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-metaphlan_PHY_counts_order <- subset_taxa(metaphlan_PHY_counts_order, Order != "Eubacteriales")
-metaphlan_PHY_counts_order <- subset_taxa(metaphlan_PHY_counts_order, Order != "Erysipelotrichales")
-metaphlan_PHY_counts_order <- subset_taxa(metaphlan_PHY_counts_order, Order != "NA")
+metaphlan_PHY_rel_order <- subset_taxa(metaphlan_PHY_rel_order, Order != "Eubacteriales")
+metaphlan_PHY_rel_order <- subset_taxa(metaphlan_PHY_rel_order, Order != "Erysipelotrichales")
+metaphlan_PHY_rel_order <- subset_taxa(metaphlan_PHY_rel_order, Order != "NA")
 
-p <- metaphlan_PHY_counts_order %>%
+p <- metaphlan_PHY_rel_order %>%
   comp_barplot(tax_level = "Order",
                n_taxa = 40,
                tax_transform_for_plot = "identity",
-               sample_order = sort(rownames(sam_data(metaphlan_PHY_counts_order))),
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_order))),
                bar_outline_colour = NA,
                bar_width = 0.7,
                other_name = "Others") +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of Top 40 Orders (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "right",
-        legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Orders (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot13_tax_count_order.tiff",
@@ -3053,34 +2287,22 @@ ggsave(filename = "plot13_tax_count_order.tiff",
 ##### Class level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-metaphlan_PHY_counts_class <- subset_taxa(metaphlan_PHY_counts_class, Class != "Clostridia")
-metaphlan_PHY_counts_class <- subset_taxa(metaphlan_PHY_counts_class, Class != "Erysipelotrichia")
-metaphlan_PHY_counts_class <- subset_taxa(metaphlan_PHY_counts_class, Class != "NA")
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "Clostridia")
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "Erysipelotrichia")
+metaphlan_PHY_rel_class <- subset_taxa(metaphlan_PHY_rel_class, Class != "NA")
 
-p <- metaphlan_PHY_counts_class %>%
+p <- metaphlan_PHY_rel_class %>%
   comp_barplot(tax_level = "Class",
                n_taxa = 40,
                tax_transform_for_plot = "identity",
-               sample_order = sort(rownames(sam_data(metaphlan_PHY_counts_class))),
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_class))),
                bar_outline_colour = NA,
                bar_width = 0.7,
                other_name = "Others") +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of Top 40 Classes (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "right",
-        legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Top 40 Classes (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot13_tax_count_class.tiff",
@@ -3090,32 +2312,20 @@ ggsave(filename = "plot13_tax_count_class.tiff",
 ##### Phylum level
 
 ```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-metaphlan_PHY_counts_phylum <- subset_taxa(metaphlan_PHY_counts_phylum, Phylum != "NA")
+metaphlan_PHY_rel_phylum <- subset_taxa(metaphlan_PHY_rel_phylum, Phylum != "NA")
 
-p <- metaphlan_PHY_counts_phylum %>%
+p <- metaphlan_PHY_rel_phylum %>%
   comp_barplot(tax_level = "Phylum",
                n_taxa = 40,
                tax_transform_for_plot = "identity",
-               sample_order = sort(rownames(sam_data(metaphlan_PHY_counts_phylum))),
+               sample_order = sort(rownames(sam_data(metaphlan_PHY_rel_phylum))),
                bar_outline_colour = NA,
                bar_width = 0.7,
                other_name = "Others") +
-  labs(x = NULL, y = NULL) + theme_light() + ggtitle("Counts of Phyla (metaphlan)") +
-  theme(text = element_text(family = "Palatino"),
-        plot.title = element_text(size = 30, face = "bold"),
-        axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(size = 20, angle = 45, hjust = 1),
-        strip.text.y = element_text(size = 20, color = "black", face = "bold", angle = 0, hjust = 0),
-        strip.background = element_rect(fill = "white", color = "white"),
-        panel.spacing.y = unit(1, "lines"),
-        legend.text = element_text(size = 10, face = "italic"),
-        legend.title = element_blank(),
-        legend.position = "right",
-        legend.direction = "horizontal",
-        legend.spacing = unit(0.25, 'cm'),
-        legend.key.size = unit(0.85, "cm")) + guides(fill = guide_legend(byrow = TRUE))
-
-p
+  labs(x = NULL, y = NULL) +
+  ggtitle("Total Abundances of Phyla (metaphlan)") +
+  abd_th + theme_update(legend.position = "right") +
+  guides(fill = guide_legend(byrow = TRUE))
 
 # Save plot
 ggsave(filename = "plot13_tax_count_phylum.tiff",
@@ -3174,17 +2384,234 @@ p
 htmlwidgets::saveWidget(p, file = "plot3_sankey_phylum.html")
 ```
 
+# Source: https://github.com/theislab/MetaMap-web/blob/1d6220640d95cb7a54733138e4c652a642de6e8b/R/plots.r
+
 ```{r}
-write_csv(psmelt(resfinder_PHY_counts_HWW), file = 'resfinder_PHY_counts_HWW.csv')
+#' @import rlang
+#' @import purrr
+#' @import tidyr
+#' @import plyr
+#' @import dplyr
+#' @import stringr
+#' @import phyloseq
+#' @import ggplot2
+#' @import shiny
+#' @import plotly
+#' @import utils
+#' @import data.table
+#' @import shinyjs
+#' @import shinythemes
+#' @import DT
+#' @import V8
+#' @import psadd
+#' @import grid
+
+#' @title TaxID to Species
+#'
+#' Transforms taxID to the corresponding Species name.
+#'
+#' @param phylo \link[phyloseq]{phyloseq} object
+#' @param taxID
+#'
+#'
+#' @return Species name
+#' @export
+taxids2names <-
+  function(phylo, TaxID, level = "Species")
+    phylo@tax_table[TaxID, level]  %>% as.character
+
+#' Deal with NAs
+#'
+#' Replaces NAs with the following: {Class}_NA. Class stands for the last known class of the corresponding OTU.
+#'
+#' @param tax_table A table obtained by \link[phyloseq]{tax_table}.
+#'
+#'
+#' @return Modified tax table
+#' @export
+clean_tax_table <- function(tax_table) {
+  tax_table <- as.data.frame(tax_table)
+  tax_table[] <- lapply(tax_table, as.character)
+  inds <- which(is.na(tax_table), arr.ind = TRUE)
+  if(length(inds)==0)
+    return(tax_table)
+  inds1 <- aggregate(row ~ col, data = inds, list)
+  # rownames(inds) <- inds$col
+  # inds <- inds$row
+  env <- environment()
+  tmp <- tax_table
+  levels <- apply(inds1, 1, function(x) {
+    tbl <- tax_table[x$row, 1:(x$col - 1)]
+    tbl <- as.data.frame(tbl)
+    levels <- apply(tbl, 1, function(y) {
+      y[max(which(!is.na(y)))]
+    })
+    levels
+    # assign("tmp", tax_table, env)
+  }) %>% unlist
+
+  tax_table[inds] <- paste0(levels, "_NA")
+  tax_table
+}
+```
+
+```{r}
+#' Make Sankey links table
+#'
+#' Creates a table with information about all the links from \code{source} to \code{target}.
+#'     This table can be used to create a shankey plot.
+#'
+#' @param tax_table filtered tax table from a \link[phyloseq]{phyloseq} object
+#' @param otu_table otu_table from a \link[phyloseq]{phyloseq} object
+#' @param source \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param target \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param source_filter String to filter \code{source} values.
+#' @param level_filter \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#'
+#' @return A data.frame with info about the links.
+#' @export
+makeSankey_links <-
+  function(tax_table,
+           otu_table,
+           source,
+           target,
+           source_filter,
+           level_filter) {
+    group <- tax_table[, target]
+
+    target_means <- rowsum(otu_table, group) %>% rowMeans() %>%
+    {
+      . / sum(.) * 100
+    }
+
+    # Filter tax_table
+    if (!is.null(source_filter)) {
+      if (is.null(level_filter))
+        level_filter <- source
+      tax_table <-
+        filter(tax_table, tax_table[, level_filter] == source_filter)
+    }
+
+    links <-
+      tax_table[, c(source, target)] %>% data.frame(stringsAsFactors = FALSE) %>%
+      distinct %>% setNames(c("Source", "Target")) %>%
+      mutate(
+        Value = target_means[.$Target],
+        Source_level = rep(source, nrow(.)),
+        Target_level = rep(target, nrow(.))
+      ) %>%
+      .[order(.$Value, decreasing = TRUE),] %>% .[which(.$Value > 0.5),] %>%
+      .[1:min(10, nrow(.)),]
+
+
+    links
+  }
+```
+
+```{r}
+library(plotly)
+
+#' Sankey plot
+#'
+#' Plot a sankey diagram.
+#'
+#' @param phylo \link[phyloseq]{phyloseq} object
+#' @param source \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param target \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param level_filter \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param source_filter String to filter \code{source} values.
+#' @param normalized A boolean value indicating, whether the count_table is normalized for sequencing depth.
+#'
+#' @return An intercative sankey plot generated by plotly.
+#' @export
+plot_sankey <-
+  function(phylo,
+           source = "Kingdom",
+           target = "Phylum",
+           level_filter = NULL,
+           source_filter = NULL,
+           normalized = FALSE) {
+    if (is.null(phylo))
+      return(NULL)
+
+    # Deal with NA values
+    tax_table <- clean_tax_table(phylo@tax_table)
+
+    firstLevel <- which(colnames(tax_table) == source)
+    lastLevel <- which(colnames(tax_table) == target)
+    levls <- colnames(tax_table)[firstLevel:lastLevel]
+
+    pairs <-
+      lapply(1:(length(levls) - 1), function(x)
+        list(Source = levls[x], Target = levls[x + 1]))
+
+    phylo@tax_table <- tax_table(tax_table)
+
+    otu_table <- phylo@otu_table
+    
+    links <-
+      do.call(rbind, lapply(pairs, function(x)
+        makeSankey_links(
+          tax_table,
+          otu_table,
+          x$Source,
+          x$Target,
+          source_filter,
+          level_filter
+        )))
+
+    # Add __S and __T
+    links$Source <-
+      paste0(substr(links$Source_level, 1, 1), "__", links$Source)
+    links$Target <-
+      paste0(substr(links$Target_level, 1, 1), "__", links$Target)
+
+    sources <- links$Source %>% unique
+    targets <- links$Target %>% unique
+    node_labels <-
+      c(sources, targets) %>% setNames(0:(length(.) - 1), .)
+    links <- links %>%
+      mutate(SourceNr = node_labels[Source],
+             TargetNr = node_labels[Target])
+
+    p <- plot_ly(
+      source = "sankey",
+      type = "sankey",
+      valueformat = ".0f",
+      valuesuffix = "%",
+      node = list(
+        label = names(node_labels),
+        # color = json_data$data[[1]]$node$color,
+        pad = 15,
+        thickness = 15,
+        line = list(color = "black",
+                    width = 0.5)
+      ),
+
+      link = with(links, list(
+        source = SourceNr,
+        target = TargetNr,
+        value =  Value
+      ))
+    )
+    return(list(plot = p, links = links))
+  }
+
+p <- plot_sankey(metaphlan_PHY_rel_species, source="Kingdom", target="Species", level_filter="Kingdom")
+htmlwidgets::saveWidget(p[[1]], file = "plot4_sankey_species.html")
+```
+
+```{r}
 write_csv(psmelt(resfinder_PHY_rel_HWW), file = 'resfinder_PHY_rel_HWW.csv')
-write_csv(psmelt(MGE_PHY_counts_HWW), file = 'MGE_PHY_counts_HWW.csv')
-write_csv(psmelt(MGE_rel_PHY), file = 'MGE_PHY_rel_HWW.csv')
-write_csv(psmelt(metaphlan_PHY_counts_phylum), file = 'metaphlan_PHY_counts_phylum.csv')
-write_csv(psmelt(metaphlan_PHY_counts_class), file = 'metaphlan_PHY_counts_class.csv')
-write_csv(psmelt(metaphlan_PHY_counts_order), file = 'metaphlan_PHY_counts_order.csv')
-write_csv(psmelt(metaphlan_PHY_counts_family), file = 'metaphlan_PHY_counts_family.csv')
-write_csv(psmelt(metaphlan_PHY_counts_genus), file = 'metaphlan_PHY_counts_genus.csv')
-write_csv(psmelt(metaphlan_PHY_counts_species), file = 'metaphlan_PHY_counts_species.csv')
+write_csv(psmelt(resfinder_PHY_rel_HWW), file = 'resfinder_PHY_rel_HWW.csv')
+write_csv(psmelt(MGE_PHY_rel_HWW), file = 'MGE_PHY_rel_HWW.csv')
+write_csv(psmelt(MGE_PHY_rel_HWW), file = 'MGE_PHY_rel_HWW.csv')
+write_csv(psmelt(metaphlan_PHY_rel_phylum), file = 'metaphlan_PHY_rel_phylum.csv')
+write_csv(psmelt(metaphlan_PHY_rel_class), file = 'metaphlan_PHY_rel_class.csv')
+write_csv(psmelt(metaphlan_PHY_rel_order), file = 'metaphlan_PHY_rel_order.csv')
+write_csv(psmelt(metaphlan_PHY_rel_family), file = 'metaphlan_PHY_rel_family.csv')
+write_csv(psmelt(metaphlan_PHY_rel_genus), file = 'metaphlan_PHY_rel_genus.csv')
+write_csv(psmelt(metaphlan_PHY_rel_species), file = 'metaphlan_PHY_rel_species.csv')
 
 ```
 
