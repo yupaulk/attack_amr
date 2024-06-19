@@ -1,0 +1,231 @@
+# Bioinformatics Analyses of ATTACK-AMR
+## Authors: Paul K. Yu, Daphne Janelyn Go
+
+### Adapted from Melina A. Markkanen, Kaisa Haukka, Katariina M. M. Pärnänen, Victorien Tamegnon Dougnon, Isidore Juste O. Bonkoungou, Zakaria Garba, Halidou Tinto, Anniina Sarekoski, Antti Karkman, Anu Kantele, Marko P. J. Virta. 2023. Metagenomic Analysis of the Abundance and Composition of Antibiotic Resistance Genes in Hospital Wastewater in Benin, Burkina Faso, and Finland mSphere. https://doi.org/10.1128/msphere.00538-22
+### https://github.com/melinamarkkanen/AMRIWA
+
+### Import libraries
+
+```{r, libraries}
+# install.packages("stringr")
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# BiocManager::install("phyloseq")
+# library(tidyverse)
+
+library(stringr)
+library(phyloseq)
+library(readr)
+library(tidyverse)
+
+```
+
+### Load Metadata
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metadata <- read.csv("metadata_updated.csv", row.names=1)
+
+```
+
+### Load Metaxa2 Results
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaxa_genus <- read.delim("metaxa_genus.txt")
+
+# Create OTU table
+OTU_metaxa <- metaxa_genus[,-1]
+# Match sample ID order with metadata file
+match <- match(rownames(metadata), colnames(OTU_metaxa))
+OTU_metaxa <- OTU_metaxa[,match]
+all(colnames(OTU_metaxa) == rownames(metadata))
+# Create tax table
+tax_table_metaxa <- data.frame(str_split_fixed(data.frame(metaxa_genus) [,1], ";", 6))
+colnames(tax_table_metaxa) <- c("Domain", "Phylum", "Class", "Order", "Family", "Genus")
+# Check if samples are in order
+identical(rownames(metadata), colnames(OTU_metaxa))
+# Combine into phyloseq object
+metaxa_PHY <- phyloseq(otu_table(OTU_metaxa, 
+    taxa_are_rows=TRUE), tax_table(as.matrix(tax_table_metaxa)), sample_data(metadata))
+
+# Exclude taxa "Unknown", "Unclassified", "Eukaryota", "Mitochondria", "Archaea", "Chloroplast"
+metaxa_PHY <- subset_taxa(metaxa_PHY, Domain == "Bacteria")
+
+# Add SSU counts to metadata
+metadata$SSU_counts <- sample_sums(metaxa_PHY)
+
+```
+
+### Make Phyloseq ARG RPKSSU (Resfinder)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+counts_resfinder <-as.matrix(read.table("ARG_genemat.txt", header= T, check.names = F, row.names = 1))
+
+# Tax_table
+clusters_tax_table_resfinder <- read.csv("clusters_tax_table.txt", header=FALSE, sep=";")
+colnames(clusters_tax_table_resfinder) <- c("Gene",  "Cluster_name", "Class")
+# Reorder columns
+col_order <- c("Class", "Cluster_name", "Gene")
+clusters_tax_table_resfinder <- clusters_tax_table_resfinder[, col_order]
+
+# Reorder to match metadata
+match <- match(rownames(metadata), colnames(counts_resfinder))
+counts_resfinder <- counts_resfinder[,match]
+all(colnames(counts_resfinder) == rownames(metadata))
+
+# Reorder to match tax_table
+match <- match(rownames(counts_resfinder), clusters_tax_table_resfinder$Gene)
+clusters_tax_table_resfinder <- clusters_tax_table_resfinder[match,]
+all(rownames(counts_resfinder) == clusters_tax_table_resfinder$Gene)
+
+# Divide by ARG gene lengths
+resfinder_lengths <- read.delim("resfinder_lengths.txt", header=FALSE, comment.char="#")
+all(rownames(clusters_tax_table_resfinder$Gene) == resfinder_lengths$V1)
+resfinder_length_norm <- counts_resfinder/resfinder_lengths[, 2]
+
+# Normalization with Metaxa2 SSU counts
+resfinder_length_SSU_norm <- t(t(resfinder_length_norm)/metadata$SSU_counts) * 1540
+all(rownames(metadata) == colnames(resfinder_length_SSU_norm))
+identical((resfinder_length_norm[3, 5]/metadata$SSU_counts[5]) * 1540, resfinder_length_SSU_norm[3, 5])
+all(rownames(resfinder_length_norm) == clusters_tax_table_resfinder$Gene)
+# Hide rownames
+dim(resfinder_length_SSU_norm)
+rownames(resfinder_length_SSU_norm) <- c(1:3146) #PKY: Why hard-coded?
+
+dim(clusters_tax_table_resfinder)
+rownames(clusters_tax_table_resfinder) <- c(1:3146) #PKY: Why hard-coded?
+
+# Combine to phyloseq object
+resfinder_PHY_rel <- phyloseq(otu_table(resfinder_length_SSU_norm, taxa_are_rows = TRUE),
+  sample_data(metadata), tax_table(as.matrix(clusters_tax_table_resfinder)))
+
+# Exclude biological / technical replicates
+resfinder_PHY_rel_uniq <- subset_samples(resfinder_PHY_rel, replicate == "NO")
+resfinder_PHY_rel_uniq <- subset_samples(resfinder_PHY_rel_uniq, sample_material == "water")
+
+# Create phyloseq object with only HWW samples
+resfinder_PHY_rel_HWW <- subset_samples(resfinder_PHY_rel_uniq, HWW == "YES")
+
+```
+
+### Make Phyloseq Metaphlan Relative Abundances
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metaphlan_merged_abundance_table <- read.delim("merged_metaphlan_rel_species.txt", header = T)
+mp_rel <- metaphlan_merged_abundance_table[ -c(1) ]
+
+# Tax table
+## Check if in order
+tax_table_metaphlan <- read.csv2("tax_table_metaphlan_rel_species.txt", header=F, sep="")
+
+tax_table_metaphlan <- data.frame(str_split_fixed(data.frame(tax_table_metaphlan) [,1], ";", 7))
+colnames(tax_table_metaphlan) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+
+tax_table_metaphlan <- apply(tax_table_metaphlan, 2, function(y) (gsub(".__", "", y)))
+
+# Reorder
+match <- match(rownames(metadata), colnames(mp_rel))
+mp_rel  <- mp_rel[,match]
+all(rownames(metadata) == colnames(mp_rel))
+
+# Combine into phyloseq object
+metaphlan_PHY_rel <- phyloseq(otu_table(mp_rel, taxa_are_rows=TRUE), sample_data(metadata), tax_table(as.matrix(tax_table_metaphlan)))
+
+# Leave only bacteria
+metaphlan_PHY_rel_bact <- subset_taxa(metaphlan_PHY_rel, Kingdom != "Viruses" & Kingdom != "Eukaryota")
+
+# Prune to diff taxa level
+metaphlan_PHY_rel_species <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Species")
+metaphlan_PHY_rel_genus <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Genus")
+metaphlan_PHY_rel_family <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Family")
+metaphlan_PHY_rel_order <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Order")
+metaphlan_PHY_rel_class <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Class")
+metaphlan_PHY_rel_phylum <- tax_glom(metaphlan_PHY_rel_bact, taxrank = "Phylum")
+
+```
+
+### Make Phyloseq MGE RPKSSU
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+counts_MGE <-as.matrix(read.table("MGE_genemat.txt", header= T, check.names = F, row.names = 1))
+
+# Reorder to match metadata
+match <- match(rownames(metadata), colnames(counts_MGE))
+counts_MGE <- counts_MGE[,match]
+all(colnames(counts_MGE) == rownames(metadata))
+
+# Tax table
+MGE_tax_table_trim <- read.delim("MGE_tax_table_trim.txt", header=F)
+nrow(MGE_tax_table_trim)
+colnames(MGE_tax_table_trim) <- c("Gene", "Element", "Class")
+MGE_tax_table_trim <- MGE_tax_table_trim[,!is.na(colnames(MGE_tax_table_trim))]
+MGE_tax_table_trim <- MGE_tax_table_trim[!is.na(MGE_tax_table_trim[,1]),]
+rownames(MGE_tax_table_trim) <- c(1:nrow(MGE_tax_table_trim)+1)
+
+# Reorder tax_table to match
+match <- match(rownames(counts_MGE), MGE_tax_table_trim$Gene)
+MGE_tax_table_trim <- MGE_tax_table_trim[match,]
+MGE_tax_table_trim <- MGE_tax_table_trim[!is.na(MGE_tax_table_trim[,1]),]
+all(MGE_tax_table_trim$Gene %in% rownames(counts_MGE))
+
+# Normalization to MGE lengths
+MGE_lengths <- read.delim("MGE_lengths.txt", 
+                          header=FALSE, comment.char="#", check.names = F)
+match <- match(rownames(counts_MGE), MGE_lengths$V1)
+MGE_lengths <- MGE_lengths[match,]
+MGE_lengths <- MGE_lengths[!is.na(MGE_lengths[,1]),]
+all(rownames(MGE_tax_table_trim$Gene) == MGE_lengths$V1)
+counts_MGE_length_norm <- counts_MGE/MGE_lengths[, 2]
+
+# Normalization with Metaxa2 SSU counts
+counts_MGE_length_SSU_norm <- t(t(counts_MGE_length_norm)/metadata$SSU_counts) * 1540 # 1540 is the 16S average length
+all(rownames(metadata) == colnames(counts_MGE_length_SSU_norm))
+identical((counts_MGE_length_norm[1, 5]/metadata$SSU_counts[5]) * 1540, counts_MGE_length_SSU_norm[1, 5])
+all(MGE_tax_table_trim$Gene %in% rownames(counts_MGE_length_norm))
+
+# Hide rownames
+rownames(counts_MGE_length_SSU_norm) <- c(1:nrow(counts_MGE_length_SSU_norm)+1)
+rownames(MGE_tax_table_trim) <- c(1:nrow(MGE_tax_table_trim)+1)
+
+# Combine to phyloseq object
+MGE_PHY_rel_HWW <- phyloseq(otu_table(counts_MGE_length_SSU_norm, taxa_are_rows = TRUE), 
+                    sample_data(metadata), tax_table(as.matrix(MGE_tax_table_trim)))
+
+# Exclude biological / technical replicates
+MGE_PHY_rel_uniq <- subset_samples(MGE_PHY_rel_HWW, replicate == "NO")
+MGE_PHY_rel_uniq <- subset_samples(MGE_PHY_rel_uniq, sample_material == "water")
+
+# Create phyloseq object with only HWW samples
+MGE_PHY_rel_HWW <- subset_samples(MGE_PHY_rel_uniq, HWW == "YES")
+
+```
+
+### Save phyloseq objects as rds
+```{r}
+saveRDS(resfinder_PHY_rel_HWW, file = 'resfinder_PHY_rel_HWW.rds')
+saveRDS(MGE_PHY_rel_HWW, file = 'MGE_PHY_rel_HWW.rds')
+saveRDS(metaphlan_PHY_rel_phylum, file = 'metaphlan_PHY_rel_phylum.rds')
+saveRDS(metaphlan_PHY_rel_class, file = 'metaphlan_PHY_rel_class.rds')
+saveRDS(metaphlan_PHY_rel_order, file = 'metaphlan_PHY_rel_order.rds')
+saveRDS(metaphlan_PHY_rel_family, file = 'metaphlan_PHY_rel_family.rds')
+saveRDS(metaphlan_PHY_rel_genus, file = 'metaphlan_PHY_rel_genus.rds')
+saveRDS(metaphlan_PHY_rel_species, file = 'metaphlan_PHY_rel_species.rds')
+
+```
+
+### Save phyloseq objects as csv
+
+```{r}
+write_csv(psmelt(resfinder_PHY_rel_HWW), file = 'resfinder_PHY_rel_HWW.csv')
+write_csv(psmelt(MGE_PHY_rel_HWW), file = 'MGE_PHY_rel_HWW.csv')
+write_csv(psmelt(metaphlan_PHY_rel_phylum), file = 'metaphlan_PHY_rel_phylum.csv')
+write_csv(psmelt(metaphlan_PHY_rel_class), file = 'metaphlan_PHY_rel_class.csv')
+write_csv(psmelt(metaphlan_PHY_rel_order), file = 'metaphlan_PHY_rel_order.csv')
+write_csv(psmelt(metaphlan_PHY_rel_family), file = 'metaphlan_PHY_rel_family.csv')
+write_csv(psmelt(metaphlan_PHY_rel_genus), file = 'metaphlan_PHY_rel_genus.csv')
+write_csv(psmelt(metaphlan_PHY_rel_species), file = 'metaphlan_PHY_rel_species.csv')
+
+```
+
+```{r}
+sessionInfo()
+```

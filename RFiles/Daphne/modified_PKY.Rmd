@@ -678,7 +678,7 @@ arg_shannon_stat.test
 # UST  0.46 0.48
 
 # Plot
-p <- ggboxplot(arg_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(arg_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
   labs(title = "Shannon Diversity Index for ARGs Across Hospitals") +
@@ -768,7 +768,7 @@ arg_simpson_stat.test
 # UST  0.59 0.59
 
 # Plot
-p <- ggboxplot(arg_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(arg_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
   labs(title = "Simpson Diversity Index for ARGs Across Hospitals") +
@@ -858,7 +858,7 @@ arg_rich_stat.test
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","n.s.","**"))
 
 # Plot
-p <- ggboxplot(arg_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) + 
+p <- ggboxplot(arg_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj") +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
@@ -949,7 +949,7 @@ arg_even_stat.test
 # UST  0.82 0.82
 
 # Plot
-p <- ggboxplot(arg_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(arg_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
   labs(title = "Pielou's Evenness Index for ARGs Across Hospitals") +
@@ -1039,7 +1039,7 @@ tax_shannon_stat.test
 # UST  0.59 0.20
 
 # Plot
-p <- ggboxplot(tax_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(tax_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
   labs(title = "Shannon Diversity Index for Taxonomic Composition Across Hospitals") +
@@ -1129,7 +1129,7 @@ tax_simpson_stat.test
 # UST  0.24 0.24
 
 # Plot
-p <- ggboxplot(tax_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(tax_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
   labs(title = "Simpson Diversity Index for Taxonomic Composition Across Hospitals") +
@@ -1217,7 +1217,7 @@ tax_rich_stat.test
 # UST  0.59 0.14
 
 # Plot
-p <- ggboxplot(tax_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(tax_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
   labs(title = "Richness Index for Taxonomic Composition Across Hospitals") +
@@ -1304,7 +1304,7 @@ tax_even_stat.test
 # UST  0.59 0.59
 
 # Plot
-p <- ggboxplot(tax_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(tax_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
   labs(title = "Pielou's Evenness Index for Taxonomic Composition Across Hospitals") +
@@ -1350,7 +1350,6 @@ tax_even_stat.test
 
 # Plot
 p <- ggbarplot(tax_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
   labs(title = "Pielou's Evenness Indexfor Taxonomic Composition Across Hospitals", y = "evenness")
 
@@ -1393,7 +1392,7 @@ mge_shannon_stat.test
 # UST  0.310 0.140
 
 # Plot
-p <- ggboxplot(mge_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(mge_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
   labs(title = "Shannon Diversity Index for MGEs Across Hospitals") +
@@ -1483,7 +1482,7 @@ mge_simpson_stat.test
 # UST  0.59 0.36
 
 # Plot
-p <- ggboxplot(mge_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(mge_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
   labs(title = "Simpson Diversity Index for MGEs Across Hospitals") + 
@@ -1573,7 +1572,7 @@ mge_rich_stat.test
 pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","*","n.s."))
 
 # Plot
-p <- ggboxplot(mge_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) + 
+p <- ggboxplot(mge_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj") +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill = hospital)) + 
   div_th +
@@ -1664,7 +1663,7 @@ mge_even_stat.test
 # UST  1   1 
 
 # Plot
-p <- ggboxplot(mge_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p <- ggboxplot(mge_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
   labs(title = "Pielou's Evenness Index for MGEs Across Hospitals") +
@@ -2528,7 +2527,7 @@ arg_observed_stat.test
 # UST  0.0032 0.6991
 
 # Plot
-p1_plot <- ggboxplot(arg_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p1_plot <- ggboxplot(arg_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
   labs(title = "Total Abundances for ARGs Across Hospitals", y = "ARGs/16S rRNA") +
@@ -2572,7 +2571,7 @@ mge_observed_stat.test
 # UST  0.0032 0.6991
 
 # Plot
-p2_plot <- ggboxplot(mge_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+p2_plot <- ggboxplot(mge_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
   geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
   labs(title = "Total Abundances for MGEs Across Hospitals", y = "MGEs/16S rRNA") +
