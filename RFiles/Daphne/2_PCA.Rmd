@@ -13,10 +13,10 @@
 # install.packages("microViz", repos = c(davidbarnett = "https://david-barnett.r-universe.dev", getOption("repos")))
 # install.packages("patchwork")
 
+library(phyloseq)
 library(tidyverse)
 library(microViz)
 library(patchwork)
-library(phyloseq)
 
 ```
 

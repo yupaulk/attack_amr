@@ -1,0 +1,1127 @@
+# Bioinformatics Analyses of ATTACK-AMR
+## Authors: Paul K. Yu, Daphne Janelyn Go
+
+### Adapted from Melina A. Markkanen, Kaisa Haukka, Katariina M. M. Pärnänen, Victorien Tamegnon Dougnon, Isidore Juste O. Bonkoungou, Zakaria Garba, Halidou Tinto, Anniina Sarekoski, Antti Karkman, Anu Kantele, Marko P. J. Virta. 2023. Metagenomic Analysis of the Abundance and Composition of Antibiotic Resistance Genes in Hospital Wastewater in Benin, Burkina Faso, and Finland mSphere. https://doi.org/10.1128/msphere.00538-22
+### https://github.com/melinamarkkanen/AMRIWA
+
+### Import libraries
+
+```{r, libraries}
+# if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+# BiocManager::install(c("phyloseq", "microbiome", "ComplexHeatmap"), update = FALSE)
+# install.packages("microViz", repos = c(davidbarnett = "https://david-barnett.r-universe.dev", getOption("repos")))
+# install.packages("tidyverse")
+# install.packages("vegan")
+# install.packages("ggpubr")
+
+library(phyloseq)
+library(tidyverse)
+library(vegan)
+library(ggpubr)
+library(microViz)
+
+```
+
+### Read rds as phyloseq object
+
+```{r}
+resfinder_PHY_rel_HWW <- readRDS('resfinder_PHY_rel_HWW.rds')
+MGE_PHY_rel_HWW <- readRDS('MGE_PHY_rel_HWW.rds')
+metaphlan_PHY_rel_phylum <- readRDS('metaphlan_PHY_rel_phylum.rds')
+metaphlan_PHY_rel_class <- readRDS('metaphlan_PHY_rel_class.rds')
+metaphlan_PHY_rel_order <- readRDS('metaphlan_PHY_rel_order.rds')
+metaphlan_PHY_rel_family <- readRDS('metaphlan_PHY_rel_family.rds')
+metaphlan_PHY_rel_genus <- readRDS('metaphlan_PHY_rel_genus.rds')
+metaphlan_PHY_rel_species <- readRDS('metaphlan_PHY_rel_species.rds')
+
+```
+
+### Diversity Metrics
+
+```{r}
+div_th <- theme_classic() + theme(text = element_text(family = "Palatino"), 
+                                  axis.title.y = element_text(size = 35),
+                                  axis.title.x = element_blank(),
+                                  axis.text.y = element_text(size = 20),
+                                  axis.text.x = element_text(size = 16, face = "bold"),
+                                  legend.position = "none",
+                                  plot.title = element_text(face = "bold"),
+                                  plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
+```
+
+#### Shannon for ARGs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_rel_HWW), index = "shannon", MARGIN = 2))
+all(rownames(arg_shannon_div) == colnames(resfinder_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum)
+arg_shannon_div$observed <- diversity_observed
+arg_shannon_div$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_shannon_eda <- arg_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = arg_shannon_div)
+
+# Test multiple pairwise
+arg_shannon_stat.test <- pairwise.wilcox.test(arg_shannon_div$shannon, arg_shannon_div$hospital, p.adjust.method = "BH")
+arg_shannon_stat.test 
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.19 -   
+# UST  0.46 0.48
+
+# Plot
+p <- ggboxplot(arg_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Shannon Diversity Index for ARGs Across Hospitals") +
+  scale_y_continuous(limits = c(4,max(arg_shannon_div$shannon)), breaks = seq(4,max(arg_shannon_div$shannon), by = 0.5)) + 
+  geom_text(aes(label = paste(rownames(arg_shannon_div), arg_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot5_arg_shannon.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Shannon for ARGs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_shannon_div <- data.frame("shannon" = diversity(otu_table(resfinder_PHY_rel_HWW), index = "shannon", MARGIN = 2))
+all(rownames(arg_shannon_div) == colnames(resfinder_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum)
+arg_shannon_div$observed <- diversity_observed
+arg_shannon_div$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_shannon_eda <- arg_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = arg_shannon_div)
+
+# Test multiple pairwise
+arg_shannon_stat.test <- pairwise.wilcox.test(arg_shannon_div$shannon, arg_shannon_div$hospital, p.adjust.method = "BH")
+arg_shannon_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.19 -   
+# UST  0.46 0.48
+
+# Plot
+p <- ggbarplot(arg_shannon_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th + 
+  labs(title = "Shannon Diversity Index for ARGs Across Hospitals", y = "shannon")
+
+# Save plot
+ggsave(filename = "plot5_arg_shannon_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Simpson for ARGs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_rel_HWW), index = "simpson", MARGIN = 2))
+all(rownames(arg_simpson_div) == colnames(resfinder_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum)
+arg_simpson_div$observed <- diversity_observed
+arg_simpson_div$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_simpson_eda <- arg_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = arg_simpson_div)
+
+# Test multiple pairwise
+arg_simpson_stat.test <- pairwise.wilcox.test(arg_simpson_div$simpson, arg_simpson_div$hospital, p.adjust.method = "BH")
+arg_simpson_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.59 -   
+# UST  0.59 0.59
+
+# Plot
+p <- ggboxplot(arg_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Simpson Diversity Index for ARGs Across Hospitals") +
+  scale_y_continuous(limits = c(0.94,max(arg_simpson_div$simpson)), breaks = seq(0.94,max(arg_simpson_div$simpson), by = 0.02)) +
+  geom_text(aes(label = paste(rownames(arg_simpson_div), arg_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot5_arg_simpson.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Simpson for ARGs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_simpson_div <- data.frame("simpson" = diversity(otu_table(resfinder_PHY_rel_HWW), index = "simpson", MARGIN = 2))
+all(rownames(arg_simpson_div) == colnames(resfinder_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum)
+arg_simpson_div$observed <- diversity_observed
+arg_simpson_div$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_simpson_eda <- arg_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = arg_simpson_div)
+
+# Test multiple pairwise
+arg_simpson_stat.test <- pairwise.wilcox.test(arg_simpson_div$simpson, arg_simpson_div$hospital, p.adjust.method = "BH")
+arg_simpson_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.59 -   
+# UST  0.59 0.59
+
+# Plot
+p <- ggbarplot(arg_simpson_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) + 
+  div_th +
+  labs(title = "Simpson Diversity Index for ARGs Across Hospitals", y = "simpson")
+
+# Save plot
+ggsave(filename = "plot5_arg_simpson_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Richness for ARGs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_rel_HWW), MARGIN=2))
+all(rownames(arg_rich) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_rich$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_rich_eda <- arg_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = arg_rich)
+
+# Test multiple pairwise
+arg_rich_stat.test <- pairwise.wilcox.test(arg_rich$richness, arg_rich$hospital, p.adjust.method = "BH")
+arg_rich_stat.test
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0032 -     
+# UST  0.0032 0.6991
+
+pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","n.s.","**"))
+
+# Plot
+p <- ggboxplot(arg_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) + 
+  stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj") +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Richness Index for ARGs Across Hospitals") +
+  scale_y_continuous(limits = c(350,850), breaks = seq(350,850, by = 50)) +
+  geom_text(aes(label = paste(rownames(arg_rich), arg_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot5_arg_richness.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Richness for ARGs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_rich <- data.frame("richness" = specnumber(otu_table(resfinder_PHY_rel_HWW), MARGIN=2))
+all(rownames(arg_rich) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_rich$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_rich_eda <- arg_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = arg_rich)
+
+# Test multiple pairwise
+arg_rich_stat.test <- pairwise.wilcox.test(arg_rich$richness, arg_rich$hospital, p.adjust.method = "BH")
+arg_rich_stat.test
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0032 -     
+# UST  0.0032 0.6991
+
+pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","n.s.","**"))
+
+# Plot
+p <- ggbarplot(arg_rich_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj") +
+  div_th +
+  labs(title = "Richness Index for ARGs Across Hospitals", y = "richness")
+
+# Save plot
+ggsave(filename = "plot5_arg_richness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for ARGs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_even <- data.frame("evenness" = arg_shannon_div$shannon / log(arg_rich$richness))
+rownames(arg_even) <- colnames(resfinder_PHY_rel_HWW@otu_table)
+all(rownames(arg_even) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_even$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_even_eda <- arg_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(evenness ~ hospital, data = arg_even)
+
+# Test multiple pairwise
+arg_even_stat.test <- pairwise.wilcox.test(arg_even$evenness, arg_even$hospital, p.adjust.method = "BH")
+arg_even_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.82 -   
+# UST  0.82 0.82
+
+# Plot
+p <- ggboxplot(arg_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
+  div_th +
+  labs(title = "Pielou's Evenness Index for ARGs Across Hospitals") +
+  scale_y_continuous(limits = c(0.65,0.9), breaks = seq(0.65,0.9, by = 0.05)) +
+  geom_text(aes(label = paste(rownames(arg_even), arg_even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot5_arg_evenness.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for ARGs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_even <- data.frame("evenness" = arg_shannon_div$shannon / log(arg_rich$richness))
+rownames(arg_even) <- colnames(resfinder_PHY_rel_HWW@otu_table)
+all(rownames(arg_even) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_even$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_even_eda <- arg_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(evenness ~ hospital, data = arg_even)
+
+# Test multiple pairwise
+arg_even_stat.test <- pairwise.wilcox.test(arg_even$evenness, arg_even$hospital, p.adjust.method = "BH")
+arg_even_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.82 -   
+# UST  0.82 0.82
+
+# Plot
+p <- ggbarplot(arg_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Pielou's Evenness Index for ARGs Across Hospitals", y = "evenness")
+
+# Save plot
+ggsave(filename = "plot5_arg_evenness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Shannon for Taxa (metaphlan) (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_rel_genus), index = "shannon", MARGIN = 2))
+all(rownames(tax_shannon_div) == colnames(metaphlan_PHY_rel_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_rel_genus@otu_table > 0, 2, sum)
+tax_shannon_div$observed <- diversity_observed
+tax_shannon_div$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
+
+# Exploratory data analysis
+tax_shannon_eda <- tax_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = tax_shannon_div)
+
+# Test multiple pairwise
+tax_shannon_stat.test <- pairwise.wilcox.test(tax_shannon_div$shannon, tax_shannon_div$hospital, p.adjust.method = "BH")
+tax_shannon_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.20 -   
+# UST  0.59 0.20
+
+# Plot
+p <- ggboxplot(tax_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Shannon Diversity Index for Taxonomic Composition Across Hospitals") +
+  scale_y_continuous(limits = c(2.5,max(tax_shannon_div$shannon)), breaks = seq(2.5,max(tax_shannon_div$shannon), by = 0.5)) +
+  geom_text(aes(label = paste(rownames(tax_shannon_div), tax_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot6_tax_shannon.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Shannon for Taxa (metaphlan) (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_shannon_div <- data.frame("shannon" = diversity(otu_table(metaphlan_PHY_rel_genus), index = "shannon", MARGIN = 2))
+all(rownames(tax_shannon_div) == colnames(metaphlan_PHY_rel_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_rel_genus@otu_table > 0, 2, sum)
+tax_shannon_div$observed <- diversity_observed
+tax_shannon_div$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
+
+# Exploratory data analysis
+tax_shannon_eda <- tax_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = tax_shannon_div)
+
+# Test multiple pairwise
+tax_shannon_stat.test <- pairwise.wilcox.test(tax_shannon_div$shannon, tax_shannon_div$hospital, p.adjust.method = "BH")
+tax_shannon_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.20 -   
+# UST  0.59 0.20
+
+# Plot
+p <- ggbarplot(tax_shannon_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Shannon Diversity Index for Taxonomic Composition Across Hospitals", y = "shannon")
+
+# Save plot
+ggsave(filename = "plot6_tax_shannon_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Simpson for Taxa (metaphlan) (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_rel_genus), index = "simpson", MARGIN = 2))
+all(rownames(tax_simpson_div) == colnames(metaphlan_PHY_rel_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_rel_genus@otu_table > 0, 2, sum)
+tax_simpson_div$observed <- diversity_observed
+tax_simpson_div$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
+
+# Exploratory data analysis
+tax_simpson_eda <- tax_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = tax_simpson_div)
+
+# Test multiple pairwise
+tax_simpson_stat.test <- pairwise.wilcox.test(tax_simpson_div$simpson, tax_simpson_div$hospital, p.adjust.method = "BH")
+tax_simpson_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.24 -   
+# UST  0.24 0.24
+
+# Plot
+p <- ggboxplot(tax_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Simpson Diversity Index for Taxonomic Composition Across Hospitals") +
+  scale_y_continuous(limits = c(0.9,max(tax_simpson_div$simpson)), breaks = seq(0.9,max(tax_simpson_div$simpson), by = 0.02)) +
+  geom_text(aes(label = paste(rownames(tax_simpson_div), tax_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot6_tax_simpson.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Simpson for Taxa (metaphlan) (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_simpson_div <- data.frame("simpson" = diversity(otu_table(metaphlan_PHY_rel_genus), index = "simpson", MARGIN = 2))
+all(rownames(tax_simpson_div) == colnames(metaphlan_PHY_rel_genus@otu_table))
+diversity_observed <- apply(metaphlan_PHY_rel_genus@otu_table > 0, 2, sum)
+tax_simpson_div$observed <- diversity_observed
+tax_simpson_div$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
+
+# Exploratory data analysis
+tax_simpson_eda <- tax_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = tax_simpson_div)
+
+# Test multiple pairwise
+tax_simpson_stat.test <- pairwise.wilcox.test(tax_simpson_div$simpson, tax_simpson_div$hospital, p.adjust.method = "BH")
+tax_simpson_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.24 -   
+# UST  0.24 0.24
+
+# Plot
+p <- ggbarplot(tax_simpson_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Simpson Diversity Index for Taxonomic Composition Across Hospitals", y = "simpson")
+
+# Save plot
+ggsave(filename = "plot6_tax_simpson_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Richness for Taxa (metaphlan) (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_rel_genus), MARGIN=2))
+all(rownames(tax_rich) == colnames(metaphlan_PHY_rel_genus@otu_table))
+tax_rich$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
+
+# Exploratory data analysis
+tax_rich_eda <- tax_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = tax_rich)
+
+# Test multiple pairwise
+tax_rich_stat.test <- pairwise.wilcox.test(tax_rich$richness, tax_rich$hospital, p.adjust.method = "BH")
+tax_rich_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.14 -   
+# UST  0.59 0.14
+
+# Plot
+p <- ggboxplot(tax_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
+  div_th +
+  labs(title = "Richness Index for Taxonomic Composition Across Hospitals") +
+  scale_y_continuous(limits = c(200,max(tax_rich$richness)), breaks = seq(200,max(tax_rich$richness), by = 50)) +
+  geom_text(aes(label = paste(rownames(tax_rich), tax_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot6_tax_richness.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Richness for Taxa (metaphlan) (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_rich <- data.frame("richness" = specnumber(otu_table(metaphlan_PHY_rel_genus), MARGIN=2))
+all(rownames(tax_rich) == colnames(metaphlan_PHY_rel_genus@otu_table))
+tax_rich$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
+
+# Exploratory data analysis
+tax_rich_eda <- tax_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = tax_rich)
+
+# Test multiple pairwise
+tax_rich_stat.test <- pairwise.wilcox.test(tax_rich$richness, tax_rich$hospital, p.adjust.method = "BH")
+tax_rich_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.14 -   
+# UST  0.59 0.14
+
+# Plot
+p <- ggbarplot(tax_rich_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Richness Index for Taxonomic Composition Across Hospitals", y = "richness")
+
+# Save plot
+ggsave(filename = "plot6_tax_richness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for Taxa (metaphlan) (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_even <- data.frame("evenness" = tax_shannon_div$shannon / log(tax_rich$richness))
+rownames(tax_even) <- colnames(metaphlan_PHY_rel_genus@otu_table)
+all(rownames(tax_even) == colnames(metaphlan_PHY_rel_genus@otu_table))
+tax_even$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
+
+# Exploratory data analysis
+tax_even_eda <- tax_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(evenness ~ hospital, data = tax_even)
+
+# Test multiple pairwise
+tax_even_stat.test <- pairwise.wilcox.test(tax_even$evenness, tax_even$hospital, p.adjust.method = "BH")
+tax_even_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.59 -   
+# UST  0.59 0.59
+
+# Plot
+p <- ggboxplot(tax_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
+  div_th +
+  labs(title = "Pielou's Evenness Index for Taxonomic Composition Across Hospitals") +
+  scale_y_continuous(limits = c(0.5,max(tax_even$evenness)), breaks = seq(0.52,max(tax_even$evenness), by = 0.05)) +
+  geom_text(aes(label = paste(rownames(tax_even), tax_even$evenness)), hjust = -0.1, vjust = 0.52, size = 4)
+
+# Save plot
+ggsave(filename = "plot6_tax_evenness.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for Taxa (metaphlan) (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+tax_even <- data.frame("evenness" = tax_shannon_div$shannon / log(tax_rich$richness))
+rownames(tax_even) <- colnames(metaphlan_PHY_rel_genus@otu_table)
+all(rownames(tax_even) == colnames(metaphlan_PHY_rel_genus@otu_table))
+tax_even$hospital <- as.factor(metaphlan_PHY_rel_genus@sam_data$hospital)
+
+# Exploratory data analysis
+tax_even_eda <- tax_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(evenness ~ hospital, data = tax_even)
+
+# Test multiple pairwise
+tax_even_stat.test <- pairwise.wilcox.test(tax_even$evenness, tax_even$hospital, p.adjust.method = "BH")
+tax_even_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.59 -   
+# UST  0.59 0.59
+
+# Plot
+p <- ggbarplot(tax_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  div_th +
+  labs(title = "Pielou's Evenness Indexfor Taxonomic Composition Across Hospitals", y = "evenness")
+
+# Save plot
+ggsave(filename = "plot6_tax_evenness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Shannon for MGEs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_rel_HWW), index = "shannon", MARGIN = 2))
+all(rownames(mge_shannon_div) == colnames(MGE_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum)
+mge_shannon_div$observed <- diversity_observed
+mge_shannon_div$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_shannon_eda <- mge_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = mge_shannon_div)
+
+# Test multiple pairwise
+mge_shannon_stat.test <- pairwise.wilcox.test(mge_shannon_div$shannon, mge_shannon_div$hospital, p.adjust.method = "BH")
+mge_shannon_stat.test
+
+# There are no sig. differences
+#      CGH   SLMC 
+# SLMC 0.078 -    
+# UST  0.310 0.140
+
+# Plot
+p <- ggboxplot(mge_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
+  div_th +
+  labs(title = "Shannon Diversity Index for MGEs Across Hospitals") +
+  scale_y_continuous(limits = c(4.5,max(mge_shannon_div$shannon)), breaks = seq(4.5,max(mge_shannon_div$shannon), by = 0.5)) +
+  geom_text(aes(label = paste(rownames(mge_shannon_div), mge_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot7_mge_shannon.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Shannon for MGEs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_shannon_div <- data.frame("shannon" = diversity(otu_table(MGE_PHY_rel_HWW), index = "shannon", MARGIN = 2))
+all(rownames(mge_shannon_div) == colnames(MGE_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum)
+mge_shannon_div$observed <- diversity_observed
+mge_shannon_div$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_shannon_eda <- mge_shannon_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(shannon),
+    sd = sd(shannon),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(shannon ~ hospital, data = mge_shannon_div)
+
+# Test multiple pairwise
+mge_shannon_stat.test <- pairwise.wilcox.test(mge_shannon_div$shannon, mge_shannon_div$hospital, p.adjust.method = "BH")
+mge_shannon_stat.test
+
+# There are no sig. differences
+#      CGH   SLMC 
+# SLMC 0.078 -    
+# UST  0.310 0.140
+
+# Plot
+p <- ggbarplot(mge_shannon_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Shannon Diversity Index for MGEs Across Hospitals", y = "shannon")
+
+# Save plot
+ggsave(filename = "plot7_mge_shannon_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Simpson for MGEs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_rel_HWW), index = "simpson", MARGIN = 2))
+all(rownames(mge_simpson_div) == colnames(MGE_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum)
+mge_simpson_div$observed <- diversity_observed
+mge_simpson_div$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_simpson_eda <- mge_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = mge_simpson_div)
+
+# Test multiple pairwise
+mge_simpson_stat.test <- pairwise.wilcox.test(mge_simpson_div$simpson, mge_simpson_div$hospital, p.adjust.method = "BH")
+mge_simpson_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.28 -   
+# UST  0.59 0.36
+
+# Plot
+p <- ggboxplot(mge_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
+  div_th +
+  labs(title = "Simpson Diversity Index for MGEs Across Hospitals") + 
+  scale_y_continuous(limits = c(0.96,max(mge_simpson_div$simpson)), breaks = seq(0.96,max(mge_simpson_div$simpson), by = 0.02)) +
+  geom_text(aes(label = paste(rownames(mge_simpson_div), mge_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot7_mge_simpson.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Simpson for MGEs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_simpson_div <- data.frame("simpson" = diversity(otu_table(MGE_PHY_rel_HWW), index = "simpson", MARGIN = 2))
+all(rownames(mge_simpson_div) == colnames(MGE_PHY_rel_HWW@otu_table))
+diversity_observed <- apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum)
+mge_simpson_div$observed <- diversity_observed
+mge_simpson_div$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_simpson_eda <- mge_simpson_div %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(simpson),
+    sd = sd(simpson),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(simpson ~ hospital, data = mge_simpson_div)
+
+# Test multiple pairwise
+mge_simpson_stat.test <- pairwise.wilcox.test(mge_simpson_div$simpson, mge_simpson_div$hospital, p.adjust.method = "BH")
+mge_simpson_stat.test
+
+# There are no sig. differences
+#      CGH  SLMC
+# SLMC 0.28 -   
+# UST  0.59 0.36
+
+# Plot
+p <- ggbarplot(mge_simpson_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Simpson Diversity Index for MGEs Across Hospitals", y = "simpson")
+
+# Save plot
+ggsave(filename = "plot7_mge_simpson_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Richness for MGEs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_rel_HWW), MARGIN=2))
+all(rownames(mge_rich) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_rich$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_rich_eda <- mge_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = mge_rich)
+
+# Test multiple pairwise
+mge_rich_stat.test <- pairwise.wilcox.test(mge_rich$richness, mge_rich$hospital, p.adjust.method = "BH")
+mge_rich_stat.test
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0065 -     
+# UST  0.0931 0.0390
+
+pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","*","n.s."))
+
+# Plot
+p <- ggboxplot(mge_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) + 
+  stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj") +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill = hospital)) + 
+  div_th +
+  labs(title = "Richness Index for MGEs Across Hospitals") +
+  scale_y_continuous(limits = c(400,950), breaks = seq(400,950, by = 50)) +
+  geom_text(aes(label = paste(rownames(mge_rich), mge_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot7_mge_richness.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Richness for MGEs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_rich <- data.frame("richness" = specnumber(otu_table(MGE_PHY_rel_HWW), MARGIN=2))
+all(rownames(mge_rich) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_rich$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_rich_eda <- mge_rich %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(richness),
+    sd = sd(richness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(richness ~ hospital, data = mge_rich)
+
+# Test multiple pairwise
+mge_rich_stat.test <- pairwise.wilcox.test(mge_rich$richness, mge_rich$hospital, p.adjust.method = "BH")
+mge_rich_stat.test
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0065 -     
+# UST  0.0931 0.0390
+
+pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","UST"), p.adj = c("**","*","n.s."))
+
+# Plot
+p <- ggbarplot(mge_rich_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj") +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Richness Index for MGEs Across Hospitals", y = "richness")
+
+# Save plot
+ggsave(filename = "plot7_mge_richness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for MGEs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_even <- data.frame("evenness" = mge_shannon_div$shannon / log(mge_rich$richness))
+rownames(mge_even) <- colnames(MGE_PHY_rel_HWW@otu_table)
+all(rownames(mge_even) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_even$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_even_eda <- mge_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(evenness ~ hospital, data = mge_even)
+
+# Test multiple pairwise
+mge_even_stat.test <- pairwise.wilcox.test(mge_even$evenness, mge_even$hospital, p.adjust.method = "BH")
+mge_even_stat.test
+
+# There are no sig. differences
+#      CGH SLMC
+# SLMC 1   -   
+# UST  1   1 
+
+# Plot
+p <- ggboxplot(mge_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Pielou's Evenness Index for MGEs Across Hospitals") +
+  scale_y_continuous(limits = c(0.74,max(mge_even$evenness)), breaks = seq(0.74,max(mge_even$evenness), by = 0.05)) +
+  geom_text(aes(label = paste(rownames(mge_even), mge_even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot7_mge_evenness.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+#### Evenness for MGEs (bar plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_even <- data.frame("evenness" = mge_shannon_div$shannon / log(mge_rich$richness))
+rownames(mge_even) <- colnames(MGE_PHY_rel_HWW@otu_table)
+all(rownames(mge_even) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_even$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_even_eda <- mge_even %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(evenness),
+    sd = sd(evenness),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(evenness ~ hospital, data = mge_even)
+
+# Test multiple pairwise
+mge_even_stat.test <- pairwise.wilcox.test(mge_even$evenness, mge_even$hospital, p.adjust.method = "BH")
+mge_even_stat.test
+
+# There are no sig. differences
+#      CGH SLMC
+# SLMC 1   -   
+# UST  1   1 
+
+# Plot
+p <- ggbarplot(mge_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722"), alpha = 0.8) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  div_th +
+  labs(title = "Pielou's Evenness Index for MGEs Across Hospitals", y = "evenness")
+
+# Save plot
+ggsave(filename = "plot7_mge_evenness_bar.tiff",
+       width = 8, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+```{r}
+sessionInfo()
+```
