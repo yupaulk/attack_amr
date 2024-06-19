@@ -638,8 +638,7 @@ div_th <- theme_classic() + theme(text = element_text(family = "Palatino"),
                                   axis.title.y = element_text(size = 35),
                                   axis.title.x = element_blank(),
                                   axis.text.y = element_text(size = 20),
-                                  axis.text.x = element_text(size = 16, angle = 30, 
-                                                            hjust = 1, face = "bold"),
+                                  axis.text.x = element_text(size = 16, face = "bold"),
                                   legend.position = "none",
                                   plot.title = element_text(face = "bold"),
                                   plot.margin = margin(0.25, 0.25, 0.25, 0.25, "cm"))
@@ -680,11 +679,10 @@ arg_shannon_stat.test
 
 # Plot
 p <- ggboxplot(arg_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
-  labs(title = "Diversity Metrics for ARGs Across Hospitals", 
-                subtitle = "Shannon Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(4,max(arg_shannon_div$shannon)), breaks = seq(4,max(arg_shannon_div$shannon), by = 0.5)) + 
+  labs(title = "Shannon Diversity Index for ARGs Across Hospitals") +
+  scale_y_continuous(limits = c(4,max(arg_shannon_div$shannon)), breaks = seq(4,max(arg_shannon_div$shannon), by = 0.5)) + 
   geom_text(aes(label = paste(rownames(arg_shannon_div), arg_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -729,9 +727,7 @@ arg_shannon_stat.test
 p <- ggbarplot(arg_shannon_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th + 
-  labs(title = "Diversity Metrics for ARGs Across Hospitals", 
-                subtitle = "Shannon Diversity Index by Hospital",
-                y = "shannon")
+  labs(title = "Shannon Diversity Index for ARGs Across Hospitals", y = "shannon")
 
 # Save plot
 ggsave(filename = "plot5_arg_shannon_bar.tiff",
@@ -773,11 +769,10 @@ arg_simpson_stat.test
 
 # Plot
 p <- ggboxplot(arg_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
-  labs(title = "Diversity Metrics for ARGs Across Hospitals", 
-                subtitle = "Simpson Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(0.94,max(arg_simpson_div$simpson)), breaks = seq(0.94,max(arg_simpson_div$simpson), by = 0.02)) +
+  labs(title = "Simpson Diversity Index for ARGs Across Hospitals") +
+  scale_y_continuous(limits = c(0.94,max(arg_simpson_div$simpson)), breaks = seq(0.94,max(arg_simpson_div$simpson), by = 0.02)) +
   geom_text(aes(label = paste(rownames(arg_simpson_div), arg_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -822,9 +817,7 @@ arg_simpson_stat.test
 p <- ggbarplot(arg_simpson_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) + 
   div_th +
-  labs(title = "Diversity Metrics for ARGs Across Hospitals", 
-                subtitle = "Simpson Diversity Index by Hospital",
-                y = "simpson")
+  labs(title = "Simpson Diversity Index for ARGs Across Hospitals", y = "simpson")
 
 # Save plot
 ggsave(filename = "plot5_arg_simpson_bar.tiff",
@@ -867,11 +860,10 @@ pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","U
 # Plot
 p <- ggboxplot(arg_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj") +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
-  labs(title = "Richness for ARGs Across Hospitals", 
-                subtitle = "Richness Index by Hospital") +
-                scale_y_continuous(limits = c(350,850), breaks = seq(350,850, by = 50)) +
+  labs(title = "Richness Index for ARGs Across Hospitals") +
+  scale_y_continuous(limits = c(350,850), breaks = seq(350,850, by = 50)) +
   geom_text(aes(label = paste(rownames(arg_rich), arg_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -917,9 +909,7 @@ p <- ggbarplot(arg_rich_eda, x = "hospital", y = "mean", fill = "hospital", pale
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   stat_pvalue_manual(pvalues, size = 6, y.position = 800, step.increase = 0.05, label = "p.adj") +
   div_th +
-  labs(title = "Richness for ARGs Across Hospitals", 
-                subtitle = "Richness Index by Hospital",
-                y = "richness")
+  labs(title = "Richness Index for ARGs Across Hospitals", y = "richness")
 
 # Save plot
 ggsave(filename = "plot5_arg_richness_bar.tiff",
@@ -960,11 +950,10 @@ arg_even_stat.test
 
 # Plot
 p <- ggboxplot(arg_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
-  labs(title = "Evenness for ARGs Across Hospitals", 
-                subtitle = "Pielou's Evenness by Hospital") +
-                scale_y_continuous(limits = c(0.65,0.9), breaks = seq(0.65,0.9, by = 0.05)) +
+  labs(title = "Pielou's Evenness Index for ARGs Across Hospitals") +
+  scale_y_continuous(limits = c(0.65,0.9), breaks = seq(0.65,0.9, by = 0.05)) +
   geom_text(aes(label = paste(rownames(arg_even), arg_even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -1008,9 +997,7 @@ arg_even_stat.test
 p <- ggbarplot(arg_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
-  labs(title = "Evenness for ARGs Across Hospitals", 
-                subtitle = "Pieolou's Evenness by Hospital",
-                y = "evenness")
+  labs(title = "Pielou's Evenness Index for ARGs Across Hospitals", y = "evenness")
 
 # Save plot
 ggsave(filename = "plot5_arg_evenness_bar.tiff",
@@ -1053,11 +1040,10 @@ tax_shannon_stat.test
 
 # Plot
 p <- ggboxplot(tax_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
-  labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
-                subtitle = "Shannon Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(2.5,max(tax_shannon_div$shannon)), breaks = seq(2.5,max(tax_shannon_div$shannon), by = 0.5)) +
+  labs(title = "Shannon Diversity Index for Taxonomic Composition Across Hospitals") +
+  scale_y_continuous(limits = c(2.5,max(tax_shannon_div$shannon)), breaks = seq(2.5,max(tax_shannon_div$shannon), by = 0.5)) +
   geom_text(aes(label = paste(rownames(tax_shannon_div), tax_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -1102,9 +1088,7 @@ tax_shannon_stat.test
 p <- ggbarplot(tax_shannon_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
-  labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
-                subtitle = "Shannon Diversity Index by Hospital",
-                y = "shannon")
+  labs(title = "Shannon Diversity Index for Taxonomic Composition Across Hospitals", y = "shannon")
 
 # Save plot
 ggsave(filename = "plot6_tax_shannon_bar.tiff",
@@ -1146,11 +1130,10 @@ tax_simpson_stat.test
 
 # Plot
 p <- ggboxplot(tax_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
-  labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
-                subtitle = "Simpson Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(0.9,max(tax_simpson_div$simpson)), breaks = seq(0.9,max(tax_simpson_div$simpson), by = 0.02)) +
+  labs(title = "Simpson Diversity Index for Taxonomic Composition Across Hospitals") +
+  scale_y_continuous(limits = c(0.9,max(tax_simpson_div$simpson)), breaks = seq(0.9,max(tax_simpson_div$simpson), by = 0.02)) +
   geom_text(aes(label = paste(rownames(tax_simpson_div), tax_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -1195,9 +1178,7 @@ tax_simpson_stat.test
 p <- ggbarplot(tax_simpson_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
-  labs(title = "Diversity Metrics for Taxonomic Composition Across Hospitals", 
-                subtitle = "Simpson Diversity Index by Hospital",
-                y = "simpson")
+  labs(title = "Simpson Diversity Index for Taxonomic Composition Across Hospitals", y = "simpson")
 
 # Save plot
 ggsave(filename = "plot6_tax_simpson_bar.tiff",
@@ -1237,11 +1218,10 @@ tax_rich_stat.test
 
 # Plot
 p <- ggboxplot(tax_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
-  labs(title = "Richness for Taxonomic Composition Across Hospitals", 
-                subtitle = "Richness by Hospital") +
-                scale_y_continuous(limits = c(200,max(tax_rich$richness)), breaks = seq(200,max(tax_rich$richness), by = 50)) +
+  labs(title = "Richness Index for Taxonomic Composition Across Hospitals") +
+  scale_y_continuous(limits = c(200,max(tax_rich$richness)), breaks = seq(200,max(tax_rich$richness), by = 50)) +
   geom_text(aes(label = paste(rownames(tax_rich), tax_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -1284,9 +1264,7 @@ tax_rich_stat.test
 p <- ggbarplot(tax_rich_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
-  labs(title = "Richness for Taxonomic Composition Across Hospitals", 
-                subtitle = "Richness Index by Hospital",
-                y = "richness")
+  labs(title = "Richness Index for Taxonomic Composition Across Hospitals", y = "richness")
 
 # Save plot
 ggsave(filename = "plot6_tax_richness_bar.tiff",
@@ -1327,11 +1305,10 @@ tax_even_stat.test
 
 # Plot
 p <- ggboxplot(tax_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
-  labs(title = "Evenness for Taxonomic Composition Across Hospitals", 
-                subtitle = "Pielou's Evenness by Hospital") +
-                scale_y_continuous(limits = c(0.5,max(tax_even$evenness)), breaks = seq(0.52,max(tax_even$evenness), by = 0.05)) +
+  labs(title = "Pielou's Evenness Index for Taxonomic Composition Across Hospitals") +
+  scale_y_continuous(limits = c(0.5,max(tax_even$evenness)), breaks = seq(0.52,max(tax_even$evenness), by = 0.05)) +
   geom_text(aes(label = paste(rownames(tax_even), tax_even$evenness)), hjust = -0.1, vjust = 0.52, size = 4)
 
 # Save plot
@@ -1375,9 +1352,7 @@ tax_even_stat.test
 p <- ggbarplot(tax_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
-  labs(title = "Evenness for Taxonomic Composition Across Hospitals", 
-                subtitle = "Pielou's Evenness by Hospital",
-                y = "evenness")
+  labs(title = "Pielou's Evenness Indexfor Taxonomic Composition Across Hospitals", y = "evenness")
 
 # Save plot
 ggsave(filename = "plot6_tax_evenness_bar.tiff",
@@ -1419,11 +1394,10 @@ mge_shannon_stat.test
 
 # Plot
 p <- ggboxplot(mge_shannon_div, x = "hospital", y = "shannon", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
-  labs(title = "Diversity Metrics for MGEs Across Hospitals", 
-                subtitle = "Shannon Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(4.5,max(mge_shannon_div$shannon)), breaks = seq(4.5,max(mge_shannon_div$shannon), by = 0.5)) +
+  labs(title = "Shannon Diversity Index for MGEs Across Hospitals") +
+  scale_y_continuous(limits = c(4.5,max(mge_shannon_div$shannon)), breaks = seq(4.5,max(mge_shannon_div$shannon), by = 0.5)) +
   geom_text(aes(label = paste(rownames(mge_shannon_div), mge_shannon_div$shannon)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -1468,9 +1442,7 @@ mge_shannon_stat.test
 p <- ggbarplot(mge_shannon_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
-  labs(title = "Diversity Metrics for MGEs Across Hospitals", 
-                subtitle = "Shannon Diversity Index by Hospital",
-                y = "shannon")
+  labs(title = "Shannon Diversity Index for MGEs Across Hospitals", y = "shannon")
 
 # Save plot
 ggsave(filename = "plot7_mge_shannon_bar.tiff",
@@ -1512,11 +1484,10 @@ mge_simpson_stat.test
 
 # Plot
 p <- ggboxplot(mge_simpson_div, x = "hospital", y = "simpson", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) +
   div_th +
-  labs(title = "Diversity Metrics for MGEs Across Hospitals", 
-                subtitle = "Simpson Diversity Index by Hospital") +
-                scale_y_continuous(limits = c(0.96,max(mge_simpson_div$simpson)), breaks = seq(0.96,max(mge_simpson_div$simpson), by = 0.02)) +
+  labs(title = "Simpson Diversity Index for MGEs Across Hospitals") + 
+  scale_y_continuous(limits = c(0.96,max(mge_simpson_div$simpson)), breaks = seq(0.96,max(mge_simpson_div$simpson), by = 0.02)) +
   geom_text(aes(label = paste(rownames(mge_simpson_div), mge_simpson_div$simpson)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -1561,9 +1532,7 @@ mge_simpson_stat.test
 p <- ggbarplot(mge_simpson_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
-  labs(title = "Diversity Metrics for MGEs Across Hospitals", 
-                subtitle = "Simpson Diversity Index by Hospital",
-                y = "simpson")
+  labs(title = "Simpson Diversity Index for MGEs Across Hospitals", y = "simpson")
 
 # Save plot
 ggsave(filename = "plot7_mge_simpson_bar.tiff",
@@ -1606,11 +1575,10 @@ pvalues <- data.frame(group1 = c("SLMC","UST","CGH"), group2 = c("CGH","SLMC","U
 # Plot
 p <- ggboxplot(mge_rich, x = "hospital", y = "richness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) + 
   stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj") +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill = hospital)) + 
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill = hospital)) + 
   div_th +
-  labs(title = "Richness for MGEs Across Hospitals", 
-                subtitle = "Richness by Hospital") +
-                scale_y_continuous(limits = c(400,950), breaks = seq(400,950, by = 50)) +
+  labs(title = "Richness Index for MGEs Across Hospitals") +
+  scale_y_continuous(limits = c(400,950), breaks = seq(400,950, by = 50)) +
   geom_text(aes(label = paste(rownames(mge_rich), mge_rich$richness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -1656,9 +1624,7 @@ p <- ggbarplot(mge_rich_eda, x = "hospital", y = "mean", fill = "hospital", pale
   stat_pvalue_manual(pvalues, size = 6, y.position = 900, step.increase = 0.05, label = "p.adj") +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
-  labs(title = "Richness for MGEs Across Hospitals", 
-                subtitle = "Richness Index by Hospital",
-                y = "richness")
+  labs(title = "Richness Index for MGEs Across Hospitals", y = "richness")
 
 # Save plot
 ggsave(filename = "plot7_mge_richness_bar.tiff",
@@ -1699,11 +1665,10 @@ mge_even_stat.test
 
 # Plot
 p <- ggboxplot(mge_even, x = "hospital", y = "evenness", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
-  labs(title = "Evenness for MGEs Across Hospitals", 
-                subtitle = "Pielou's Evenness by Hospital") +
-                scale_y_continuous(limits = c(0.74,max(mge_even$evenness)), breaks = seq(0.74,max(mge_even$evenness), by = 0.05)) +
+  labs(title = "Pielou's Evenness Index for MGEs Across Hospitals") +
+  scale_y_continuous(limits = c(0.74,max(mge_even$evenness)), breaks = seq(0.74,max(mge_even$evenness), by = 0.05)) +
   geom_text(aes(label = paste(rownames(mge_even), mge_even$evenness)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -1747,9 +1712,7 @@ mge_even_stat.test
 p <- ggbarplot(mge_even_eda, x = "hospital", y = "mean", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
   div_th +
-  labs(title = "Evenness for MGEs Across Hospitals", 
-                subtitle = "Pielou's Evenness by Hospital",
-                y = "evenness")
+  labs(title = "Pielou's Evenness Index for MGEs Across Hospitals", y = "evenness")
 
 # Save plot
 ggsave(filename = "plot7_mge_evenness_bar.tiff",
@@ -1867,74 +1830,6 @@ p <- resfinder_PHY_rel_HWW %>%
 # Save plot
 ggsave(filename = "plot9_arg_count_class.tiff",
        width = 24, height = 8, dpi = 300, units = "in", device='tiff', scale = 1)
-```
-
-```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
-# Gather data
-
-#PKY: Is this the correct way? We got 105% for CGH2...
-colSums(otu_table(resfinder_PHY_rel_HWW))
-
-df <- data.frame(
-  RA = sample_sums(resfinder_PHY_rel_HWW),
-  hospital = as.factor(sample_data(resfinder_PHY_rel_HWW)$hospital)
-)
-M <- lm(RA ~ hospital, data = df)
-summary(M)
-shapiro.test(df$RA)
-# Data is not normally distributed.
-plot(M)
-
-# Heterosedasticity?
-par(mfrow=c(2,2))
-#plot(M)
-
-lmtest::bptest(M)  # Breusch-Pagan test
-car::ncvTest(M)  # Breusch-Pagan test
-# There is no heteroscedasticity.
-```
-
-```{r}
-# Test
-kruskal.test(RA ~ hospital, data = df)
-```
-
-```{r}
-# Test multiple pairwise
-stat.test <- pairwise.wilcox.test(df$RA, df$hospital, p.adjust.method = "BH")
-stat.test
-
-pvalues <- tibble::tribble(
-  ~group1, ~group2,   ~p.adj,
-    "SLMC",     "CGH", "***",
-    "SLMC",     "UST", "**",
-    "CGH",     "UST", "**"
-  )
-pvalues
-
-# +
-#   stat_pvalue_manual(pvalues, hide.ns = TRUE, size = 8, y.position = 2.5, step.increase = 0.025, label = "p.adj")
-
-# Save plot
-p <- ggboxplot(df, x = "hospital", y = "RA", color = "hospital", palette = c("#1C4731", "#910C28", "#1E88E5"), width = 0.3)  +
-  theme_bw() +
-  theme(axis.text.x = element_text(size = 16, face = "bold"),
-        axis.title.x = element_blank(),
-        axis.text.y = element_text(size = 16),
-        axis.title.y = element_text(size = 20),
-        legend.position = "none",
-        plot.subtitle = element_text(size = 24, hjust = 0.5),
-        plot.tag = element_text(size = 24, family = "Palatino", face = "bold"),
-        text = element_text(family = "Palatino"),
-        aspect.ratio = 1) +
-  labs(y = "ARGs/16S rRNA", x = "") +
-  guides(color = "none", alpha = "none") +
-  geom_jitter(data = df, aes(x = hospital, y = RA, color = hospital), size = 3, alpha = 0.7, width = 0.1) +
-  geom_text(data = df, aes(x = hospital, y = RA, label = rownames(arg_shannon_div)), size = 3, vjust = -0.5)  +
-  labs(title = "Comparison of ARGs/16S rRNA Levels Across Hospitals using Wilcoxx")  # Add title
-
-ggsave(filename = "wilcox.tiff",
-       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 #### Relative abundances of MGEs
@@ -2633,12 +2528,11 @@ arg_observed_stat.test
 # UST  0.0032 0.6991
 
 # Plot
-p <- ggboxplot(arg_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+p1_plot <- ggboxplot(arg_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
-  labs(title = "Total Abundances for ARGs Across Hospitals", 
-                subtitle = "Total Abundances by Hospital") +
-                scale_y_continuous(limits = c(350,max(arg_observed$observed)), breaks = seq(350,max(arg_observed$observed), by = 50)) + 
+  labs(title = "Total Abundances for ARGs Across Hospitals", y = "ARGs/16S rRNA") +
+  scale_y_continuous(limits = c(350,max(arg_observed$observed)), breaks = seq(350,max(arg_observed$observed), by = 50)) + 
   geom_text(aes(label = paste(rownames(arg_observed), arg_observed$observed)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
@@ -2678,17 +2572,36 @@ mge_observed_stat.test
 # UST  0.0032 0.6991
 
 # Plot
-p <- ggboxplot(mge_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
-  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+p2_plot <- ggboxplot(mge_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_jitter(width = 0.1), aes(fill=hospital)) + 
   div_th +
-  labs(title = "Total Abundances for MGEs Across Hospitals", 
-                subtitle = "Total Abundances by Hospital") +
-                scale_y_continuous(limits = c(350,max(mge_observed$observed)), breaks = seq(350,max(mge_observed$observed), by = 50)) + 
+  labs(title = "Total Abundances for MGEs Across Hospitals", y = "MGEs/16S rRNA") +
+  scale_y_continuous(limits = c(350,max(mge_observed$observed)), breaks = seq(350,max(mge_observed$observed), by = 50)) +
   geom_text(aes(label = paste(rownames(mge_observed), mge_observed$observed)), hjust = -0.1, vjust = 0.5, size = 4)
 
 # Save plot
 ggsave(filename = "plot14_mge_observed.tiff",
        width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+
+```{r}
+p1_plot <- p1_plot + labs(title="")
+p2_plot <- p2_plot + labs(title="")
+patchwork0 <- p1_plot + p2_plot + 
+  plot_annotation(tag_levels = list(c('ARGs', 'MGEs')), 
+  title = "Total Abundances for ARGS, MGEs Across Hospitals") & 
+  theme(plot.title = element_text(size = 30, family = "Palatino", face = "bold"),
+        plot.tag = element_text(size = 22, face = "bold"),
+        plot.tag.position = c(0.5, 1))
+patchwork <- patchwork0 + plot_layout(guides = "collect")
+patchwork
+
+# Save plots for HWW samples
+ggsave(filename = "plot14a_merged_sum.tiff",
+       width = 16, height = 10, dpi = 300, units = "in", device='tiff', scale = 1)
+ggsave(filename = "plot14b_merged_sum.tiff",
+       width = 32, height = 10, dpi = 300, units = "in", device='tiff', scale = 1)
 ```
 
 ### Save phyloseq objects to csv
