@@ -1,0 +1,281 @@
+# Bioinformatics Analyses of ATTACK-AMR
+## Authors: Paul K. Yu, Daphne Janelyn Go
+
+### Adapted from Melina A. Markkanen, Kaisa Haukka, Katariina M. M. Pärnänen, Victorien Tamegnon Dougnon, Isidore Juste O. Bonkoungou, Zakaria Garba, Halidou Tinto, Anniina Sarekoski, Antti Karkman, Anu Kantele, Marko P. J. Virta. 2023. Metagenomic Analysis of the Abundance and Composition of Antibiotic Resistance Genes in Hospital Wastewater in Benin, Burkina Faso, and Finland mSphere. https://doi.org/10.1128/msphere.00538-22
+### https://github.com/melinamarkkanen/AMRIWA
+
+### Import libraries
+
+```{r, libraries}
+# if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+# BiocManager::install(c("phyloseq", "microbiome", "ComplexHeatmap"), update = FALSE)
+# install.packages("microViz", repos = c(davidbarnett = "https://david-barnett.r-universe.dev", getOption("repos")))
+# install.packages("tidyverse")
+# install.packages("plotly")
+
+library(phyloseq)
+library(tidyverse)
+library(plotly)
+
+source("plot_hierarchy.R")
+
+```
+
+### Read rds as phyloseq object
+
+```{r}
+metaphlan_PHY_rel_phylum <- readRDS('metaphlan_PHY_rel_phylum.rds')
+metaphlan_PHY_rel_class <- readRDS('metaphlan_PHY_rel_class.rds')
+metaphlan_PHY_rel_order <- readRDS('metaphlan_PHY_rel_order.rds')
+metaphlan_PHY_rel_family <- readRDS('metaphlan_PHY_rel_family.rds')
+metaphlan_PHY_rel_genus <- readRDS('metaphlan_PHY_rel_genus.rds')
+metaphlan_PHY_rel_species <- readRDS('metaphlan_PHY_rel_species.rds')
+
+```
+
+# Sankey diagram from https://ianartmor.github.io/phyloseq_sankey/
+
+```{r}
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_species, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_species.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_genus, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_genus.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_family, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_family.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_order, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_order.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_class, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_class.html")
+
+p <- plot_hierarchy(physeq = metaphlan_PHY_rel_phylum, number_of_taxa_to_plot = 40)
+p
+htmlwidgets::saveWidget(p, file = "plot3_sankey_phylum.html")
+```
+
+# Source: https://github.com/theislab/MetaMap-web/blob/1d6220640d95cb7a54733138e4c652a642de6e8b/R/plots.r
+
+```{r}
+#' @import rlang
+#' @import purrr
+#' @import tidyr
+#' @import plyr
+#' @import dplyr
+#' @import stringr
+#' @import phyloseq
+#' @import ggplot2
+#' @import shiny
+#' @import plotly
+#' @import utils
+#' @import data.table
+#' @import shinyjs
+#' @import shinythemes
+#' @import DT
+#' @import V8
+#' @import psadd
+#' @import grid
+
+#' @title TaxID to Species
+#'
+#' Transforms taxID to the corresponding Species name.
+#'
+#' @param phylo \link[phyloseq]{phyloseq} object
+#' @param taxID
+#'
+#'
+#' @return Species name
+#' @export
+taxids2names <-
+  function(phylo, TaxID, level = "Species")
+    phylo@tax_table[TaxID, level]  %>% as.character
+
+#' Deal with NAs
+#'
+#' Replaces NAs with the following: {Class}_NA. Class stands for the last known class of the corresponding OTU.
+#'
+#' @param tax_table A table obtained by \link[phyloseq]{tax_table}.
+#'
+#'
+#' @return Modified tax table
+#' @export
+clean_tax_table <- function(tax_table) {
+  tax_table <- as.data.frame(tax_table)
+  tax_table[] <- lapply(tax_table, as.character)
+  inds <- which(is.na(tax_table), arr.ind = TRUE)
+  if(length(inds)==0)
+    return(tax_table)
+  inds1 <- aggregate(row ~ col, data = inds, list)
+  # rownames(inds) <- inds$col
+  # inds <- inds$row
+  env <- environment()
+  tmp <- tax_table
+  levels <- apply(inds1, 1, function(x) {
+    tbl <- tax_table[x$row, 1:(x$col - 1)]
+    tbl <- as.data.frame(tbl)
+    levels <- apply(tbl, 1, function(y) {
+      y[max(which(!is.na(y)))]
+    })
+    levels
+    # assign("tmp", tax_table, env)
+  }) %>% unlist
+
+  tax_table[inds] <- paste0(levels, "_NA")
+  tax_table
+}
+```
+
+```{r}
+#' Make Sankey links table
+#'
+#' Creates a table with information about all the links from \code{source} to \code{target}.
+#'     This table can be used to create a shankey plot.
+#'
+#' @param tax_table filtered tax table from a \link[phyloseq]{phyloseq} object
+#' @param otu_table otu_table from a \link[phyloseq]{phyloseq} object
+#' @param source \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param target \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param source_filter String to filter \code{source} values.
+#' @param level_filter \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#'
+#' @return A data.frame with info about the links.
+#' @export
+makeSankey_links <-
+  function(tax_table,
+           otu_table,
+           source,
+           target,
+           source_filter,
+           level_filter) {
+    group <- tax_table[, target]
+
+    target_means <- rowsum(otu_table, group) %>% rowMeans() %>%
+    {
+      . / sum(.) * 100
+    }
+
+    # Filter tax_table
+    if (!is.null(source_filter)) {
+      if (is.null(level_filter))
+        level_filter <- source
+      tax_table <-
+        filter(tax_table, tax_table[, level_filter] == source_filter)
+    }
+
+    links <-
+      tax_table[, c(source, target)] %>% data.frame(stringsAsFactors = FALSE) %>%
+      distinct %>% setNames(c("Source", "Target")) %>%
+      mutate(
+        Value = target_means[.$Target],
+        Source_level = rep(source, nrow(.)),
+        Target_level = rep(target, nrow(.))
+      ) %>%
+      .[order(.$Value, decreasing = TRUE),] %>% .[which(.$Value > 0.5),] %>%
+      .[1:min(10, nrow(.)),]
+
+
+    links
+  }
+```
+
+```{r}
+#' Sankey plot
+#'
+#' Plot a sankey diagram.
+#'
+#' @param phylo \link[phyloseq]{phyloseq} object
+#' @param source \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param target \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param level_filter \code{c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")}
+#' @param source_filter String to filter \code{source} values.
+#' @param normalized A boolean value indicating, whether the count_table is normalized for sequencing depth.
+#'
+#' @return An intercative sankey plot generated by plotly.
+#' @export
+plot_sankey <-
+  function(phylo,
+           source = "Kingdom",
+           target = "Phylum",
+           level_filter = NULL,
+           source_filter = NULL,
+           normalized = FALSE) {
+    if (is.null(phylo))
+      return(NULL)
+
+    # Deal with NA values
+    tax_table <- clean_tax_table(phylo@tax_table)
+
+    firstLevel <- which(colnames(tax_table) == source)
+    lastLevel <- which(colnames(tax_table) == target)
+    levls <- colnames(tax_table)[firstLevel:lastLevel]
+
+    pairs <-
+      lapply(1:(length(levls) - 1), function(x)
+        list(Source = levls[x], Target = levls[x + 1]))
+
+    phylo@tax_table <- tax_table(tax_table)
+
+    otu_table <- phylo@otu_table
+    
+    links <-
+      do.call(rbind, lapply(pairs, function(x)
+        makeSankey_links(
+          tax_table,
+          otu_table,
+          x$Source,
+          x$Target,
+          source_filter,
+          level_filter
+        )))
+
+    # Add __S and __T
+    links$Source <-
+      paste0(substr(links$Source_level, 1, 1), "__", links$Source)
+    links$Target <-
+      paste0(substr(links$Target_level, 1, 1), "__", links$Target)
+
+    sources <- links$Source %>% unique
+    targets <- links$Target %>% unique
+    node_labels <-
+      c(sources, targets) %>% setNames(0:(length(.) - 1), .)
+    links <- links %>%
+      mutate(SourceNr = node_labels[Source],
+             TargetNr = node_labels[Target])
+
+    p <- plot_ly(
+      source = "sankey",
+      type = "sankey",
+      valueformat = ".0f",
+      valuesuffix = "%",
+      node = list(
+        label = names(node_labels),
+        # color = json_data$data[[1]]$node$color,
+        pad = 15,
+        thickness = 15,
+        line = list(color = "black",
+                    width = 0.5)
+      ),
+
+      link = with(links, list(
+        source = SourceNr,
+        target = TargetNr,
+        value =  Value
+      ))
+    )
+    return(list(plot = p, links = links))
+  }
+
+p <- plot_sankey(metaphlan_PHY_rel_species, source="Kingdom", target="Species", level_filter="Kingdom")
+htmlwidgets::saveWidget(p[[1]], file = "plot4_sankey_species.html")
+```
+
+```{r}
+sessionInfo()
+```
