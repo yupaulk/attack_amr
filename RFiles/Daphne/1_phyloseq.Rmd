@@ -7,15 +7,12 @@
 ### Import libraries
 
 ```{r, libraries}
-# install.packages("stringr")
 # if (!requireNamespace("BiocManager", quietly = TRUE))
 #     install.packages("BiocManager")
 # BiocManager::install("phyloseq")
-# library(tidyverse)
+# install.packages("tidyverse")
 
-library(stringr)
 library(phyloseq)
-library(readr)
 library(tidyverse)
 
 ```
