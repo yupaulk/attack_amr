@@ -2601,6 +2601,98 @@ p <- plot_sankey(metaphlan_PHY_rel_species, source="Kingdom", target="Species", 
 htmlwidgets::saveWidget(p[[1]], file = "plot4_sankey_species.html")
 ```
 
+### Sum of Relative Abundance of ARGs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+arg_observed <- data.frame("observed" = apply(resfinder_PHY_rel_HWW@otu_table > 0, 2, sum))
+all(rownames(arg_observed) == colnames(resfinder_PHY_rel_HWW@otu_table))
+arg_observed$hospital <- as.factor(resfinder_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+arg_observed_eda <- arg_observed %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(observed),
+    sd = sd(observed),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(observed ~ hospital, data = arg_observed)
+
+# Test multiple pairwise
+arg_observed_stat.test <- pairwise.wilcox.test(arg_observed$observed, arg_observed$hospital, p.adjust.method = "BH")
+arg_observed_stat.test 
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0032 -     
+# UST  0.0032 0.6991
+
+# Plot
+p <- ggboxplot(arg_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Total Abundances for ARGs Across Hospitals", 
+                subtitle = "Total Abundances by Hospital") +
+                scale_y_continuous(limits = c(350,max(arg_observed$observed)), breaks = seq(350,max(arg_observed$observed), by = 50)) + 
+  geom_text(aes(label = paste(rownames(arg_observed), arg_observed$observed)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot14_arg_observed.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+### Sum of Relative Abundance of MGEs (box plot)
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+mge_observed <- data.frame("observed" = apply(MGE_PHY_rel_HWW@otu_table > 0, 2, sum))
+all(rownames(mge_observed) == colnames(MGE_PHY_rel_HWW@otu_table))
+mge_observed$hospital <- as.factor(MGE_PHY_rel_HWW@sam_data$hospital)
+
+# Exploratory data analysis
+mge_observed_eda <- mge_observed %>%
+  group_by(hospital) %>%
+  summarise(
+    mean = mean(observed),
+    sd = sd(observed),
+    n = n(),
+    se = sd / sqrt(n),
+    conf.low = mean - qt(0.975, df = n - 1) * se,
+    conf.high = mean + qt(0.975, df = n - 1) * se
+  )
+
+# Test the significance
+kruskal.test(observed ~ hospital, data = mge_observed)
+
+# Test multiple pairwise
+mge_observed_stat.test <- pairwise.wilcox.test(mge_observed$observed, mge_observed$hospital, p.adjust.method = "BH")
+mge_observed_stat.test 
+
+# There are sig. differences
+#      CGH    SLMC  
+# SLMC 0.0032 -     
+# UST  0.0032 0.6991
+
+# Plot
+p <- ggboxplot(mge_observed, x = "hospital", y = "observed", fill = "hospital", palette = c("#CD3857", "#61A6E3", "#CC7722")) +
+  geom_dotplot(binaxis='y', stackdir='center', dotsize = 0.4, aes(fill=hospital)) + 
+  div_th +
+  labs(title = "Total Abundances for MGEs Across Hospitals", 
+                subtitle = "Total Abundances by Hospital") +
+                scale_y_continuous(limits = c(350,max(mge_observed$observed)), breaks = seq(350,max(mge_observed$observed), by = 50)) + 
+  geom_text(aes(label = paste(rownames(mge_observed), mge_observed$observed)), hjust = -0.1, vjust = 0.5, size = 4)
+
+# Save plot
+ggsave(filename = "plot14_mge_observed.tiff",
+       width = 16, height = 13, dpi = 300, units = "in", device='tiff', scale = 1)
+```
+
+### Save phyloseq objects to csv
+
 ```{r}
 write_csv(psmelt(resfinder_PHY_rel_HWW), file = 'resfinder_PHY_rel_HWW.csv')
 write_csv(psmelt(resfinder_PHY_rel_HWW), file = 'resfinder_PHY_rel_HWW.csv')
