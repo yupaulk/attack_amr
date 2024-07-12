@@ -29,6 +29,7 @@ metadata <- read.csv("metadata_updated.csv", header = TRUE)
 ```
 
 ```{r}
+metaphlan_data <- read.delim("merged_metaphlan_rel_species.txt", header = TRUE)
 # Reshape MetaPhlAn data using pivot_longer
 long_metaphlan <- metaphlan_data %>%
   pivot_longer(cols = -clade_name, names_to = "SampleID", values_to = "RelativeAbundance")
