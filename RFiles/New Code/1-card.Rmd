@@ -1,0 +1,278 @@
+
+
+## CARD Analysis File
+
+```{r}
+library (ggplot2)
+library(RColorBrewer)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggpubr)
+library(vegan)
+library(plotly)
+library(ggfortify)
+library(compositions)
+```
+
+
+## Including Analysis
+
+#### Load Pertinent Files
+
+```{r}
+metadata <- read.csv("metadata_updated.csv", header = TRUE)
+metaxa_data <- read.delim("metaxa_genus.txt", header = TRUE)
+card_data <- read.delim("card_genemat_no_zero.txt", header = TRUE)
+drug_class_card <- read.delim("card_drug_class.txt", header = TRUE)
+card_lengths <- read.delim("card_lengths.txt", header = TRUE)
+print (drug_class_card)
+```
+
+#### Merging Metadata and Normalizing Counts using Metaxa
+
+```{r}
+# Transform Metaxa data to long format
+long_metaxa <- metaxa_data %>%
+  pivot_longer(cols = -Taxa, names_to = "SampleID", values_to = "Count")
+
+# Merge Metaxa data with metadata
+combined_metaxa <- merge(long_metaxa, metadata, by = "SampleID", all.x = TRUE)
+combined_length <- merge (card_data, card_lengths, by = "GENE", all.x = TRUE)
+
+ssu_counts <- combined_metaxa %>%
+  group_by(SampleID) %>%
+  summarize(SSU_Counts = sum(Count))
+
+print (ssu_counts)
+# print(combined_length[-1, 2:(ncol(combined_length) - 1)])
+
+card_length_norm <- combined_length[, 2:(ncol(combined_length)-1)]  / combined_length$Length
+
+combined_length_df <- combined_length[,]
+
+
+card_length_norm$GENE = combined_length$GENE
+# Transform CARD data to long format
+long_card <- card_data %>%
+  pivot_longer(cols = -GENE, names_to = "SampleID", values_to = "Count")
+
+# FIX MERGING
+
+combined_temp <- merge(card_length_norm, long_card, by = "GENE", all.x = TRUE)
+combined_data <- merge (combined_temp, metadata, by = "SampleID", all.x = TRUE)
+combined_data_ssu <- merge (combined_data, ssu_counts, by = "SampleID", all.x = TRUE)
+
+print (combined_data_ssu)
+
+  
+# CONTINUE FROM HERE
+# # Normalization with Metaxa2 SSU counts
+# card_length_SSU_norm <- t(t(card_length_norm) / ssu_counts[,-1]) * 1540
+# # Replace counts in card_data with normalized values
+# normalized_card_data <- card_data
+# normalized_card_data[-1] <- card_length_SSU_norm
+# 
+# # Optionally, you can ensure the first column (GENE names) is retained properly
+# normalized_card_data[, 1] <- card_data[, 1]
+# 
+# # Print the final normalized data frame
+# print(normalized_card_data)
+# # Transform CARD data to long format
+# long_card <- normalized_card_data %>%
+#   pivot_longer(cols = -GENE, names_to = "SampleID", values_to = "Count")
+# 
+# # Merge CARD data with metadata
+# combined_data <- merge(long_card,metadata, by = "SampleID", all.x = TRUE)
+# combined_data_class <- merge(combined_data, drug_class_card, by = "GENE", all.x = TRUE)
+# 
+# # Reshape the data so that one row is one sample using pivot_wider
+# card_df <- combined_data %>%
+#   pivot_wider(names_from = GENE, values_from = Count)
+# 
+# print (combined_data)
+write.csv(combined_data_ssu, "output1.csv")
+```
+
+#### Cleaning Drug Classes
+
+```{r}
+# Separating Multiple Drug Classes
+combined_data_class <- combined_data_class %>%
+  mutate(Class = str_replace_all(Class, "\\s*,\\s*", ","))
+
+combined_data_class <- combined_data_class %>%
+  separate_rows(Class, sep = ",") %>%
+  mutate(Class = trimws(Class))
+
+print (combined_data_class)
+
+# Reshape the data so that one row is one sample using pivot_wider
+card_class <- combined_data_class %>% pivot_wider(names_from = Class, values_from = Count)
+
+
+card_class <- card_class %>%
+  mutate(across(everything(), ~ replace_na(.x, 0)))
+clean_names <- names(card_class)
+clean_names <- iconv(clean_names, from = "UTF-8", to = "ASCII//TRANSLIT")
+clean_names <- sub("^ ", "", clean_names)  # Adjusting the replacement pattern if necessary
+names(card_class) <- clean_names
+
+# # Find duplicate column names
+# duplicate_cols <- names(card_class)[duplicated(names(card_class))]
+# 
+# # Combine counts for duplicate columns
+# for (col in unique(duplicate_cols)) {
+#   cols_to_combine <- which(names(card_class) == col)
+#   card_class[, col] <- rowSums(card_class[, cols_to_combine])
+#   card_class <- card_class[, -cols_to_combine[-1]]
+# }
+
+print (card_class)
+print (card_df)
+
+# write.csv(card_class, "output.csv")
+```
+
+## 
+
+## Plots
+
+### Relative abundances of Resistomes
+
+#### By Drug Class
+
+```{r}
+# top_classes <- combined_data_class %>%
+#   group_by(Class) %>%
+#   summarise(AverageAbundance = mean(Count, na.rm = TRUE)) %>%
+#   arrange(desc(AverageAbundance)) %>%
+#   top_n(20, AverageAbundance) %>%
+#   pull(Class)
+# print(top_classes)
+
+top_classes <- combined_data_class %>%
+  group_by(Class) %>%
+  summarise(TotalCount = sum(Count, na.rm = TRUE)) %>%
+  arrange(desc(TotalCount)) %>%
+  top_n(15) %>%
+  pull(Class)
+
+class_viz <- combined_data_class %>%
+  group_by(SampleID, hospital) %>%
+  mutate(TotalCount = sum(Count, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(RelativeAbundance = (Count / TotalCount) * 100)  %>%
+  mutate(Class = ifelse(Class %in% top_classes, Class, "Others")) %>%
+  mutate(Class = factor(Class, levels = c("Others", top_classes)))
+
+
+
+n_colors <- length(levels(class_viz$Class))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+
+print (class_viz)
+
+# Create the vertical bar plot using ggplot2, grouped by hospital
+p <- ggplot(class_viz, aes(x = SampleID, y = RelativeAbundance, fill = Class)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  facet_wrap(~hospital, scales = "free_x") +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = " Drug Class Relative Abundances Grouped by Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+         plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+
+# Save plot
+ggsave(filename = "plot1_drug_class_arg_ggplot.png",
+     width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+```{r}
+top_classes <- combined_data_class %>%
+  group_by(Class) %>%
+  summarise(TotalCount = sum(Count, na.rm = TRUE)) %>%
+  arrange(desc(TotalCount)) %>%
+  top_n(15) %>%
+  pull(Class)
+
+class_viz <- combined_data_class %>%
+  mutate(Class = ifelse(Class %in% top_classes, Class, "Others"))
+
+class_viz$Class <- factor(class_viz$Class, levels = c("Others", top_classes))
+
+n_colors <- length(levels(class_viz$Class))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+
+print (class_viz)
+
+# Create the vertical bar plot using ggplot2, grouped by hospital
+p <- ggplot(class_viz, aes(x = SampleID, y = Count, fill = Class)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  facet_wrap(~hospital, scales = "free_x") +
+  color_palette +
+  labs(x = "Sample", y = "Normalized Count", title = " Top 15 Drug Classes Grouped by Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+         plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+
+# Save plot
+ggsave(filename = "plot1_drug_class_count_arg_ggplot.png",
+     width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+```{r}
+# Comment: PCA plot Incorrect (Data)
+selected_data <- card_df%>% select(c(16: ncol(card_df)))
+print (selected_data)
+card_pca <- clr(selected_data)
+pca_result <- rda(card_pca)
+
+
+
+# Extract PCA scores for the samples (sites)
+pca_scores <- prcomp(card_pca)
+ # Convert to data frame
+print (pca_data)
+
+# Add the hospital column to the PCA scores data frame
+pca_data$hospital <- card_df$hospital
+pca_data$SampleID <- card_df$SampleID
+pca_data$month <- card_df$month
+
+head(pca_data$PC1)
+
+# Plotting using ggplot2
+p <- ggplot(pca_data, aes(x = PC1, y = PC2, color = hospital, label = SampleID)) +
+  geom_point(size = 5, alpha = 0.8) +
+  geom_text(vjust = 1.5, hjust = 1.5, size = 3) +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 17, hjust = 0.5),
+        axis.title = element_text(size = 17, face = "bold"),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 17),
+        legend.key.size = unit(1, 'cm'),
+        legend.position = c(0.15, 0.9),
+        legend.background = element_rect(color = "#ffffff"),
+        legend.direction = "horizontal",
+        axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values = c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+
+p + ggtitle("PCA, clr-transformed for three hospitals based on ARG", subtitle = "CARD ARG")
+
+# Save the plot
+ggsave(filename = "plot1_tax_pca_arg.png",
+       width = 16, height = 13, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+

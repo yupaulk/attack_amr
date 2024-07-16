@@ -1,0 +1,529 @@
+# Bioinformatics Analyses of ATTACK-AMR
+
+## Authors: Paul K. Yu, Daphne Janelyn Go
+
+```{r, libraries}
+# if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+# BiocManager::install(c("phyloseq", "microbiome", "ComplexHeatmap"), update = FALSE)
+# install.packages("microViz", repos = c(davidbarnett = "https://david-barnett.r-universe.dev", getOption("repos")))
+# install.packages("tidyverse")
+# install.packages("ggpubr")
+# install.packages("patchwork")
+library (ggplot2)
+library(RColorBrewer)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggpubr)
+library(vegan)
+library(plotly)
+library(ggfortify)
+library(compositions)
+```
+
+### Load Metadata
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results='hide', fig.show='hide'}
+metadata <- read.csv("metadata_updated.csv", header = TRUE)
+
+```
+
+```{r}
+metaphlan_data <- read.delim("merged_metaphlan_rel_species.txt", header = TRUE)
+# Reshape MetaPhlAn data using pivot_longer
+long_metaphlan <- metaphlan_data %>%
+  pivot_longer(cols = -clade_name, names_to = "SampleID", values_to = "RelativeAbundance")
+
+# Merge MetaPhlAn data with metadata
+combined_data <- merge(long_metaphlan, metadata, by = "SampleID", all.x = TRUE)
+
+# Reshape the data so that one row is one sample using pivot_wider
+wide_metaphlan <- combined_data %>%
+  pivot_wider(names_from = clade_name, values_from = RelativeAbundance)
+
+# View the combined data
+head(wide_metaphlan)
+
+
+```
+
+### Make Phyloseq Metaphlan Relative Abundances
+
+```{r}
+# Reshape MetaPhlAn data using pivot_longer
+long_metaphlan <- metaphlan_data %>%
+  pivot_longer(cols = -clade_name, names_to = "SampleID", values_to = "RelativeAbundance")
+
+# Merge MetaPhlAn data with metadata
+combined_data <- merge(long_metaphlan, metadata, by = "SampleID", all.x = TRUE)
+
+# Add a column that specifies the highest taxonomic level in each row
+combined_data$Taxonomic_Level <- sapply(strsplit(as.character(combined_data$clade_name), "\\|"), function(x) length(x))
+
+# Define a function to assign labels based on the number of taxonomic separators
+get_taxonomic_label <- function(name) {
+  parts <- unlist(strsplit(name, "\\|"))
+  
+  switch(length(parts),
+         "1" = "Kingdom",
+         "2" = "Phylum",
+         "3" = "Class",
+         "4" = "Order",
+         "5" = "Family",
+         "6" = "Genus",
+         "7" = "Species",
+         "Other")  # Default case for unmatched formats
+}
+
+# Apply the label function
+combined_data$Taxonomic_Label <- sapply(combined_data$clade_name, get_taxonomic_label)
+
+# Extract the descriptive name by taking the last part after the last |
+extract_clade_name <- function(name) {
+  parts <- unlist(strsplit(name, "\\|"))
+  last_part <- parts[length(parts)]
+  clade_name <- sub(".*__", "", last_part)  # Extract the part after __
+  return(clade_name)
+}
+
+# Apply the extraction function to each row and replace clade_name with descriptive name
+combined_data$clade_name <- sapply(combined_data$clade_name, extract_clade_name)
+
+# Remove rows with "Other" if you prefer not to include unspecified labels
+combined_data <- combined_data[!is.na(combined_data$Taxonomic_Label) & combined_data$Taxonomic_Label != "Other", ]
+
+all_taxonomic_data <- combined_data
+
+# Create a list of data frames, one for each taxonomic level
+list_of_data_frames <- combined_data %>%
+  split(.$Taxonomic_Label)
+
+kingdom_data <- list_of_data_frames$Kingdom
+phylum_data <- list_of_data_frames$Phylum
+class_data <- list_of_data_frames$Class
+order_data <- list_of_data_frames$Order
+family_data <- list_of_data_frames$Family
+genus_data <- list_of_data_frames$Genus
+species_data <- list_of_data_frames$Species
+
+# Reshape the data so that one row is one sample using pivot_wider
+wide_genus_data <- genus_data %>%
+  pivot_wider(names_from = clade_name, values_from = RelativeAbundance)
+
+print(wide_genus_data)
+
+```
+
+## Relative abundances of Taxa (metaphlan)
+
+### Abundances of functional genes
+
+```{r}
+top_species <- species_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+
+
+species_viz <- species_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_species, clade_name, "Others"))
+
+species_viz$clade_name <- factor(species_viz$clade_name, levels = c("Others", top_species))
+n_colors <- length(levels(species_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+
+print (table(species_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2, grouped by hospital
+p <- ggplot(species_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  facet_wrap(~hospital, scales = "free_x") +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = " Species Relative Abundances Grouped by Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+         plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_species_new.png",
+     width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+### Genus Level
+
+```{r}
+
+top_genus <- genus_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = median(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(25, AverageAbundance) %>%
+  pull(clade_name)
+
+
+
+genus_viz <- genus_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_genus, clade_name, "Others"))
+
+genus_viz$clade_name <- factor(genus_viz$clade_name, levels = c("Others", top_genus))
+n_colors <- length(levels(genus_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(30, "Set3"), brewer.pal(20, "Pastel2"))[1:n_colors])
+
+
+print (table(genus_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2, grouped by hospital
+p <- ggplot(genus_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  facet_wrap(~hospital, scales = "free_x") +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = " Genus Relative Abundances Grouped by Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+         plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_genus_new.png",
+     width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+### Family Level
+
+```{r}
+
+top_family <- family_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+
+
+family_viz <- family_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_family, clade_name, "Others"))
+
+family_viz$clade_name <- factor(family_viz$clade_name, levels = c("Others", top_family))
+n_colors <- length(levels(family_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+
+print (table(family_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2, grouped by hospital
+p <- ggplot(family_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  facet_wrap(~hospital, scales = "free_x") +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = " Family Relative Abundances Grouped by Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+         plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_fam_new.png",
+     width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+### Order Level
+
+```{r}
+
+top_order <- order_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+
+
+order_viz <- order_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_order, clade_name, "Others"))
+
+order_viz$clade_name <- factor(order_viz$clade_name, levels = c("Others", top_order))
+n_colors <- length(levels(order_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+
+print (table(order_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2, grouped by hospital
+p <- ggplot(order_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  facet_wrap(~hospital, scales = "free_x") +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = " Order Relative Abundances Grouped by Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+         plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_order_new.png",
+     width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+### Class Level
+
+```{r}
+
+top_class <- class_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+
+
+class_viz <- class_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_class, clade_name, "Others"))
+
+class_viz$clade_name <- factor(class_viz$clade_name, levels = c("Others", top_class))
+n_colors <- length(levels(class_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+
+print (table(class_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2, grouped by hospital
+p <- ggplot(class_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  facet_wrap(~hospital, scales = "free_x") +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = " Class Relative Abundances Grouped by Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+         plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_class_new.png",
+     width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+### Phylum Level
+
+```{r}
+
+top_phylum <- phylum_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = sum(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(10, AverageAbundance) %>%
+  pull(clade_name)
+
+
+
+phylum_viz <- phylum_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_phylum, clade_name, "Others"))
+
+phylum_viz$clade_name <- factor(phylum_viz$clade_name, levels = c("Others", top_phylum))
+n_colors <- length(levels(phylum_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+
+print (table(phylum_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2, grouped by hospital
+p <- ggplot(phylum_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  facet_wrap(~hospital, scales = "free_x") +
+  color_palette +
+  labs(x = "Sample", y ="Abundance %", title = " Phylum Relative Abundances Grouped by Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+         plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_phylum_new.png",
+     width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+## Diversity
+
+### Shannon Index
+
+```{r}
+
+
+# Assuming `genus_data` has columns 'SampleID', 'RelativeAbundance', and 'clade_name'
+# Pivot the data to a wide format where each column represents a genus
+genus_matrix <- genus_data %>%
+  pivot_wider(names_from = clade_name, values_from = RelativeAbundance, values_fill = list(RelativeAbundance = 0)) %>%
+  select(-SampleID, -alias, -month, -name, -hospital, -replicate, -HWW, -hospital_description, -no_of_beds, -lat, -long,
+         -sample_material, -DNA_ng_µl, -A260.280, -plot_name, -Taxonomic_Level, -Taxonomic_Label) %>%
+  as.matrix()
+
+
+# Calculate Shannon diversity
+shannon_diversity <- diversity(genus_matrix, index = "shannon")
+
+# Create a data frame to store the results along with SampleID
+shannon_results <- data.frame(
+  SampleID = genus_data$SampleID[!duplicated(genus_data$SampleID)],  # Ensure SampleID matches the diversity calculations
+  Shannon = shannon_diversity
+)
+
+# If you need to merge with additional metadata, e.g., hospital information
+shannon_results <- merge(shannon_results, metadata, by = "SampleID", all.x = TRUE)
+
+
+# Perform the Kruskal-Wallis Test to check for significant differences between hospitals
+kw_test_results <- kruskal.test(Shannon ~ hospital, data = shannon_results)
+
+# Pairwise Wilcoxon Test with Benjamini-Hochberg adjustment for multiple comparisons
+pw_wilcox_test_results <- pairwise.wilcox.test(shannon_results$Shannon, shannon_results$hospital, p.adjust.method = "BH")
+
+# Print statistical test results
+# print(kw_test_results)
+# print(pw_wilcox_test_results)
+
+# Plotting Shannon Diversity using ggplot2
+p <- ggplot(shannon_results, aes(x = hospital, y = Shannon, fill = hospital)) +
+  geom_boxplot(alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis = 'y', stackdir = 'center', position = position_dodge(0.8)) +
+  labs(title = "Shannon Diversity Index for Taxonomic Composition Among Genus Across Hospitals", 
+       x = "Hospital", 
+       y = "Shannon Index") +
+  theme_minimal() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 10))
+
+# Display the plot
+print(p)
+
+# Save the plot
+ggsave(filename = "plot6_tax_shannon_genus.jpg",
+       plot = p,
+       width = 16, height = 13, dpi = 300, units = "in", device = 'jpg', scale = 1)
+```
+
+```{r}
+
+
+# Assuming `genus_data` has columns 'SampleID', 'RelativeAbundance', and 'clade_name'
+# Pivot the data to a wide format where each column represents a genus
+species_matrix <- species_data %>%
+  pivot_wider(names_from = clade_name, values_from = RelativeAbundance, values_fill = list(RelativeAbundance = 0)) %>%
+  select(-SampleID, -alias, -month, -name, -hospital, -replicate, -HWW, -hospital_description, -no_of_beds, -lat, -long,
+         -sample_material, -DNA_ng_µl, -A260.280, -plot_name, -Taxonomic_Level, -Taxonomic_Label) %>%
+  as.matrix()
+
+
+# Calculate Shannon diversity
+shannon_diversity <- diversity(species_matrix, index = "shannon")
+
+# Create a data frame to store the results along with SampleID
+shannon_results <- data.frame(
+  SampleID = species_data$SampleID[!duplicated(species_data$SampleID)],  # Ensure SampleID matches the diversity calculations
+  Shannon = shannon_diversity
+)
+
+# If you need to merge with additional metadata, e.g., hospital information
+shannon_results <- merge(shannon_results, metadata, by = "SampleID", all.x = TRUE)
+
+
+# Perform the Kruskal-Wallis Test to check for significant differences between hospitals
+kw_test_results <- kruskal.test(Shannon ~ hospital, data = shannon_results)
+
+# Pairwise Wilcoxon Test with Benjamini-Hochberg adjustment for multiple comparisons
+pw_wilcox_test_results <- pairwise.wilcox.test(shannon_results$Shannon, shannon_results$hospital, p.adjust.method = "BH")
+
+# Print statistical test results
+# print(kw_test_results)
+# print(pw_wilcox_test_results)
+
+# Plotting Shannon Diversity using ggplot2
+p <- ggplot(shannon_results, aes(x = hospital, y = Shannon, fill = hospital)) +
+  geom_boxplot(alpha = 0.8, outlier.shape = NA) +
+  geom_dotplot(binaxis = 'y', stackdir = 'center', position = position_dodge(0.8)) +
+  labs(title = "Shannon Diversity Index for Taxonomic Composition Among Species Across Hospitals", 
+       x = "Hospital", 
+       y = "Shannon Index") +
+  theme_minimal() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 10))
+
+# Display the plot
+print(p)
+
+# Save the plot
+ggsave(filename = "plot6_tax_shannon_species.jpg",
+       plot = p,
+       width = 16, height = 13, dpi = 300, units = "in", device = 'jpg', scale = 1)
+```
+
+## PCA Plot
+
+```{r}
+selected_data <- wide_genus_data%>% select(c(18: ncol(wide_genus_data)))
+selected_data <- clr(selected_data)
+pca_result <- rda(selected_data)
+
+
+# Extract PCA scores for the samples (sites)
+pca_scores <- scores(pca_result, display = "sites")
+pca_data <- as.data.frame(pca_scores)  # Convert to data frame
+
+# Add the hospital column to the PCA scores data frame
+pca_data$hospital <- wide_genus_data$hospital
+pca_data$SampleID <- wide_genus_data$SampleID
+pca_data$month <- wide_genus_data$month
+
+head(pca_data$PC1)
+
+# Plotting using ggplot2
+p <- ggplot(pca_data, aes(x = PC1, y = PC2, color = hospital, label = SampleID)) +
+  geom_point(size = 10, alpha = 0.8) +
+  geom_text(vjust = 1.5, hjust = 1.5, size = 3) +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 17, hjust = 0.5),
+        axis.title = element_text(size = 17, face = "bold"),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 17),
+        legend.key.size = unit(1, 'cm'),
+        legend.position = c(0.15, 0.9),
+        legend.background = element_rect(color = "#ffffff"),
+        legend.direction = "horizontal",
+        axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values = c("#CD3857", "#61A6E3", "#CC7722")) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+
+p + ggtitle("PCA, clr-transformed for three hospitals on Taxonomic Composition at Genus Level", subtitle = "Metaphlan")
+
+# Save the plot
+ggsave(filename = "plot1_tax_pca.png",
+       width = 16, height = 13, dpi = 300, units = "in", device = 'png', scale = 1)
+```
