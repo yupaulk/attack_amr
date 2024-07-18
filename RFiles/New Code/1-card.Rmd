@@ -223,9 +223,12 @@ ggsave(filename = "plot1_drug_class_count_arg_ggplot.png",
 ```
 
 ```{r}
-# Comment: PCA plot Incorrect (Data)
-selected_data <- card_df%>% select(c(16: ncol(card_df)))
+# Remove outlier CGH4
+card_df_clean <- card_df %>% 
+  filter(SampleID != "CGH4")
 
+# Comment: PCA plot Incorrect (Data)
+selected_data <- card_df_clean %>% select(c(16: ncol(card_df_clean)))
 
 ## Version 1
 # card_pca <- clr(selected_data)
@@ -233,13 +236,17 @@ selected_data <- card_df%>% select(c(16: ncol(card_df)))
 # biplot(pca_data)
 
 ## Version 2
-pca_data <- prcomp(selected_data, scale. = TRUE)
+# Remove entries with zero variance
+variances <- apply(selected_data, 2, var)
+selected_data <- selected_data[, variances != 0]
+
+pca_data <- prcomp(selected_data, center = TRUE, scale. = TRUE)
 pca_data <- as.data.frame(pca_data$x[, 1:2])
 
 # Add the hospital column to the PCA scores data frame
-pca_data$hospital <- card_df$hospital
-pca_data$SampleID <- card_df$SampleID
-pca_data$month <- card_df$month
+pca_data$hospital <- card_df_clean$hospital
+pca_data$SampleID <- card_df_clean$SampleID
+pca_data$month <- card_df_clean$month
 
 # Plotting using ggplot2
 p <- ggplot(pca_data, aes(x = PC1, y = PC2, color = hospital, label = SampleID)) +
