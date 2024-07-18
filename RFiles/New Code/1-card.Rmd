@@ -26,7 +26,7 @@ metaxa_data <- read.delim("metaxa_genus.txt", header = TRUE)
 card_data <- read.delim("card_genemat_no_zero.txt", header = TRUE)
 drug_class_card <- read.delim("card_drug_class.txt", header = TRUE)
 card_lengths <- read.delim("card_lengths.txt", header = TRUE)
-print (drug_class_card)
+
 ```
 
 #### Merging Metadata and Normalizing Counts using Metaxa
@@ -44,54 +44,45 @@ ssu_counts <- combined_metaxa %>%
   group_by(SampleID) %>%
   summarize(SSU_Counts = sum(Count))
 
-print (ssu_counts)
-# print(combined_length[-1, 2:(ncol(combined_length) - 1)])
+# Make GENE column into row names
+rownames(combined_length) <- combined_length$GENE
 
-card_length_norm <- combined_length[, 2:(ncol(combined_length)-1)]  / combined_length$Length
+# Remove GENE column
+combined_length <- combined_length %>% select(-GENE)
 
-combined_length_df <- combined_length[,]
+# Normalize reads by gene lengths
+card_length_norm <- combined_length[, 1:(ncol(combined_length)-1)]  / combined_length$Length
 
+# Sort columns alphabetically to match with ssu_counts
+card_length_norm <- card_length_norm[ , order(names(card_length_norm))]
 
-card_length_norm$GENE = combined_length$GENE
+View(card_length_norm_t)
+
+# Normalization with Metaxa2 SSU counts
+card_length_norm_t <- t(card_length_norm)
+ssu_counts <- ssu_counts %>% select(-SampleID)
+card_length_norm_t <- sweep(card_length_norm_t, 1, t(ssu_counts), FUN = "/")
+card_length_SSU_norm <- t(card_length_norm_t) * 1540
+
+row.names(card_length_SSU_norm)
+
+# Replace counts in card_data with normalized values
+normalized_card_data <- as.data.frame(card_length_SSU_norm) %>%
+  mutate(GENE = rownames(card_length_SSU_norm)) %>%
+  select(GENE, everything())
+
 # Transform CARD data to long format
-long_card <- card_data %>%
+long_card <- normalized_card_data %>%
   pivot_longer(cols = -GENE, names_to = "SampleID", values_to = "Count")
 
-# FIX MERGING
+# Merge CARD data with metadata
+combined_data <- merge(long_card,metadata, by = "SampleID", all.x = TRUE)
+combined_data_class <- merge(combined_data, drug_class_card, by = "GENE", all.x = TRUE)
 
-combined_temp <- merge(card_length_norm, long_card, by = "GENE", all.x = TRUE)
-combined_data <- merge (combined_temp, metadata, by = "SampleID", all.x = TRUE)
-combined_data_ssu <- merge (combined_data, ssu_counts, by = "SampleID", all.x = TRUE)
+# Reshape the data so that one row is one sample using pivot_wider
+card_df <- combined_data %>%
+  pivot_wider(names_from = GENE, values_from = Count)
 
-print (combined_data_ssu)
-
-  
-# CONTINUE FROM HERE
-# # Normalization with Metaxa2 SSU counts
-# card_length_SSU_norm <- t(t(card_length_norm) / ssu_counts[,-1]) * 1540
-# # Replace counts in card_data with normalized values
-# normalized_card_data <- card_data
-# normalized_card_data[-1] <- card_length_SSU_norm
-# 
-# # Optionally, you can ensure the first column (GENE names) is retained properly
-# normalized_card_data[, 1] <- card_data[, 1]
-# 
-# # Print the final normalized data frame
-# print(normalized_card_data)
-# # Transform CARD data to long format
-# long_card <- normalized_card_data %>%
-#   pivot_longer(cols = -GENE, names_to = "SampleID", values_to = "Count")
-# 
-# # Merge CARD data with metadata
-# combined_data <- merge(long_card,metadata, by = "SampleID", all.x = TRUE)
-# combined_data_class <- merge(combined_data, drug_class_card, by = "GENE", all.x = TRUE)
-# 
-# # Reshape the data so that one row is one sample using pivot_wider
-# card_df <- combined_data %>%
-#   pivot_wider(names_from = GENE, values_from = Count)
-# 
-# print (combined_data)
-write.csv(combined_data_ssu, "output1.csv")
 ```
 
 #### Cleaning Drug Classes
@@ -234,23 +225,21 @@ ggsave(filename = "plot1_drug_class_count_arg_ggplot.png",
 ```{r}
 # Comment: PCA plot Incorrect (Data)
 selected_data <- card_df%>% select(c(16: ncol(card_df)))
-print (selected_data)
-card_pca <- clr(selected_data)
-pca_result <- rda(card_pca)
 
 
+## Version 1
+# card_pca <- clr(selected_data)
+# pca_data <- rda(card_pca)
+# biplot(pca_data)
 
-# Extract PCA scores for the samples (sites)
-pca_scores <- prcomp(card_pca)
- # Convert to data frame
-print (pca_data)
+## Version 2
+pca_data <- prcomp(selected_data, scale. = TRUE)
+pca_data <- as.data.frame(pca_data$x[, 1:2])
 
 # Add the hospital column to the PCA scores data frame
 pca_data$hospital <- card_df$hospital
 pca_data$SampleID <- card_df$SampleID
 pca_data$month <- card_df$month
-
-head(pca_data$PC1)
 
 # Plotting using ggplot2
 p <- ggplot(pca_data, aes(x = PC1, y = PC2, color = hospital, label = SampleID)) +
