@@ -29,8 +29,8 @@ metadata <- read.csv("metadata_updated.csv", header = TRUE)
 ```
 
 ```{r}
-metaphlan_data <- read.delim("merged_metaphlan_rel_species.txt", header = TRUE)
 # Reshape MetaPhlAn data using pivot_longer
+metaphlan_data <- read.delim("merged_metaphlan_rel_species.txt", header = TRUE)
 long_metaphlan <- metaphlan_data %>%
   pivot_longer(cols = -clade_name, names_to = "SampleID", values_to = "RelativeAbundance")
 
@@ -108,6 +108,9 @@ species_data <- list_of_data_frames$Species
 
 # Reshape the data so that one row is one sample using pivot_wider
 wide_genus_data <- genus_data %>%
+  pivot_wider(names_from = clade_name, values_from = RelativeAbundance)
+
+wide_phylum_data <- phylum_data %>%
   pivot_wider(names_from = clade_name, values_from = RelativeAbundance)
 
 print(wide_genus_data)
@@ -379,7 +382,7 @@ ggsave(filename = "plot12_tax_rel_phylum_new.png",
 genus_matrix <- genus_data %>%
   pivot_wider(names_from = clade_name, values_from = RelativeAbundance, values_fill = list(RelativeAbundance = 0)) %>%
   select(-SampleID, -alias, -month, -name, -hospital, -replicate, -HWW, -hospital_description, -no_of_beds, -lat, -long,
-         -sample_material, -DNA_ng_µl, -A260.280, -plot_name, -Taxonomic_Level, -Taxonomic_Label) %>%
+         -sample_material, -DNA_ng_ml, -A260.280, -plot_name, -Taxonomic_Level, -Taxonomic_Label) %>%
   as.matrix()
 
 
@@ -436,7 +439,7 @@ ggsave(filename = "plot6_tax_shannon_genus.jpg",
 species_matrix <- species_data %>%
   pivot_wider(names_from = clade_name, values_from = RelativeAbundance, values_fill = list(RelativeAbundance = 0)) %>%
   select(-SampleID, -alias, -month, -name, -hospital, -replicate, -HWW, -hospital_description, -no_of_beds, -lat, -long,
-         -sample_material, -DNA_ng_µl, -A260.280, -plot_name, -Taxonomic_Level, -Taxonomic_Label) %>%
+         -sample_material, -DNA_ng_ml, -A260.280, -plot_name, -Taxonomic_Level, -Taxonomic_Label) %>%
   as.matrix()
 
 
@@ -487,6 +490,8 @@ ggsave(filename = "plot6_tax_shannon_species.jpg",
 
 ## PCA Plot
 
+### Genus
+
 ```{r}
 selected_data <- wide_genus_data%>% select(c(18: ncol(wide_genus_data)))
 selected_data <- clr(selected_data)
@@ -505,9 +510,10 @@ pca_data$month <- wide_genus_data$month
 head(pca_data$PC1)
 
 # Plotting using ggplot2
-p <- ggplot(pca_data, aes(x = PC1, y = PC2, color = hospital, label = SampleID)) +
-  geom_point(size = 10, alpha = 0.8) +
-  geom_text(vjust = 1.5, hjust = 1.5, size = 3) +
+p <- ggplot(pca_data, aes(x = PC1, y = PC2, color = hospital, label = SampleID, group = hospital)) +
+  geom_point(size = 4, alpha = 0.8) +
+  geom_text(vjust = 1.5, hjust = 1.5, size = 3, check_overlap = TRUE) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(color = hospital), size = 1) +
   theme(text = element_text(family = "Palatino"),
         plot.title = element_text(size = 17, hjust = 0.5),
         axis.title = element_text(size = 17, face = "bold"),
@@ -518,12 +524,442 @@ p <- ggplot(pca_data, aes(x = PC1, y = PC2, color = hospital, label = SampleID))
         legend.background = element_rect(color = "#ffffff"),
         legend.direction = "horizontal",
         axis.text = element_text(size = 17), aspect.ratio = 1) +
-  scale_color_manual(values = c("#CD3857", "#61A6E3", "#CC7722")) +
-  stat_ellipse(level = 0.95, linetype = 2, aes(colour = hospital), size = 1)
+  scale_color_manual(values = c("#CD3857", "#61A6E3", "#CC7722"))
 
 p + ggtitle("PCA, clr-transformed for three hospitals on Taxonomic Composition at Genus Level", subtitle = "Metaphlan")
 
 # Save the plot
 ggsave(filename = "plot1_tax_pca.png",
        width = 16, height = 13, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+### Phylum
+
+```{r}
+selected_data <- wide_phylum_data%>% select(c(18: ncol(wide_phylum_data)))
+selected_data <- clr(selected_data)
+pca_result <- rda(selected_data)
+
+
+# Extract PCA scores for the samples (sites)
+pca_scores <- scores(pca_result, display = "sites")
+pca_data <- as.data.frame(pca_scores)  # Convert to data frame
+
+# Add the hospital column to the PCA scores data frame
+pca_data$hospital <- wide_phylum_data$hospital
+pca_data$SampleID <- wide_phylum_data$SampleID
+pca_data$month <- wide_phylum_data$month
+
+head(pca_data$PC1)
+
+# Plotting using ggplot2
+p <- ggplot(pca_data, aes(x = PC1, y = PC2, color = hospital, label = SampleID, group = hospital)) +
+  geom_point(size = 4, alpha = 0.8) +
+  geom_text(vjust = 1.5, hjust = 1.5, size = 3, check_overlap = TRUE) +
+  stat_ellipse(level = 0.95, linetype = 2, aes(color = hospital), size = 1) +
+  theme(text = element_text(family = "Palatino"),
+        plot.title = element_text(size = 17, hjust = 0.5),
+        axis.title = element_text(size = 17, face = "bold"),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 17),
+        legend.key.size = unit(1, 'cm'),
+        legend.position = c(0.15, 0.9),
+        legend.background = element_rect(color = "#ffffff"),
+        legend.direction = "horizontal",
+        axis.text = element_text(size = 17), aspect.ratio = 1) +
+  scale_color_manual(values = c("#CD3857", "#61A6E3", "#CC7722"))
+
+p + ggtitle("PCA, clr-transformed for three hospitals on Taxonomic Composition at phylum Level", subtitle = "Metaphlan")
+
+# Save the plot
+ggsave(filename = "plot1_tax_pca_phylum.png",
+       width = 16, height = 13, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+### Relative Abundance Separated Per Hospital
+
+#### CGH Species
+
+```{r}
+# Filter data for the CGH hospital
+cgh_species_data <- species_data %>% 
+  filter(hospital == "CGH")
+
+# Summarize and get the top species for CGH hospital
+top_species <- cgh_species_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+# Update species_viz to only include data for CGH hospital
+species_viz <- cgh_species_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_species, clade_name, "Others"))
+
+species_viz$clade_name <- factor(species_viz$clade_name, levels = c("Others", top_species))
+n_colors <- length(levels(species_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+print(table(species_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2
+p <- ggplot(species_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = "Species Relative Abundances for CGH Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_species_cgh.png",
+       width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+
+```
+
+#### SLMC Species
+
+```{r}
+
+
+# Filter data for the SLMC hospital
+slmc_species_data <- species_data %>% 
+  filter(hospital == "SLMC")
+
+# Summarize and get the top species for SLMC hospital
+top_species <- slmc_species_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+# Update species_viz to only include data for SLMC hospital
+species_viz <- slmc_species_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_species, clade_name, "Others"))
+
+species_viz$clade_name <- factor(species_viz$clade_name, levels = c("Others", top_species))
+n_colors <- length(levels(species_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+print(table(species_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2
+p <- ggplot(species_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = "Species Relative Abundances for SLMC Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_species_slmc.png",
+       width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+
+```
+
+#### UST Species
+
+```{r}
+
+# Filter data for the UST hospital
+ust_species_data <- species_data %>% 
+  filter(hospital == "UST")
+
+# Summarize and get the top species for UST hospital
+top_species <- ust_species_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+# Update species_viz to only include data for UST hospital
+species_viz <- ust_species_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_species, clade_name, "Others"))
+
+species_viz$clade_name <- factor(species_viz$clade_name, levels = c("Others", top_species))
+n_colors <- length(levels(species_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+print(table(species_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2
+p <- ggplot(species_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = "Species Relative Abundances for UST Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_species_ust.png",
+       width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+
+```
+
+### CGH Genus
+
+```{r}
+# Filter data for the CGH hospital
+cgh_genus_data <- genus_data %>% 
+  filter(hospital == "CGH")
+
+# Summarize and get the top genus for CGH hospital
+top_genus <- cgh_genus_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+# Update genus_viz to only include data for CGH hospital
+genus_viz <- cgh_genus_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_genus, clade_name, "Others"))
+
+genus_viz$clade_name <- factor(genus_viz$clade_name, levels = c("Others", top_genus))
+n_colors <- length(levels(genus_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+print(table(genus_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2
+p <- ggplot(genus_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = "Genus Relative Abundances for CGH Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_genus_cgh.png",
+       width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+
+```
+
+#### SLMC Genus
+
+```{r}
+
+# Filter data for the SLMC hospital
+slmc_genus_data <- genus_data %>% 
+  filter(hospital == "SLMC")
+
+# Summarize and get the top genus for SLMC hospital
+top_genus <- slmc_genus_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+# Update genus_viz to only include data for SLMC hospital
+genus_viz <- slmc_genus_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_genus, clade_name, "Others"))
+
+genus_viz$clade_name <- factor(genus_viz$clade_name, levels = c("Others", top_genus))
+n_colors <- length(levels(genus_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+print(table(genus_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2
+p <- ggplot(genus_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = "Genus Relative Abundances for SLMC Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_genus_slmc.png",
+       width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+#### UST Genus
+
+```{r}
+# Filter data for the UST hospital
+ust_genus_data <- genus_data %>% 
+  filter(hospital == "UST")
+
+# Summarize and get the top genus for UST hospital
+top_genus <- ust_genus_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+# Update genus_viz to only include data for UST hospital
+genus_viz <- ust_genus_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_genus, clade_name, "Others"))
+
+genus_viz$clade_name <- factor(genus_viz$clade_name, levels = c("Others", top_genus))
+n_colors <- length(levels(genus_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+print(table(genus_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2
+p <- ggplot(genus_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = "Genus Relative Abundances for UST Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_genus_ust.png",
+       width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+#### CGH Phylum
+
+```{r}
+# Filter data for the CGH hospital
+cgh_phylum_data <- phylum_data %>% 
+  filter(hospital == "CGH")
+
+# Summarize and get the top phylum for CGH hospital
+top_phylum <- cgh_phylum_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+# Update phylum_viz to only include data for CGH hospital
+phylum_viz <- cgh_phylum_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_phylum, clade_name, "Others"))
+
+phylum_viz$clade_name <- factor(phylum_viz$clade_name, levels = c("Others", top_phylum))
+n_colors <- length(levels(phylum_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+print(table(phylum_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2
+p <- ggplot(phylum_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = "Phylum Relative Abundances for CGH Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_phylum_cgh.png",
+       width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+#### SLMC Phylum
+
+```{r}
+# Filter data for the SLMC hospital
+slmc_phylum_data <- phylum_data %>% 
+  filter(hospital == "SLMC")
+
+# Summarize and get the top phylum for SLMC hospital
+top_phylum <- slmc_phylum_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+# Update phylum_viz to only include data for SLMC hospital
+phylum_viz <- slmc_phylum_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_phylum, clade_name, "Others"))
+
+phylum_viz$clade_name <- factor(phylum_viz$clade_name, levels = c("Others", top_phylum))
+n_colors <- length(levels(phylum_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+print(table(phylum_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2
+p <- ggplot(phylum_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = "Phylum Relative Abundances for SLMC Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_phylum_slmc.png",
+       width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
+```
+
+#### UST Phylum
+
+```{r}
+# Filter data for the UST hospital
+ust_phylum_data <- phylum_data %>% 
+  filter(hospital == "UST")
+
+# Summarize and get the top phylum for UST hospital
+top_phylum <- ust_phylum_data %>%
+  group_by(clade_name) %>%
+  summarise(AverageAbundance = mean(RelativeAbundance, na.rm = TRUE)) %>%
+  arrange(desc(AverageAbundance)) %>%
+  top_n(15, AverageAbundance) %>%
+  pull(clade_name)
+
+# Update phylum_viz to only include data for UST hospital
+phylum_viz <- ust_phylum_data %>%
+  mutate(clade_name = ifelse(clade_name %in% top_phylum, clade_name, "Others"))
+
+phylum_viz$clade_name <- factor(phylum_viz$clade_name, levels = c("Others", top_phylum))
+n_colors <- length(levels(phylum_viz$clade_name))
+color_palette <- scale_fill_manual(values = c(brewer.pal(12, "Set3"), brewer.pal(8, "Pastel2"))[1:n_colors])
+
+print(table(phylum_viz$clade_name))
+
+# Create the vertical bar plot using ggplot2
+p <- ggplot(phylum_viz, aes(x = SampleID, y = RelativeAbundance, fill = clade_name)) +
+  geom_bar(stat = "identity", position = "stack", width = 0.7) +
+  color_palette +
+  labs(x = "Sample", y = "Abundance %", title = "Phylum Relative Abundances for UST Hospital") +
+  theme_light() +
+  theme(legend.position = "right", 
+        legend.title = element_blank(), 
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.text = element_text(size = 8), # Adjust legend text size if necessary
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# Save plot
+ggsave(filename = "plot12_tax_rel_phylum_ust.png",
+       width = 16, height = 8, dpi = 300, units = "in", device = 'png', scale = 1)
 ```
